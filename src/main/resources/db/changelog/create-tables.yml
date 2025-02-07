@@ -1,7 +1,7 @@
 databaseChangeLog:
   - changeSet:
       id: 1
-      author: user
+      author: Pavel Bakanov
       changes:
         - createTable:
             tableName: post
@@ -54,7 +54,7 @@ databaseChangeLog:
 
   - changeSet:
       id: 2
-      author: user
+      author: Pavel Bakanov
       changes:
         - createTable:
             tableName: comment
@@ -107,7 +107,7 @@ databaseChangeLog:
 
   - changeSet:
       id: 3
-      author: user
+      author: Pavel Bakanov
       changes:
         - createTable:
             tableName: photo

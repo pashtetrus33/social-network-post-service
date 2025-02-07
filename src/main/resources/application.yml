@@ -1,8 +1,6 @@
 spring:
   application:
     name: post-service
-  profiles:
-    active: local
 
   jpa:
     generate-ddl: false
@@ -11,11 +9,13 @@ spring:
     url: jdbc:postgresql://91.197.98.213:5432/post_db?currentSchema=post_schema
     username: postgre_user
     password: postgre_secret_password
+    driver-class-name: org.postgresql.Driver
     hikari:
       connection-timeout: 10000
 
+
   liquibase:
-    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    change-log: classpath:/db/changelog/master.yml
 
   cache:
     type: caffeine
@@ -25,8 +25,8 @@ spring:
 eureka:
   client:
     serviceUrl:
-     #defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
-     defaultZone: http://host.docker.internal:8761/eureka/
+     defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+     #defaultZone: http://host.docker.internal:8761/eureka/
 
   instance:
     preferIpAddress: true
