@@ -1,0 +1,117 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: user
+      changes:
+        - createTable:
+            tableName: post
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: time
+                  type: TIMESTAMP
+              - column:
+                  name: time_changed
+                  type: TIMESTAMP
+              - column:
+                  name: author_id
+                  type: BIGINT
+              - column:
+                  name: title
+                  type: VARCHAR(255)
+              - column:
+                  name: type
+                  type: VARCHAR(20)
+              - column:
+                  name: post_text
+                  type: TEXT
+              - column:
+                  name: is_blocked
+                  type: BOOLEAN
+              - column:
+                  name: is_delete
+                  type: BOOLEAN
+              - column:
+                  name: comments_count
+                  type: INT
+              - column:
+                  name: like_amount
+                  type: INT
+              - column:
+                  name: my_like
+                  type: BOOLEAN
+              - column:
+                  name: image_path
+                  type: VARCHAR(500)
+              - column:
+                  name: publish_date
+                  type: TIMESTAMP
+
+  - changeSet:
+      id: 2
+      author: user
+      changes:
+        - createTable:
+            tableName: comment
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: comment_type
+                  type: VARCHAR(20)
+              - column:
+                  name: time
+                  type: TIMESTAMP
+              - column:
+                  name: time_changed
+                  type: TIMESTAMP
+              - column:
+                  name: author_id
+                  type: BIGINT
+              - column:
+                  name: parent_id
+                  type: BIGINT
+              - column:
+                  name: comment_text
+                  type: TEXT
+              - column:
+                  name: post_id
+                  type: BIGINT
+              - column:
+                  name: is_blocked
+                  type: BOOLEAN
+              - column:
+                  name: is_delete
+                  type: BOOLEAN
+              - column:
+                  name: like_amount
+                  type: INT
+              - column:
+                  name: my_like
+                  type: BOOLEAN
+              - column:
+                  name: comments_count
+                  type: INT
+              - column:
+                  name: image_path
+                  type: VARCHAR(500)
+
+  - changeSet:
+      id: 3
+      author: user
+      changes:
+        - createTable:
+            tableName: photo
+            columns:
+              - column:
+                  name: image_path
+                  type: VARCHAR(500)

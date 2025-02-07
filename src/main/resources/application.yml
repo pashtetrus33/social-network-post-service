@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: post-service
+  profiles:
+    active: local
+
+  jpa:
+    generate-ddl: false
+    open-in-view: false
+  datasource:
+    url: jdbc:postgresql://91.197.98.213:5432/post_db?currentSchema=post_schema
+    username: postgre_user
+    password: postgre_secret_password
+    hikari:
+      connection-timeout: 10000
+
+  liquibase:
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=600s
+
+eureka:
+  client:
+    serviceUrl:
+     #defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+     defaultZone: http://host.docker.internal:8761/eureka/
+
+  instance:
+    preferIpAddress: true
