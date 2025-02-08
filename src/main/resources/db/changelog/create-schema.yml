@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 0
+      author: Pavel Bakanov
+      changes:
+        - sql:
+            dbms: postgresql
+            sql: CREATE SCHEMA IF NOT EXISTS post_schema;
