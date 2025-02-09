@@ -13,14 +13,14 @@ import java.util.List;
 @AllArgsConstructor
 public class PostSearchDto {
 
-    private List<@Positive Long> ids;
-    private List<@Positive Long> accountIds;
-    private List<@Positive Long> blockedIds;
+    private List<@PositiveOrZero(message = "Each ID must be a positive number or zero") Long> ids;
+    private List<@PositiveOrZero(message = "Each account ID must be a positive number or zero") Long> accountIds;
+    private List<@PositiveOrZero(message = "Each blocked ID must be a positive number or zero") Long> blockedIds;
 
-    @Size(max = 255)
+    @Size(max = 255, message = "Author name must not exceed 255 characters")
     private String author;
 
-    @Size(max = 255)
+    @Size(max = 255, message = "Title must not exceed 255 characters")
     private String title;
 
     private String postText;
@@ -29,12 +29,12 @@ public class PostSearchDto {
 
     private Boolean isDelete;
 
-    @Size(max = 50)
+    @Size(max = 50, message = "Tags list size must not exceed 50")
     private List<String> tags;
 
-    @PositiveOrZero
+    @PositiveOrZero(message = "Date from must be zero or a positive number")
     private Long dateFrom;
 
-    @PositiveOrZero
+    @PositiveOrZero(message = "Date to must be zero or a positive number")
     private Long dateTo;
 }
