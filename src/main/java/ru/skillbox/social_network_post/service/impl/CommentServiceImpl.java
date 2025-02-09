@@ -1,13 +1,17 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.entity.Comment;
+import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.exception.CommentNotFoundException;
+import ru.skillbox.social_network_post.exception.IdMismatchException;
 import ru.skillbox.social_network_post.exception.PostNotFoundException;
 import ru.skillbox.social_network_post.mapper.CommentMapper;
 import ru.skillbox.social_network_post.repository.CommentRepository;
@@ -18,7 +22,7 @@ import ru.skillbox.social_network_post.web.model.PageCommentDto;
 
 import java.text.MessageFormat;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
@@ -28,61 +32,80 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
 
 
-    private static final Logger logger = LoggerFactory.getLogger(CommentServiceImpl.class);
-
     @Override
+    @Cacheable(value = "comments", key = "#postId")
+    @Transactional
     public PageCommentDto getByPostId(Long postId, Pageable pageable) {
+        checkPostPresence(postId);
         Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
+        log.info("Fetched {} comments for post ID {}", comments.getTotalElements(), postId);
         return commentMapper.toPageCommentDto(comments);
     }
 
     @Override
+    @CacheEvict(value = "comments", key = "#postId")
+    @Transactional
     public void create(Long postId, CommentDto commentDto) {
-        // Получаем комментарий из DTO
         Comment comment = commentMapper.toComment(commentDto);
+        comment.setPost(checkPostPresence(postId));
 
-        // Устанавливаем пост для комментария
-        comment.setPost(postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException(
-                        MessageFormat.format("Post with id {0} is not found", postId))));
+        comment.setId(null); // Сбрасываем ID, чтобы Hibernate сгенерировал новый
 
-        // Сохраняем комментарий
         commentRepository.save(comment);
+        log.info("Created comment with ID {} for post ID {}", comment.getId(), postId);
     }
 
     @Override
+    @CacheEvict(value = "comments", key = "#postId")
+    @Transactional
     public void update(Long postId, Long commentId, CommentDto commentDto) {
-        // Ищем комментарий по id и посту
-        Comment comment = commentRepository.findByIdAndPostId(commentId, postId)
-                .orElseThrow(() -> {
-                    logger.error("Comment with id {} for post with id {} not found", commentId, postId);
-                    return new CommentNotFoundException("Comment not found");
-                });
 
-        // Обновляем комментарий из DTO
-        commentMapper.updateCommentFromDto(commentDto, comment);
-
-        // Сохраняем обновленный комментарий
-        commentRepository.save(comment);
-    }
-
-    @Override
-    public void delete(Long postId, Long commentId) {
-        // Проверка на существование комментария перед удалением
-        if (!commentRepository.existsByIdAndPostId(commentId, postId)) {
-            logger.error("Comment with id {} for post with id {} not found", commentId, postId);
-            throw new CommentNotFoundException("Comment not found");
+        if (!commentId.equals(commentDto.getId())) {
+            throw new IdMismatchException(
+                    MessageFormat.format("Id in body {0} and in path request {1} are different", commentDto.getId(), commentId));
         }
 
-        // Удаляем комментарий
-        commentRepository.deleteByIdAndPostId(commentId, postId);
+        Comment comment = checkCommentPresence(commentId);
+
+        commentMapper.updateCommentFromDto(commentDto, comment);
+        commentRepository.save(comment);
+        log.info("Updated comment with ID {} for post ID {}", commentId, postId);
+    }
+
+
+    @Override
+    @CacheEvict(value = "comments", key = "#postId")
+    @Transactional
+    public void delete(Long postId, Long commentId) {
+        commentRepository.delete(checkCommentPresence(commentId));
+        log.info("Deleted comment with ID {} for post ID {}", commentId, postId);
     }
 
     @Override
+    @Cacheable(value = "subcomments", key = "#commentId")
+    @Transactional
     public PageCommentDto getSubcomments(Long postId, Long commentId, Pageable pageable) {
-
+        checkPostPresence(postId);
+        checkCommentPresence(commentId);
         Page<Comment> subcomments = commentRepository.findByParentCommentIdAndPostId(commentId, postId, pageable);
-        // Преобразуем в PageCommentDto
+        log.info("Fetched {} subcomments for comment ID {}", subcomments.getTotalElements(), commentId);
         return commentMapper.toCommentDtoPage(subcomments);
+    }
+
+
+    private Post checkPostPresence(Long postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> {
+                    log.warn("Post with ID {} not found", postId);
+                    return new PostNotFoundException(MessageFormat.format("Post with id {0} not found", postId));
+                });
+    }
+
+    private Comment checkCommentPresence(Long commentId) {
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> {
+                    log.warn("Comment with ID {} not found", commentId);
+                    return new CommentNotFoundException(MessageFormat.format("Comment with id {0} not found", commentId));
+                });
     }
 }

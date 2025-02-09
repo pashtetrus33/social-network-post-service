@@ -13,52 +13,52 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class CommentDto {
 
-    @NotNull
-    @Positive
+    @NotNull(message = "ID must not be null")
+    @PositiveOrZero(message = "ID must be a positive number or zero")
     private Long id;
 
-    @NotNull
+    @NotNull(message = "Comment type must not be null")
     private CommentType commentType;
 
-    @NotNull
-    @PastOrPresent
+    @NotNull(message = "Time must not be null")
+    @PastOrPresent(message = "Time must be in the past or present")
     private LocalDateTime time;
 
-    @NotNull
-    @PastOrPresent
+    @NotNull(message = "Time changed must not be null")
+    @PastOrPresent(message = "Time changed must be in the past or present")
     private LocalDateTime timeChanged;
 
-    @NotNull
-    @Positive
+    @NotNull(message = "Author ID must not be null")
+    @Positive(message = "Author ID must be a positive number")
     private Long authorId;
 
-    @Positive
+    @PositiveOrZero(message = "Parent ID must be a positive number or zero")
     private Long parentId;
 
-    @NotBlank
+    @NotBlank(message = "Comment text must not be blank")
     private String commentText;
 
-    @NotNull
-    @Positive
+    @NotNull(message = "Post ID must not be null")
+    @Positive(message = "Post ID must be a positive number")
     private Long postId;
 
-    @NotNull
+    @NotNull(message = "Blocked status must not be null")
     private Boolean isBlocked;
 
-    @NotNull
+    @NotNull(message = "Delete status must not be null")
     private Boolean isDelete;
 
-    @NotNull
-    @Min(0)
+    @NotNull(message = "Like amount must not be null")
+    @Min(value = 0, message = "Like amount must be at least 0")
     private Integer likeAmount;
 
-    @NotNull
+    @NotNull(message = "My like status must not be null")
     private Boolean myLike;
 
-    @NotNull
-    @Min(0)
+    @NotNull(message = "Comments count must not be null")
+    @Min(value = 0, message = "Comments count must be at least 0")
     private Integer commentsCount;
 
-    @Size(max = 512)
+    @Size(max = 512, message = "Image path must not exceed 512 characters")
     private String imagePath;
 }

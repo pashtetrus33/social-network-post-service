@@ -14,56 +14,57 @@ import java.util.List;
 @AllArgsConstructor
 public class PostDto {
 
-    @NotNull
-    @Positive
+    @NotNull(message = "Id must not be null")
+    @PositiveOrZero(message = "Id must be positive or zero")
     private Long id;
 
-    @NotNull
-    @PastOrPresent
+    @NotNull(message = "Time must not be null")
+    @PastOrPresent(message = "Time must be in the past or present")
     private LocalDateTime time;
 
-    @NotNull
-    @PastOrPresent
+
+    @NotNull(message = "TimeChanged must not be null")
+    @PastOrPresent(message = "TimeChanged must be in the past or present")
     private LocalDateTime timeChanged;
 
     @NotNull
-    @Positive
+    @Positive(message = "AuthorId must be positive")
     private Long authorId;
 
-    @NotNull
-    @Size(max = 255)
+    @NotNull(message = "Title must not be null")
+    @Size(max = 255, message = "Title must not exceed 255 characters")
     private String title;
 
-    @NotNull
+    @NotNull(message = "Post type must not be null")
     private PostType type;
 
-    @NotNull
+    @NotNull(message = "Post text must not be null")
     private String postText;
 
-    @NotNull
+    @NotNull(message = "Blocked status must not be null")
     private Boolean isBlocked;
 
-    @NotNull
+    @NotNull(message = "Delete status must not be null")
     private Boolean isDelete;
 
-    @NotNull
-    @Min(0)
+    @NotNull(message = "Comments count must not be null")
+    @Min(value = 0, message = "Comments count must be at least 0")
     private Integer commentsCount;
 
-    @Size(max = 50)
+    @Size(max = 50, message = "Tags list size must not exceed 50")
     private List<String> tags;
 
-    @NotNull
-    @Min(0)
+    @NotNull(message = "Like amount must not be null")
+    @Min(value = 0, message = "Like amount must be at least 0")
     private Integer likeAmount;
 
-    @NotNull
+    @NotNull(message = "My like status must not be null")
     private Boolean myLike = false;
 
-    @Size(max = 512)
+    @Size(max = 512, message = "Image path must not exceed 512 characters")
     private String imagePath;
 
-    @NotNull
-    @PastOrPresent
+    @NotNull(message = "Publish date must not be null")
+    @PastOrPresent(message = "Publish date must be in the past or present")
     private LocalDateTime publishDate;
 }

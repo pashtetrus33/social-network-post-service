@@ -11,7 +11,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class PhotoDto {
 
-    @NotBlank
-    @Size(max = 512)
+    @NotBlank(message = "Image path must not be blank")
+    @Size(max = 512, message = "Image path must not exceed 512 characters")
     private String imagePath;
 }

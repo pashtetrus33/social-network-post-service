@@ -16,7 +16,6 @@ public interface CommentMapper {
 
     Comment toComment(CommentDto commentDto);
 
-    // Используем аннотацию @MappingTarget для обновления объекта
     void updateCommentFromDto(CommentDto commentDto, @MappingTarget Comment comment);
 
     PageCommentDto toCommentDtoPage(Page<Comment> comments);
