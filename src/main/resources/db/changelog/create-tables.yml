@@ -1,6 +1,6 @@
 databaseChangeLog:
   - changeSet:
-      id: 1
+      id: 0
       author: Pavel Bakanov
       changes:
         - createTable:
@@ -73,7 +73,7 @@ databaseChangeLog:
                     nullable: false
 
   - changeSet:
-      id: 2
+      id: 1
       author: Pavel Bakanov
       changes:
         - createTable:
@@ -140,7 +140,7 @@ databaseChangeLog:
                   type: VARCHAR(500)
 
   - changeSet:
-      id: 3
+      id: 2
       author: Pavel Bakanov
       changes:
         - createTable:
@@ -151,7 +151,7 @@ databaseChangeLog:
                   type: VARCHAR(500)
 
   - changeSet:
-      id: 4
+      id: 3
       author: Pavel Bakanov
       changes:
         - createTable:

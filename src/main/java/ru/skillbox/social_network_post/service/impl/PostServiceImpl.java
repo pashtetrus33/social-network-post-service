@@ -6,6 +6,7 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,7 +16,10 @@ import ru.skillbox.social_network_post.exception.PostNotFoundException;
 import ru.skillbox.social_network_post.mapper.PostMapper;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
+import ru.skillbox.social_network_post.repository.PostSpecification;
+import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.PostService;
+import ru.skillbox.social_network_post.web.model.KafkaDto;
 import ru.skillbox.social_network_post.web.model.PagePostDto;
 import ru.skillbox.social_network_post.web.model.PostDto;
 import ru.skillbox.social_network_post.web.model.PostSearchDto;
@@ -30,6 +34,7 @@ import java.time.ZoneId;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
+    private final KafkaService kafkaService;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final PostMapper postMapper;
@@ -83,7 +88,10 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public PagePostDto getAll(PostSearchDto searchDto, Pageable pageable) {
         log.info("Fetching all posts with pageable: {}", pageable);
-        Page<Post> posts = postRepository.findAll(pageable);
+
+        Specification<Post> spec = PostSpecification.withFilters(searchDto);
+
+        Page<Post> posts = postRepository.findAll(spec, pageable);
         return postMapper.toPagePostDto(posts);
     }
 
@@ -107,6 +115,10 @@ public class PostServiceImpl implements PostService {
 
         postRepository.save(post);
         log.info("Created post with ID {} successfully", post.getId());
+
+        KafkaDto kafkaDto = new KafkaDto(MessageFormat.format("Post with id {0} created successfully", post.getId()));
+
+        kafkaService.produce(kafkaDto);
     }
 
     @Override
