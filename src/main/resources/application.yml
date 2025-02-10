@@ -6,8 +6,8 @@ spring:
     generate-ddl: false
     open-in-view: false
   datasource:
-    url: jdbc:postgresql://localhost:5432/post_db?currentSchema=post_schema
-    #url: jdbc:postgresql://91.197.98.213:5432/post_db?currentSchema=post_schema
+    url: jdbc:postgresql://localhost:5432/post_db
+    #url: jdbc:postgresql://91.197.98.213:5432/post_db
     username: postgre_user
     password: postgre_secret_password
     driver-class-name: org.postgresql.Driver
@@ -16,7 +16,12 @@ spring:
 
 
   liquibase:
-    change-log: classpath:/db/changelog/master.yml
+    change-log: classpath:/db/changelog/create-tables.yml
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
+    post-service-topic: post
+
 
 
 eureka:

@@ -17,7 +17,9 @@ import ru.skillbox.social_network_post.mapper.CommentMapper;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.service.CommentService;
+import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.web.model.CommentDto;
+import ru.skillbox.social_network_post.web.model.KafkaDto;
 import ru.skillbox.social_network_post.web.model.PageCommentDto;
 
 import java.text.MessageFormat;
@@ -27,6 +29,7 @@ import java.text.MessageFormat;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
+    private final KafkaService kafkaService;
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final PostRepository postRepository;
@@ -46,13 +49,24 @@ public class CommentServiceImpl implements CommentService {
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
     public void create(Long postId, CommentDto commentDto) {
+
+        Post post = checkPostPresence(postId);
+
         Comment comment = commentMapper.toComment(commentDto);
-        comment.setPost(checkPostPresence(postId));
+        comment.setPost(post);
 
         comment.setId(null); // Сбрасываем ID, чтобы Hibernate сгенерировал новый
 
+        post.setCommentsCount(post.getCommentsCount() + 1);
+
         commentRepository.save(comment);
+
+
         log.info("Created comment with ID {} for post ID {}", comment.getId(), postId);
+
+        KafkaDto kafkaDto = new KafkaDto(MessageFormat.format("Comment created for post ID {0}", postId));
+
+        kafkaService.produce(kafkaDto);
     }
 
     @Override
@@ -65,7 +79,7 @@ public class CommentServiceImpl implements CommentService {
                     MessageFormat.format("Id in body {0} and in path request {1} are different", commentDto.getId(), commentId));
         }
 
-        Comment comment = checkCommentPresence(commentId);
+        Comment comment = checkCommentAndPostPresence(postId, commentId);
 
         commentMapper.updateCommentFromDto(commentDto, comment);
         commentRepository.save(comment);
@@ -89,7 +103,7 @@ public class CommentServiceImpl implements CommentService {
         checkCommentPresence(commentId);
         Page<Comment> subcomments = commentRepository.findByParentCommentIdAndPostId(commentId, postId, pageable);
         log.info("Fetched {} subcomments for comment ID {}", subcomments.getTotalElements(), commentId);
-        return commentMapper.toCommentDtoPage(subcomments);
+        return commentMapper.toPageCommentDto(subcomments);
     }
 
 
@@ -107,5 +121,18 @@ public class CommentServiceImpl implements CommentService {
                     log.warn("Comment with ID {} not found", commentId);
                     return new CommentNotFoundException(MessageFormat.format("Comment with id {0} not found", commentId));
                 });
+    }
+
+    private Comment checkCommentAndPostPresence(Long postId, Long commentId) {
+
+        checkPostPresence(postId);
+        Comment comment = checkCommentPresence(commentId);
+
+        if (!comment.getPost().getId().equals(postId)) {
+            throw new IllegalStateException(MessageFormat.format(
+                    "Comment with id {0} does not belong to post with id {1}", commentId, postId));
+        }
+
+        return comment;
     }
 }

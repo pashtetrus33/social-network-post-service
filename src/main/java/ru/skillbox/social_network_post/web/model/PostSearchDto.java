@@ -1,6 +1,5 @@
 package ru.skillbox.social_network_post.web.model;
 
-import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
