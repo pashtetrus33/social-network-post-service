@@ -39,8 +39,8 @@ public class PostSpecification {
 //            if (searchDto.getWithFriends() != null) {
 //                predicates.add(criteriaBuilder.equal(root.get("withFriends"), searchDto.getWithFriends()));
 //            }
-            if (searchDto.getIsDelete() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("isDelete"), searchDto.getIsDelete()));
+            if (searchDto.getIsDeleted() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("isDeleted"), searchDto.getIsDeleted()));
             }
             if (searchDto.getTags() != null && !searchDto.getTags().isEmpty()) {
                 Join<Post, String> tagsJoin = root.join("tags");

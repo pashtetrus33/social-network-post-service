@@ -1,6 +1,6 @@
 services:
   psql:
-    image: postgres:latest
+    image: postgres:16.2-alpine
     container_name: postgres_db
     ports:
       - "5432:5432"
@@ -14,16 +14,16 @@ services:
       - database-data:/var/lib/postgresql/data
 
   zookeeper:
-    image: confluentinc/cp-zookeeper:latest
+    image: confluentinc/cp-zookeeper:5.5.0
     ports:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    restart: on-failure
+    restart: always
 
   kafka:
-    image: wurstmeister/kafka
+    image: wurstmeister/kafka:2.13-2.6.3
     ports:
       - "9092:9092" # use this port in case you want to run application inside the docker container
       - "9094:9094" # use this port in case you want to run applications from IDE
@@ -36,7 +36,7 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
     volumes:
       - kafka:/data
-    restart: on-failure
+    restart: always
 
   # Convenient UI for Apache Kafka https://github.com/provectus/kafka-ui
   kafka-ui:

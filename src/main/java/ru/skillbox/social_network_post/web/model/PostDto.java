@@ -8,6 +8,7 @@ import ru.skillbox.social_network_post.entity.PostType;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -15,8 +16,7 @@ import java.util.List;
 public class PostDto {
 
     @NotNull(message = "Id must not be null")
-    @PositiveOrZero(message = "Id must be positive or zero")
-    private Long id;
+    private UUID id;
 
     @NotNull(message = "Time must not be null")
     @PastOrPresent(message = "Time must be in the past or present")
@@ -44,8 +44,8 @@ public class PostDto {
     @NotNull(message = "Blocked status must not be null")
     private Boolean isBlocked;
 
-    @NotNull(message = "Delete status must not be null")
-    private Boolean isDelete;
+    @NotNull(message = "Deleted status must not be null")
+    private Boolean isDeleted;
 
     @NotNull(message = "Comments count must not be null")
     @Min(value = 0, message = "Comments count must be at least 0")

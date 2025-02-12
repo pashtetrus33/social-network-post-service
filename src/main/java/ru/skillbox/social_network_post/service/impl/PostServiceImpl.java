@@ -13,7 +13,7 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.exception.IdMismatchException;
 import ru.skillbox.social_network_post.exception.PostNotFoundException;
-import ru.skillbox.social_network_post.mapper.PostMapper;
+import ru.skillbox.social_network_post.mapper.PostMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.repository.PostSpecification;
@@ -28,6 +28,7 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -37,24 +38,23 @@ public class PostServiceImpl implements PostService {
     private final KafkaService kafkaService;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-    private final PostMapper postMapper;
 
     @Override
     @Cacheable(value = "posts", key = "#postId")
     @Transactional
-    public PostDto getById(Long postId) {
+    public PostDto getById(UUID postId) {
         log.info("Fetching post with id: {}", postId);
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostNotFoundException(
                         MessageFormat.format("Post with id {0} not found", postId)
                 ));
-        return postMapper.toPostDto(post);
+        return PostMapperFactory.toPostDto(post);
     }
 
     @Override
     @CacheEvict(value = "posts", key = "#postId")
     @Transactional
-    public void update(Long postId, PostDto postDto) {
+    public void update(UUID postId, PostDto postDto) {
         log.info("Updating post with id: {}", postId);
 
         if (!postId.equals(postDto.getId())) {
@@ -64,7 +64,7 @@ public class PostServiceImpl implements PostService {
 
         Post post = checkPostPresence(postId);
 
-        postMapper.updatePostFromDto(postDto, post);
+        PostMapperFactory.updatePostFromDto(postDto, post);
         postRepository.save(post);
         log.info("Post with id: {} updated successfully", postId);
     }
@@ -72,10 +72,11 @@ public class PostServiceImpl implements PostService {
     @Override
     @CacheEvict(value = "posts", key = "#postId")
     @Transactional
-    public void delete(Long postId) {
+    public void delete(UUID postId) {
         log.info("Deleting post with id: {}", postId);
 
         checkPostPresence(postId);
+
 
         commentRepository.deleteByPostId(postId);
 
@@ -92,7 +93,7 @@ public class PostServiceImpl implements PostService {
         Specification<Post> spec = PostSpecification.withFilters(searchDto);
 
         Page<Post> posts = postRepository.findAll(spec, pageable);
-        return postMapper.toPagePostDto(posts);
+        return PostMapperFactory.toPagePostDto(posts);
     }
 
     @Override
@@ -101,7 +102,7 @@ public class PostServiceImpl implements PostService {
     public void create(PostDto postDto, Long publishDate) {
         log.info("Creating new post");
 
-        Post post = postMapper.toPost(postDto);
+        Post post = PostMapperFactory.toPost(postDto);
         if (publishDate != null) {
             LocalDateTime publishDateTime = Instant.ofEpochMilli(publishDate)
                     .atZone(ZoneId.systemDefault())
@@ -132,7 +133,7 @@ public class PostServiceImpl implements PostService {
         return uploadedPath;
     }
 
-    private Post checkPostPresence(Long postId) {
+    private Post checkPostPresence(UUID postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> {
                     log.warn("Post with ID {} not found", postId);

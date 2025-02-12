@@ -5,9 +5,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
 
+import java.util.UUID;
+
 
 @Entity
-@Table(name = "likes")
+@Table(name = "likes", schema = "schema_post")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,8 +17,8 @@ import lombok.*;
 public class Like {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @NotNull
     @Positive

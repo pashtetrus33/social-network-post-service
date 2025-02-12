@@ -5,8 +5,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.UUID;
+
 @Entity
-@Table(name = "photos")
+@Table(name = "photos", schema = "schema_post")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -14,8 +16,8 @@ import lombok.*;
 public class Photo {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @NotBlank
     @Size(max = 512)

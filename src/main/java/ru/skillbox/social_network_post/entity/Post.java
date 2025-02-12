@@ -7,9 +7,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
-@Table(name = "posts")
+@Table(name = "posts", schema = "schema_post")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -17,8 +18,8 @@ import java.util.List;
 public class Post {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
 
     @NotNull
     @PastOrPresent
@@ -48,13 +49,13 @@ public class Post {
     private Boolean isBlocked;
 
     @NotNull
-    private Boolean isDelete;
+    private Boolean isDeleted;
 
     @Min(0)
     private Integer commentsCount;
 
     @ElementCollection
-    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"))
+    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"), schema = "schema_post")
     @Column(name = "tag")
     private List<String> tags;
 

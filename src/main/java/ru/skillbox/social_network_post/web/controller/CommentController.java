@@ -14,6 +14,8 @@ import ru.skillbox.social_network_post.service.LikeService;
 import ru.skillbox.social_network_post.web.model.CommentDto;
 import ru.skillbox.social_network_post.web.model.PageCommentDto;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/post/{id}/comment")
 @RequiredArgsConstructor
@@ -24,7 +26,7 @@ public class CommentController {
 
 
     @GetMapping
-    public ResponseEntity<PageCommentDto> getByPostId(@PathVariable Long id,
+    public ResponseEntity<PageCommentDto> getByPostId(@PathVariable UUID id,
                                                       @RequestParam int page,
                                                       @RequestParam int size,
                                                       @RequestParam(defaultValue = "id,asc") String[] sort) {
@@ -34,42 +36,42 @@ public class CommentController {
 
 
     @PostMapping
-    public ResponseEntity<Void> create(@PathVariable Long id, @Valid @RequestBody CommentDto commentDto) {
+    public ResponseEntity<Void> create(@PathVariable UUID id, @Valid @RequestBody CommentDto commentDto) {
         commentService.create(id, commentDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 
     @PutMapping("/{commentId}")
-    public ResponseEntity<Void> update(@PathVariable Long id, @PathVariable Long commentId, @Valid @RequestBody CommentDto commentDto) {
+    public ResponseEntity<Void> update(@PathVariable UUID id, @PathVariable UUID commentId, @Valid @RequestBody CommentDto commentDto) {
         commentService.update(id, commentId, commentDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id, @PathVariable Long commentId) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id, @PathVariable UUID commentId) {
         commentService.delete(id, commentId);
         return ResponseEntity.noContent().build();
     }
 
 
     @PostMapping("/{commentId}/like")
-    public ResponseEntity<Void> addLikeToComment(@PathVariable Long id, @PathVariable Long commentId) {
+    public ResponseEntity<Void> addLikeToComment(@PathVariable UUID id, @PathVariable UUID commentId) {
         likeService.addLikeToComment(id, commentId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 
     @DeleteMapping("/{commentId}/like")
-    public ResponseEntity<Void> removeLikeFromComment(@PathVariable Long id, @PathVariable Long commentId) {
+    public ResponseEntity<Void> removeLikeFromComment(@PathVariable UUID id, @PathVariable UUID commentId) {
         likeService.removeLikeFromComment(id, commentId);
         return ResponseEntity.noContent().build();
     }
 
 
     @GetMapping("/{commentId}/subcomment")
-    public ResponseEntity<PageCommentDto> getSubcomments(@PathVariable Long id, @PathVariable Long commentId,
+    public ResponseEntity<PageCommentDto> getSubcomments(@PathVariable UUID id, @PathVariable UUID commentId,
                                                          @RequestParam int page,
                                                          @RequestParam int size,
                                                          @RequestParam(defaultValue = "id,asc") String[] sort) {
