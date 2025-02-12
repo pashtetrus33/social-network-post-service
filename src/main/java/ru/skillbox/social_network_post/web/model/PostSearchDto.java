@@ -26,7 +26,7 @@ public class PostSearchDto {
 
     private Boolean withFriends;
 
-    private Boolean isDelete;
+    private Boolean isDeleted;
 
     @Size(max = 50, message = "Tags list size must not exceed 50")
     private List<String> tags;

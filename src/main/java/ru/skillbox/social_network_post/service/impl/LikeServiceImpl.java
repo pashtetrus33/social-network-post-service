@@ -14,6 +14,7 @@ import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.service.LikeService;
 
 import java.text.MessageFormat;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -25,7 +26,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public void addLikeToPost(Long postId) {
+    public void addLikeToPost(UUID postId) {
         log.info("Adding like to post with id: {}", postId);
         Post post = checkPostPresence(postId);
 
@@ -43,7 +44,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public void removeLikeFromPost(Long postId) {
+    public void removeLikeFromPost(UUID postId) {
 
         Post post = checkPostPresence(postId);
 
@@ -64,7 +65,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public void addLikeToComment(Long postId, Long commentId) {
+    public void addLikeToComment(UUID postId, UUID commentId) {
         log.info("Adding like to comment with id: {} on post id: {}", commentId, postId);
 
         Comment comment = checkCommentAndPostPresence(postId, commentId);
@@ -85,7 +86,7 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public void removeLikeFromComment(Long postId, Long commentId) {
+    public void removeLikeFromComment(UUID postId, UUID commentId) {
         log.info("Removing like from comment with id: {} on post id: {}", commentId, postId);
 
         Comment comment = checkCommentAndPostPresence(postId, commentId);
@@ -109,19 +110,19 @@ public class LikeServiceImpl implements LikeService {
 
     }
 
-    private Post checkPostPresence(Long postId) {
+    private Post checkPostPresence(UUID postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() ->
                         new PostNotFoundException(MessageFormat.format("Post with id {0} not found", postId)));
     }
 
-    private Comment checkCommentPresence(Long commentId) {
+    private Comment checkCommentPresence(UUID commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() ->
                         new CommentNotFoundException(MessageFormat.format("Comment with id {0} not found", commentId)));
     }
 
-    private Comment checkCommentAndPostPresence(Long postId, Long commentId) {
+    private Comment checkCommentAndPostPresence(UUID postId, UUID commentId) {
 
         checkPostPresence(postId);
         Comment comment = checkCommentPresence(commentId);

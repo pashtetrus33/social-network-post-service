@@ -14,6 +14,9 @@ import ru.skillbox.social_network_post.service.PostService;
 import ru.skillbox.social_network_post.web.model.PagePostDto;
 import ru.skillbox.social_network_post.web.model.PostDto;
 import ru.skillbox.social_network_post.web.model.PostSearchDto;
+import ru.skillbox.social_network_post.web.util.SortParser;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/post")
@@ -25,21 +28,21 @@ public class PostController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<PostDto> getById(@PathVariable Long id) {
+    public ResponseEntity<PostDto> getById(@PathVariable UUID id) {
         PostDto postDto = postService.getById(id);
         return ResponseEntity.ok(postDto);
     }
 
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> update(@PathVariable Long id, @Valid @RequestBody PostDto postDto) {
+    public ResponseEntity<Void> update(@PathVariable UUID id, @Valid @RequestBody PostDto postDto) {
         postService.update(id, postDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
         postService.delete(id);
         return ResponseEntity.noContent().build();
     }
@@ -47,13 +50,15 @@ public class PostController {
     @GetMapping
     public ResponseEntity<PagePostDto> getAll(
             @Valid @ModelAttribute PostSearchDto searchDto,
-            @RequestParam int page,
-            @RequestParam int size,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id,asc") String[] sort) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(sort));
+
+        Sort sortConfig = SortParser.parseSort(sort);
+        Pageable pageable = PageRequest.of(page, size, sortConfig);
+
         return ResponseEntity.ok(postService.getAll(searchDto, pageable));
     }
-
 
 
     @PostMapping
@@ -64,14 +69,14 @@ public class PostController {
 
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<Void> addLikeToPost(@PathVariable Long postId) {
+    public ResponseEntity<Void> addLikeToPost(@PathVariable UUID postId) {
         likeService.addLikeToPost(postId);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 
     @DeleteMapping("/{postId}/like")
-    public ResponseEntity<Void> removeLikeFromPost(@PathVariable Long postId) {
+    public ResponseEntity<Void> removeLikeFromPost(@PathVariable UUID postId) {
         likeService.removeLikeFromPost(postId);
         return ResponseEntity.noContent().build();
     }

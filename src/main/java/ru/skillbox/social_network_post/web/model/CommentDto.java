@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import ru.skillbox.social_network_post.entity.CommentType;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @NoArgsConstructor
@@ -14,8 +15,7 @@ import java.time.LocalDateTime;
 public class CommentDto {
 
     @NotNull(message = "ID must not be null")
-    @PositiveOrZero(message = "ID must be a positive number or zero")
-    private Long id;
+    private UUID id;
 
     @NotNull(message = "Comment type must not be null")
     private CommentType commentType;
@@ -32,15 +32,13 @@ public class CommentDto {
     @Positive(message = "Author ID must be a positive number")
     private Long authorId;
 
-    @PositiveOrZero(message = "Parent ID must be a positive number or zero")
-    private Long parentId;
+    private UUID parentId;
 
     @NotBlank(message = "Comment text must not be blank")
     private String commentText;
 
     @NotNull(message = "Post ID must not be null")
-    @Positive(message = "Post ID must be a positive number")
-    private Long postId;
+    private UUID postId;
 
     @NotNull(message = "Blocked status must not be null")
     private Boolean isBlocked;

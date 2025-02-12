@@ -7,13 +7,15 @@ import ru.skillbox.social_network_post.web.model.PagePostDto;
 import ru.skillbox.social_network_post.web.model.PostDto;
 import ru.skillbox.social_network_post.web.model.PostSearchDto;
 
+import java.util.UUID;
+
 public interface PostService {
 
-    PostDto getById(Long postId);
+    PostDto getById(UUID postId);
 
-    void update(Long postId, PostDto postDto);
+    void update(UUID postId, PostDto postDto);
 
-    void delete(Long postId);
+    void delete(UUID postId);
 
     PagePostDto getAll(PostSearchDto searchDto, Pageable pageable);
 

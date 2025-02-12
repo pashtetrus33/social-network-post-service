@@ -13,7 +13,7 @@ import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.exception.CommentNotFoundException;
 import ru.skillbox.social_network_post.exception.IdMismatchException;
 import ru.skillbox.social_network_post.exception.PostNotFoundException;
-import ru.skillbox.social_network_post.mapper.CommentMapper;
+import ru.skillbox.social_network_post.mapper.CommentMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.service.CommentService;
@@ -23,6 +23,8 @@ import ru.skillbox.social_network_post.web.model.KafkaDto;
 import ru.skillbox.social_network_post.web.model.PageCommentDto;
 
 import java.text.MessageFormat;
+import java.util.Objects;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -31,28 +33,34 @@ public class CommentServiceImpl implements CommentService {
 
     private final KafkaService kafkaService;
     private final CommentRepository commentRepository;
-    private final CommentMapper commentMapper;
     private final PostRepository postRepository;
 
 
     @Override
     @Cacheable(value = "comments", key = "#postId")
     @Transactional
-    public PageCommentDto getByPostId(Long postId, Pageable pageable) {
+    public PageCommentDto getByPostId(UUID postId, Pageable pageable) {
         checkPostPresence(postId);
         Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
         log.info("Fetched {} comments for post ID {}", comments.getTotalElements(), postId);
-        return commentMapper.toPageCommentDto(comments);
+        return CommentMapperFactory.toPageCommentDto(comments);
     }
 
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
-    public void create(Long postId, CommentDto commentDto) {
+    public void create(UUID postId, CommentDto commentDto) {
 
         Post post = checkPostPresence(postId);
 
-        Comment comment = commentMapper.toComment(commentDto);
+        Comment comment = CommentMapperFactory.toComment(commentDto);
+
+        UUID parentId = commentDto.getParentId();
+
+        if (parentId != null) {
+            comment.setParentComment(checkCommentPresence(parentId));
+        }
+
         comment.setPost(post);
 
         comment.setId(null); // Сбрасываем ID, чтобы Hibernate сгенерировал новый
@@ -72,7 +80,7 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
-    public void update(Long postId, Long commentId, CommentDto commentDto) {
+    public void update(UUID postId, UUID commentId, CommentDto commentDto) {
 
         if (!commentId.equals(commentDto.getId())) {
             throw new IdMismatchException(
@@ -81,8 +89,18 @@ public class CommentServiceImpl implements CommentService {
 
         Comment comment = checkCommentAndPostPresence(postId, commentId);
 
-        commentMapper.updateCommentFromDto(commentDto, comment);
+        CommentMapperFactory.updateCommentFromDto(commentDto, comment);
+
+        if (!Objects.equals(commentDto.getParentId(), comment.getParentComment().getId())) {
+            comment.setParentComment(checkCommentPresence(commentDto.getParentId()));
+        }
+
+        if (!Objects.equals(commentDto.getPostId(), comment.getPost().getId())) {
+            comment.setPost(checkPostPresence(commentDto.getPostId()));
+        }
+
         commentRepository.save(comment);
+
         log.info("Updated comment with ID {} for post ID {}", commentId, postId);
     }
 
@@ -90,24 +108,32 @@ public class CommentServiceImpl implements CommentService {
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
-    public void delete(Long postId, Long commentId) {
-        commentRepository.delete(checkCommentPresence(commentId));
-        log.info("Deleted comment with ID {} for post ID {}", commentId, postId);
+    public void delete(UUID postId, UUID commentId) {
+        Comment comment = checkCommentPresence(commentId);
+
+        // Удаляем всех дочерних комментариев
+        commentRepository.deleteAllByParentId(comment.getId());
+
+        // Удаляем сам комментарий
+        commentRepository.delete(comment);
+
+        log.info("Deleted comment with ID {} and all its children for post ID {}", commentId, postId);
     }
+
 
     @Override
     @Cacheable(value = "subcomments", key = "#commentId")
     @Transactional
-    public PageCommentDto getSubcomments(Long postId, Long commentId, Pageable pageable) {
+    public PageCommentDto getSubcomments(UUID postId, UUID commentId, Pageable pageable) {
         checkPostPresence(postId);
         checkCommentPresence(commentId);
         Page<Comment> subcomments = commentRepository.findByParentCommentIdAndPostId(commentId, postId, pageable);
         log.info("Fetched {} subcomments for comment ID {}", subcomments.getTotalElements(), commentId);
-        return commentMapper.toPageCommentDto(subcomments);
+        return CommentMapperFactory.toPageCommentDto(subcomments);
     }
 
 
-    private Post checkPostPresence(Long postId) {
+    private Post checkPostPresence(UUID postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> {
                     log.warn("Post with ID {} not found", postId);
@@ -115,7 +141,7 @@ public class CommentServiceImpl implements CommentService {
                 });
     }
 
-    private Comment checkCommentPresence(Long commentId) {
+    private Comment checkCommentPresence(UUID commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> {
                     log.warn("Comment with ID {} not found", commentId);
@@ -123,7 +149,7 @@ public class CommentServiceImpl implements CommentService {
                 });
     }
 
-    private Comment checkCommentAndPostPresence(Long postId, Long commentId) {
+    private Comment checkCommentAndPostPresence(UUID postId, UUID commentId) {
 
         checkPostPresence(postId);
         Comment comment = checkCommentPresence(commentId);
