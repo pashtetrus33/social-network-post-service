@@ -1,17 +1,16 @@
 services:
-  psql:
+  postgre:
     image: postgres:16.2-alpine
-    container_name: postgres_db
-    ports:
-      - "5432:5432"
     restart: always
-    environment:
-      - POSTGRES_USER=postgre_user
-      - POSTGRES_PASSWORD=postgre_secret_password
-      - POSTGRES_MULTIPLE_DATABASES=post_db,notification_db,geo_country_db,friend_db,dialog_db,authorization_db,account_db
+    ports:
+      - 5432:5432
+    env_file:
+      - .env
     volumes:
-      - ./pg-init-scripts:/docker-entrypoint-initdb.d
+      - ./init-multi-postgres-databases.sh:/docker-entrypoint-initdb.d/init-multi-postgres-databases.sh
       - database-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
 
   zookeeper:
     image: confluentinc/cp-zookeeper:5.5.0

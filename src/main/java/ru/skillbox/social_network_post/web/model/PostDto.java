@@ -28,8 +28,7 @@ public class PostDto {
     private LocalDateTime timeChanged;
 
     @NotNull
-    @Positive(message = "AuthorId must be positive")
-    private Long authorId;
+    private UUID authorId;
 
     @NotNull(message = "Title must not be null")
     @Size(max = 255, message = "Title must not exceed 255 characters")
