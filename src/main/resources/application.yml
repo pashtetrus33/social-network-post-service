@@ -14,7 +14,6 @@ spring:
     hikari:
       connection-timeout: 10000
 
-
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.yml
 
@@ -22,18 +21,19 @@ spring:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9094}
     post-service-topic: post
 
-
-
-eureka:
-  client:
-    service-Url:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
-     #defaultZone: http://eureka:8761/eureka/  //Если микросервисы тоже в Docker, используйте имя контейнера вместо IP
-     #defaultZone: http://host.docker.internal:8761/eureka/
-
-  instance:
-    preferIpAddress: true
-
 server:
   port: 9090
   #port: 8082
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    shutdown:
+      enabled: true
+    health:
+      show-details: always
+    metrics:
+      enabled: true

@@ -2,8 +2,10 @@ package ru.skillbox.social_network_post.web.handler;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
@@ -47,6 +49,12 @@ public class ExceptionHandlerController {
 
     @ExceptionHandler(IdMismatchException.class)
     public ResponseEntity<ErrorResponse> handleIdMismatch(IdMismatchException ex) {
+        log.error(ex.getLocalizedMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getLocalizedMessage()));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleIdMismatch(MethodArgumentTypeMismatchException ex) {
         log.error(ex.getLocalizedMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorResponse(ex.getLocalizedMessage()));
     }

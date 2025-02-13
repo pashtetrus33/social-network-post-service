@@ -30,8 +30,7 @@ public class Post {
     private LocalDateTime timeChanged;
 
     @NotNull
-    @Positive
-    private Long authorId;
+    private UUID authorId;
 
     @NotBlank
     @Size(max = 255)
