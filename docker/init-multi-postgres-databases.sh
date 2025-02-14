@@ -1,22 +1,28 @@
 #!/bin/bash
 
-set -e
-set -u
+set -e  # Прерывать выполнение при ошибках
+set -u  # Ошибка при попытке использовать неинициализированную переменную
 
+# Загружаем переменные из .env, если файл существует
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
+# Функция создания базы данных и схемы
 function create_databases() {
-    database=$1
-    schema_name="schema_$(echo $database | sed 's/_db//')"
+    local database=$1
+    local schema_name="schema_$(echo $database | sed 's/_db//')"
 
-    echo "Creating database '$database' with schema '$schema_name'"
+    echo "Создаю базу данных '$database' с схемой '$schema_name'"
 
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
       DO
       \$\$
       BEGIN
         IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'postgre_user') THEN
-          CREATE USER postgre_user WITH ENCRYPTED PASSWORD 'postgre_secret_password';
+          CREATE USER postgre_user WITH ENCRYPTED PASSWORD '${POSTGRES_PASSWORD}';
         ELSE
-          ALTER USER postgre_user WITH ENCRYPTED PASSWORD 'postgre_secret_password';
+          ALTER USER postgre_user WITH ENCRYPTED PASSWORD '${POSTGRES_PASSWORD}';
         END IF;
       END
       \$\$;
@@ -32,10 +38,13 @@ EOSQL
 EOSQL
 }
 
-if [ -n "$POSTGRES_MULTIPLE_DATABASES" ]; then
-  echo "Multiple database creation requested: $POSTGRES_MULTIPLE_DATABASES"
-  for db in $(echo $POSTGRES_MULTIPLE_DATABASES | tr ',' ' '); do
-    create_databases $db
+# Проверяем, есть ли список баз в переменной POSTGRES_MULTIPLE_DATABASES
+if [ -n "${POSTGRES_MULTIPLE_DATABASES:-}" ]; then
+  echo "Запрос на создание нескольких баз данных: $POSTGRES_MULTIPLE_DATABASES"
+  for db in $(echo "$POSTGRES_MULTIPLE_DATABASES" | tr ',' ' '); do
+    create_databases "$db"
   done
-  echo "All databases and schemas created successfully!"
+  echo "Все базы данных и схемы успешно созданы!"
+else
+  echo "Переменная POSTGRES_MULTIPLE_DATABASES не задана, создание баз данных пропущено."
 fi

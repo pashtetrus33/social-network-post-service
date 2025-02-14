@@ -21,22 +21,16 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @NotNull
-    @PastOrPresent
     private LocalDateTime time;
 
-    @NotNull
-    @PastOrPresent
     private LocalDateTime timeChanged;
 
-    @NotNull
     private UUID authorId;
 
     @NotBlank
     @Size(max = 255)
     private String title;
 
-    @NotNull
     @Enumerated(EnumType.STRING)
     private PostType type;
 
@@ -44,10 +38,8 @@ public class Post {
     @Column(columnDefinition = "TEXT")
     private String postText;
 
-    @NotNull
     private Boolean isBlocked;
 
-    @NotNull
     private Boolean isDeleted;
 
     @Min(0)
@@ -67,7 +59,5 @@ public class Post {
     @Size(max = 512)
     private String imagePath;
 
-    @NotNull
-    @PastOrPresent
     private LocalDateTime publishDate;
 }
