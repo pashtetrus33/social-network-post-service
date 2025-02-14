@@ -1,4 +1,4 @@
-package ru.skillbox.social_network_post.web.controller.testForLogin;
+package ru.skillbox.social_network_post.web.controller.front_test;
 
 import lombok.Data;
 
