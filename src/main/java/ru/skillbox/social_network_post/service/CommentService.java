@@ -1,8 +1,8 @@
 package ru.skillbox.social_network_post.service;
 
 import org.springframework.data.domain.Pageable;
-import ru.skillbox.social_network_post.web.model.CommentDto;
-import ru.skillbox.social_network_post.web.model.PageCommentDto;
+import ru.skillbox.social_network_post.dto.CommentDto;
+import ru.skillbox.social_network_post.dto.PageCommentDto;
 
 import java.util.UUID;
 

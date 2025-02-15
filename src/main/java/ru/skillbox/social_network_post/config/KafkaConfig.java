@@ -13,7 +13,7 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import ru.skillbox.social_network_post.web.model.KafkaDto;
+import ru.skillbox.social_network_post.dto.KafkaDto;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,5 +1,7 @@
 package ru.skillbox.social_network_post.service.impl;
 
+import feign.FeignException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -7,10 +9,16 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import ru.skillbox.social_network_post.client.AccountServiceClient;
+import ru.skillbox.social_network_post.client.FriendServiceClient;
+import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.entity.Post;
+import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.exception.IdMismatchException;
 import ru.skillbox.social_network_post.exception.PostNotFoundException;
 import ru.skillbox.social_network_post.mapper.PostMapperFactory;
@@ -19,15 +27,13 @@ import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.repository.PostSpecification;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.PostService;
-import ru.skillbox.social_network_post.web.model.KafkaDto;
-import ru.skillbox.social_network_post.web.model.PagePostDto;
-import ru.skillbox.social_network_post.web.model.PostDto;
-import ru.skillbox.social_network_post.web.model.PostSearchDto;
 
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -35,9 +41,15 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
+    private final AccountServiceClient accountServiceClient;
+    private final FriendServiceClient friendServiceClient;
     private final KafkaService kafkaService;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+
+    private UUID authorId;
+    private UUID userId;
+    private final List<UUID> friendsIds = new ArrayList<>();
 
     @Override
     @Cacheable(value = "posts", key = "#postId")
@@ -85,12 +97,41 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    @Cacheable(value = "post_pages", key = "#pageable.pageNumber + '-' + #pageable.pageSize")
+    @Cacheable(value = "post_pages", key = "#searchDto.toString() + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     @Transactional
-    public PagePostDto getAll(PostSearchDto searchDto, Pageable pageable) {
+    public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
         log.info("Fetching all posts with pageable: {}", pageable);
 
-        Specification<Post> spec = PostSpecification.withFilters(searchDto);
+        if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
+            AccountSearchDto accountSearchDto = new AccountSearchDto();
+            accountSearchDto.setAuthor(searchDto.getAuthor());
+
+            // Вызов Feign-клиента с обработкой ошибок
+            try {
+                //authorId = accountServiceClient.getAccountByName(accountSearchDto);
+                authorId = UUID.fromString("123e4567-e89b-12d3-a456-426614174777");
+            } catch (FeignException e) {
+                throw new CustomFreignException(MessageFormat.format("Error fetching account by name: {0}", searchDto.getAuthor()));
+            }
+        }
+
+        if (searchDto.getWithFriends() != null && searchDto.getWithFriends().equals(true)) {
+
+            // Вызов Feign-клиента с обработкой ошибок
+            try {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                userId = (UUID) authentication.getPrincipal();
+                //friendsIds = friendServiceClient.getFriendsIds(userId);
+                friendsIds.add(UUID.fromString("123e4567-e89b-12d3-a456-426614174777"));
+
+                searchDto.setAccountIds(friendsIds);
+
+            } catch (FeignException e) {
+                throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", userId));
+            }
+        }
+
+        Specification<Post> spec = PostSpecification.withFilters(searchDto, authorId);
 
         Page<Post> posts = postRepository.findAll(spec, pageable);
         return PostMapperFactory.toPagePostDto(posts);
@@ -105,11 +146,11 @@ public class PostServiceImpl implements PostService {
         Post post = PostMapperFactory.toPost(postDto);
         if (publishDate != null) {
             LocalDateTime publishDateTime = Instant.ofEpochMilli(publishDate)
-                    .atZone(ZoneId.systemDefault())
+                    .atZone(ZoneId.of("UTC"))
                     .toLocalDateTime();
             post.setPublishDate(publishDateTime);
         } else {
-            post.setPublishDate(LocalDateTime.now());
+            post.setPublishDate(LocalDateTime.now(ZoneId.of("UTC")));
         }
 
         post.setId(null); // Сбрасываем ID, чтобы Hibernate сгенерировал новый

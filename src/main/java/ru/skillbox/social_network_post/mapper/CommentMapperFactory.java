@@ -6,8 +6,8 @@ import java.util.UUID;
 import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.Page;
 import ru.skillbox.social_network_post.entity.Comment;
-import ru.skillbox.social_network_post.web.model.CommentDto;
-import ru.skillbox.social_network_post.web.model.PageCommentDto;
+import ru.skillbox.social_network_post.dto.CommentDto;
+import ru.skillbox.social_network_post.dto.PageCommentDto;
 
 @UtilityClass
 public final class CommentMapperFactory {
