@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import ru.skillbox.social_network_post.service.KafkaService;
-import ru.skillbox.social_network_post.web.model.KafkaDto;
+import ru.skillbox.social_network_post.dto.KafkaDto;
 
 @Service
 @RequiredArgsConstructor

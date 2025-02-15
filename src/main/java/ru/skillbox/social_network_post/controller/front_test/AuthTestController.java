@@ -1,4 +1,4 @@
-package ru.skillbox.social_network_post.web.controller.front_test;
+package ru.skillbox.social_network_post.controller.front_test;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

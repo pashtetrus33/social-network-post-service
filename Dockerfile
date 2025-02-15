@@ -9,5 +9,4 @@ COPY ./target/${JAR_FILE} ${JAR_PATH}
 COPY ./entrypoint.sh /apps/entrypoint.sh
 RUN chmod +x /apps/entrypoint.sh
 
-EXPOSE 8083
 ENTRYPOINT ["/apps/entrypoint.sh"]

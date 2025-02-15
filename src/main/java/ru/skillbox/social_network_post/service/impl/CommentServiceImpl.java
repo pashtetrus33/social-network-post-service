@@ -18,9 +18,9 @@ import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.KafkaService;
-import ru.skillbox.social_network_post.web.model.CommentDto;
-import ru.skillbox.social_network_post.web.model.KafkaDto;
-import ru.skillbox.social_network_post.web.model.PageCommentDto;
+import ru.skillbox.social_network_post.dto.CommentDto;
+import ru.skillbox.social_network_post.dto.KafkaDto;
+import ru.skillbox.social_network_post.dto.PageCommentDto;
 
 import java.text.MessageFormat;
 import java.util.Objects;

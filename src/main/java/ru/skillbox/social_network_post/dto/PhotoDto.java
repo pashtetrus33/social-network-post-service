@@ -1,4 +1,4 @@
-package ru.skillbox.social_network_post.web.model;
+package ru.skillbox.social_network_post.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

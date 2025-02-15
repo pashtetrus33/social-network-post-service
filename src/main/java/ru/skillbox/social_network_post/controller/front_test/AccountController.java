@@ -1,14 +1,11 @@
-package ru.skillbox.social_network_post.web.controller.front_test;
+package ru.skillbox.social_network_post.controller.front_test;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.skillbox.social_network_post.web.model.AccountDto;
-import ru.skillbox.social_network_post.web.model.AccountSearchDto;
-import ru.skillbox.social_network_post.web.model.Status;
+import ru.skillbox.social_network_post.dto.AccountDto;
+import ru.skillbox.social_network_post.dto.AccountSearchDto;
+import ru.skillbox.social_network_post.dto.Status;
 
 import java.time.LocalDateTime;
 import java.util.Collections;

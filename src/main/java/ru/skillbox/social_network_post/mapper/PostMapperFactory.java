@@ -2,8 +2,8 @@ package ru.skillbox.social_network_post.mapper;
 
 import org.springframework.data.domain.Page;
 import ru.skillbox.social_network_post.entity.Post;
-import ru.skillbox.social_network_post.web.model.PagePostDto;
-import ru.skillbox.social_network_post.web.model.PostDto;
+import ru.skillbox.social_network_post.dto.PagePostDto;
+import ru.skillbox.social_network_post.dto.PostDto;
 
 import java.util.ArrayList;
 import java.util.List;

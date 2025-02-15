@@ -1,17 +1,16 @@
-server:
-  port: 0
-
 spring:
   application:
     name: post-service
 
   profiles:
-    active: local
+    active: prod
 
   cloud:
     config:
+      discovery:
+        enabled: true
+        service-id: config-service
       fail-fast: true
-      #fail-fast: false
 
 
 eureka:

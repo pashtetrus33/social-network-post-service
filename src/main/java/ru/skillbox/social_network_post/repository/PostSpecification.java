@@ -3,7 +3,7 @@ package ru.skillbox.social_network_post.repository;
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;
 import ru.skillbox.social_network_post.entity.Post;
-import ru.skillbox.social_network_post.web.model.PostSearchDto;
+import ru.skillbox.social_network_post.dto.PostSearchDto;
 
 import jakarta.persistence.criteria.Predicate;
 
@@ -11,25 +11,35 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
 
 public class PostSpecification {
 
-    public static Specification<Post> withFilters(PostSearchDto searchDto) {
+    public static Specification<Post> withFilters(PostSearchDto searchDto, UUID authorId) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
             if (searchDto.getIds() != null && !searchDto.getIds().isEmpty()) {
                 predicates.add(root.get("id").in(searchDto.getIds()));
             }
-//            if (searchDto.getAccountIds() != null && !searchDto.getAccountIds().isEmpty()) {
-//                predicates.add(root.get("accountId").in(searchDto.getAccountIds()));
-//            }
-            if (searchDto.getBlockedIds() != null && !searchDto.getBlockedIds().isEmpty()) {
-                predicates.add(criteriaBuilder.not(root.get("id").in(searchDto.getBlockedIds())));
+            if (searchDto.getAccountIds() != null && !searchDto.getAccountIds().isEmpty()) {
+                predicates.add(root.get("authorId").in(searchDto.getAccountIds()));
             }
-//            if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
-//                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("author")), "%" + searchDto.getAuthor().toLowerCase() + "%"));
-//            }
+            if (searchDto.getBlockedIds() != null && !searchDto.getBlockedIds().isEmpty()) {
+                predicates.add(root.get("id").in(searchDto.getBlockedIds()));
+            }
+            if (searchDto.getIsBlocked() != null && searchDto.getIsBlocked()) {
+                predicates.add(criteriaBuilder.isTrue(root.get("isBlocked")).not());
+            }
+
+            if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
+                if (authorId != null) {
+                    predicates.add(criteriaBuilder.equal(root.get("authorId"), authorId));
+                } else {
+                    return criteriaBuilder.disjunction();
+                }
+            }
             if (searchDto.getTitle() != null && !searchDto.getTitle().isBlank()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + searchDto.getTitle().toLowerCase() + "%"));
             }
@@ -49,13 +59,13 @@ public class PostSpecification {
             if (searchDto.getDateFrom() != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(
                         root.get("publishDate"),
-                        Instant.ofEpochMilli(searchDto.getDateFrom()).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                        Instant.ofEpochMilli(searchDto.getDateFrom()).atZone(ZoneId.of("UTC")).toLocalDateTime()
                 ));
             }
             if (searchDto.getDateTo() != null) {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(
                         root.get("publishDate"),
-                        Instant.ofEpochMilli(searchDto.getDateTo()).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                        Instant.ofEpochMilli(searchDto.getDateTo()).atZone(ZoneId.of("UTC")).toLocalDateTime()
                 ));
             }
 
