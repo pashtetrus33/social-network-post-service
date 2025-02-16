@@ -27,7 +27,7 @@ public final class CommentMapperFactory {
                 comment.getCommentText(),
                 getPostId(comment),
                 comment.getIsBlocked(),
-                comment.getIsDelete(),
+                comment.getIsDeleted(),
                 comment.getLikeAmount(),
                 comment.getMyLike(),
                 comment.getCommentsCount(),
@@ -68,7 +68,7 @@ public final class CommentMapperFactory {
         comment.setAuthorId(commentDto.getAuthorId());
         comment.setCommentText(commentDto.getCommentText());
         comment.setIsBlocked(commentDto.getIsBlocked());
-        comment.setIsDelete(commentDto.getIsDelete());
+        comment.setIsDeleted(commentDto.getIsDeleted());
         comment.setLikeAmount(commentDto.getLikeAmount());
         comment.setMyLike(commentDto.getMyLike());
         comment.setCommentsCount(commentDto.getCommentsCount());
@@ -88,7 +88,7 @@ public final class CommentMapperFactory {
         comment.setAuthorId(commentDto.getAuthorId());
         comment.setCommentText(commentDto.getCommentText());
         comment.setIsBlocked(commentDto.getIsBlocked());
-        comment.setIsDelete(commentDto.getIsDelete());
+        comment.setIsDeleted(commentDto.getIsDeleted());
         comment.setLikeAmount(commentDto.getLikeAmount());
         comment.setMyLike(commentDto.getMyLike());
         comment.setCommentsCount(commentDto.getCommentsCount());

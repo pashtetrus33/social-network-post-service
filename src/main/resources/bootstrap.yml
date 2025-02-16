@@ -3,7 +3,7 @@ spring:
     name: post-service
 
   profiles:
-    active: prod
+    active: local
 
   cloud:
     config:
@@ -11,15 +11,3 @@ spring:
         enabled: true
         service-id: config-service
       fail-fast: true
-
-
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
-      # defaultZone: http://eureka:8761/eureka/  # Если микросервисы тоже в Docker, используйте имя контейнера вместо IP
-      # defaultZone: http://host.docker.internal:8761/eureka/  # Для работы с Eureka из Docker на Windows/Mac
-    enabled: true
-
-  instance:
-    preferIpAddress: true

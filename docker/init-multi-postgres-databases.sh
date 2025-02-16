@@ -1,21 +1,21 @@
-#!/bin/bash
+#!/bin/sh
 
 set -e  # Прерывать выполнение при ошибках
 set -u  # Ошибка при попытке использовать неинициализированную переменную
 
 # Загружаем переменные из .env, если файл существует
 if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+    export `grep -v '^#' .env | xargs`
 fi
 
 # Функция создания базы данных и схемы
-function create_databases() {
-    local database=$1
-    local schema_name="schema_$(echo $database | sed 's/_db//')"
+create_databases() {
+    database=$1
+    schema_name="schema_`echo $database | sed 's/_db//'`"
 
     echo "Создаю базу данных '$database' с схемой '$schema_name'"
 
-    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<EOF
       DO
       \$\$
       BEGIN
@@ -29,19 +29,19 @@ function create_databases() {
 
       CREATE DATABASE $database;
       GRANT ALL PRIVILEGES ON DATABASE $database TO postgre_user;
-EOSQL
+EOF
 
-    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname="$database" <<-EOSQL
+    psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname="$database" <<EOF
       GRANT ALL ON SCHEMA public TO postgre_user;
       CREATE SCHEMA IF NOT EXISTS $schema_name AUTHORIZATION postgre_user;
       ALTER ROLE postgre_user SET search_path TO $schema_name, public;
-EOSQL
+EOF
 }
 
 # Проверяем, есть ли список баз в переменной POSTGRES_MULTIPLE_DATABASES
-if [ -n "${POSTGRES_MULTIPLE_DATABASES:-}" ]; then
+if [ -n "$POSTGRES_MULTIPLE_DATABASES" ]; then
   echo "Запрос на создание нескольких баз данных: $POSTGRES_MULTIPLE_DATABASES"
-  for db in $(echo "$POSTGRES_MULTIPLE_DATABASES" | tr ',' ' '); do
+  for db in `echo "$POSTGRES_MULTIPLE_DATABASES" | tr ',' ' '`; do
     create_databases "$db"
   done
   echo "Все базы данных и схемы успешно созданы!"

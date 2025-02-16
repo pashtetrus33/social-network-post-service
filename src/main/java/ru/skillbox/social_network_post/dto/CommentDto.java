@@ -44,7 +44,7 @@ public class CommentDto {
     private Boolean isBlocked;
 
     @NotNull(message = "Delete status must not be null")
-    private Boolean isDelete;
+    private Boolean isDeleted;
 
     @NotNull(message = "Like amount must not be null")
     @Min(value = 0, message = "Like amount must be at least 0")
