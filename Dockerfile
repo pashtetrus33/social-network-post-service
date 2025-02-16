@@ -1,11 +1,9 @@
 FROM openjdk:17-jdk-alpine3.14
 
-ARG JAR_FILE=post-service.jar
-ENV JAR_PATH=/apps/post-service.jar
+ARG JAR_FILE
 
-WORKDIR /apps
-
-COPY ./target/${JAR_FILE} ${JAR_PATH}
+RUN mkdir -p /apps
+COPY ./target/${JAR_FILE} /apps/app.jar
 COPY ./entrypoint.sh /apps/entrypoint.sh
 RUN chmod +x /apps/entrypoint.sh
 

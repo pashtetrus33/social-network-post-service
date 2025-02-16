@@ -51,7 +51,7 @@ public class Comment {
     private Boolean isBlocked;
 
     @NotNull
-    private Boolean isDelete;
+    private Boolean isDeleted;
 
     @Min(0)
     private Integer likeAmount;
