@@ -2,10 +2,10 @@ package ru.skillbox.social_network_post.service.impl;
 
 import feign.FeignException;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -36,9 +36,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
     private final AccountServiceClient accountServiceClient;
@@ -46,10 +46,20 @@ public class PostServiceImpl implements PostService {
     private final KafkaService kafkaService;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-
     private UUID authorId;
     private UUID userId;
     private final List<UUID> friendsIds = new ArrayList<>();
+
+    public PostServiceImpl(AccountServiceClient accountServiceClient,
+                           FriendServiceClient friendServiceClient, @Lazy KafkaService kafkaService,
+                           PostRepository postRepository, CommentRepository commentRepository) {
+        this.accountServiceClient = accountServiceClient;
+        this.friendServiceClient = friendServiceClient;
+        this.kafkaService = kafkaService;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+    }
+
 
     @Override
     @Cacheable(value = "posts", key = "#postId")
@@ -60,6 +70,8 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new PostNotFoundException(
                         MessageFormat.format("Post with id {0} not found", postId)
                 ));
+
+        kafkaService.deletedAccountEvent(UUID.fromString("123e4567-e89b-12d3-a456-426614174777"));
         return PostMapperFactory.toPostDto(post);
     }
 
@@ -110,10 +122,14 @@ public class PostServiceImpl implements PostService {
             try {
                 //authorId = accountServiceClient.getAccountByName(accountSearchDto);
                 authorId = UUID.fromString("123e4567-e89b-12d3-a456-426614174777");
+
             } catch (FeignException e) {
                 throw new CustomFreignException(MessageFormat.format("Error fetching account by name: {0}", searchDto.getAuthor()));
             }
         }
+
+        //Test kafka
+        kafkaService.blockedAccountEvent(UUID.fromString("123e4567-e89b-12d3-a456-426614174777"));
 
         if (searchDto.getWithFriends() != null && searchDto.getWithFriends().equals(true)) {
 
@@ -160,7 +176,7 @@ public class PostServiceImpl implements PostService {
 
         KafkaDto kafkaDto = new KafkaDto(MessageFormat.format("Post with id {0} created successfully", post.getId()));
 
-        kafkaService.produce(kafkaDto);
+        kafkaService.newPostEvent(kafkaDto);
     }
 
     @Override
@@ -172,6 +188,16 @@ public class PostServiceImpl implements PostService {
         String uploadedPath = file.getName();
         log.info("Photo uploaded successfully: {}", uploadedPath);
         return uploadedPath;
+    }
+
+    @Override
+    public List<Post> getAllByAccountId(UUID accountId) {
+        return postRepository.findAllByAuthorId(accountId);
+    }
+
+    @Override
+    public void saveAll(List<Post> posts) {
+        postRepository.saveAll(posts);
     }
 
     private Post checkPostPresence(UUID postId) {

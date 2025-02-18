@@ -1,0 +1,39 @@
+docker network create infrastructure_app-network
+
+docker network ls
+
+docker network inspect infrastructure_app-network
+
+docker run -p 8761:8761 --name discovery-service --network infrastructure_app-network pashtet33/discovery-service:v1.0
+
+docker run -p 8888:8888 --name config-service --network infrastructure_app-network pashtet33/config-service:v1.0
+
+docker run -p 8080:8080 --name gateway-service --network infrastructure_app-network pashtet33/gateway-service:v1.0
+
+// с СORS
+
+docker run -p 8080:8080 --name gateway-service --network infrastructure_app-network pashtet33/gateway-service-cors:v1.0
+
+//
+
+docker run --name post-service --network infrastructure_app-network pashtet33/post-service:v1.0
+
+docker run -p 80:80 --name frontend-service --network infrastructure_app-network pashtet33/myfrontend:v1.0
+
+
+
+
+//Cборка jar в папке target
+mvn clean package
+
+//Сборка из Dockerfile образа
+docker build --build-arg JAR_FILE=post-service.jar -t pashtet33/post-service:v1.0 .
+
+//Заливаем на докер хаб
+docker push pashtet33/post-service:v1.0
+
+
+
+
+
+

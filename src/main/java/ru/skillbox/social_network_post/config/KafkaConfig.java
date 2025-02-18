@@ -13,7 +13,6 @@ import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.converter.StringJsonMessageConverter;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 import org.springframework.util.backoff.FixedBackOff;
-import ru.skillbox.social_network_post.dto.KafkaDto;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,19 +31,18 @@ public class KafkaConfig {
         Map<String, Object> props = new HashMap<>();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, LongSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        props.put(ProducerConfig.CLIENT_ID_CONFIG, "post-service");
+        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);;
         return props;
     }
 
     @Bean
-    public ProducerFactory<Long, KafkaDto> producerKafkaDtoFactory() {
+    public ProducerFactory<Long, Object> producerFactory() {
         return new DefaultKafkaProducerFactory<>(producerConfigs());
     }
 
     @Bean
-    public KafkaTemplate<Long, KafkaDto> kafkaTemplate() {
-        KafkaTemplate<Long, KafkaDto> template = new KafkaTemplate<>(producerKafkaDtoFactory());
+    public KafkaTemplate<Long, Object> kafkaTemplate() {
+        KafkaTemplate<Long, Object> template = new KafkaTemplate<>(producerFactory());
         template.setMessageConverter(new StringJsonMessageConverter());
         return template;
     }

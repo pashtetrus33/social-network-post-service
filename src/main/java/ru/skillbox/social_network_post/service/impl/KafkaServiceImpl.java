@@ -7,9 +7,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
-import ru.skillbox.social_network_post.dto.KafkaMessage;
+import org.springframework.transaction.annotation.Transactional;
+import ru.skillbox.social_network_post.dto.AccountEventDto;
+import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.dto.KafkaDto;
+import ru.skillbox.social_network_post.service.PostService;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -17,23 +23,73 @@ import ru.skillbox.social_network_post.dto.KafkaDto;
 public class KafkaServiceImpl implements KafkaService {
 
     @Value("${spring.kafka.post-service-topic}")
-    private String kafkaTopic;
+    private String postTopic;
+
+    @Value("${spring.kafka.comment-service-topic}")
+    private String commentTopic;
+
+    @Value("${spring.kafka.blocked-account-topic}")
+    private String blockedAccountTopic;
+
+    @Value("${spring.kafka.deleted-account-topic}")
+    private String deletedAccountTopic;
 
     private final ObjectMapper objectMapper;
 
-    private final KafkaTemplate<Long, KafkaDto> kafkaTemplate;
+    private final KafkaTemplate<Long, Object> kafkaTemplate;
+
+    private final PostService postService;
+
 
     @Override
-    public void produce(KafkaDto kafkaDto) {
-        kafkaTemplate.send(kafkaTopic, kafkaDto);
-        log.info("Sent message to Kafka -> '{}'", kafkaDto);
+    public void newPostEvent(KafkaDto kafkaDto) {
+        kafkaTemplate.send(postTopic, kafkaDto);
+        log.info("Sent new post message to Kafka -> '{}'", kafkaDto);
     }
 
-    @KafkaListener(topics = "${spring.kafka.comment-service-topic}", groupId = "${spring.kafka.consumer.group-id}")
-    public void listen(String message) {
+    @Override
+    public void newCommentEvent(KafkaDto kafkaDto) {
+        kafkaTemplate.send(commentTopic, kafkaDto);
+        log.info("Sent new comment message to Kafka -> '{}'", kafkaDto);
+    }
+
+    public void deletedAccountEvent(UUID accountId) {
+        AccountEventDto accountEventDto = new AccountEventDto(accountId);
+        kafkaTemplate.send(deletedAccountTopic, accountEventDto);
+    }
+
+    public void blockedAccountEvent(UUID accountId) {
+        AccountEventDto accountEventDto = new AccountEventDto(accountId);
+        kafkaTemplate.send(blockedAccountTopic, accountEventDto);
+    }
+
+
+    @Transactional
+    @KafkaListener(topics = "${spring.kafka.blocked-account-topic}", groupId = "${spring.kafka.consumer.group-id}")
+    public void listenBlockedAccount(String message) {
         try {
-            KafkaMessage kafkaMessage = objectMapper.readValue(message, KafkaMessage.class);
-            System.out.println("Получено DTO: " + kafkaMessage.getMessage());
+            AccountEventDto blockedAccountEventDto = objectMapper.readValue(message, AccountEventDto.class);
+            System.out.println("Получено Blocked account DTO: " + blockedAccountEventDto.getAccountId());
+            List<Post> posts = postService.getAllByAccountId(blockedAccountEventDto.getAccountId());
+            posts.forEach(post -> post.setIsBlocked(true));
+            postService.saveAll(posts);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Transactional
+    @KafkaListener(topics = "${spring.kafka.deleted-account-topic}", groupId = "${spring.kafka.consumer.group-id}")
+    public void listenDeletedAccount(String message) {
+        try {
+            AccountEventDto accountEventDto = objectMapper.readValue(message, AccountEventDto.class);
+            System.out.println("Получено Deleted account DTO: " + accountEventDto.getAccountId());
+
+            List<Post> posts = postService.getAllByAccountId(accountEventDto.getAccountId());
+            posts.forEach(post -> post.setIsDeleted(true));
+            postService.saveAll(posts);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
