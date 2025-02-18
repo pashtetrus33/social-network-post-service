@@ -23,5 +23,17 @@ docker run -p 80:80 --name frontend-service --network infrastructure_app-network
 
 
 
+//Cборка jar в папке target
+mvn clean package
+
+//Сборка из Dockerfile образа
+docker build --build-arg JAR_FILE=post-service.jar -t pashtet33/post-service:v1.0 .
+
+//Заливаем на докер хаб
+docker push pashtet33/post-service:v1.0
+
+
+
+
 
 
