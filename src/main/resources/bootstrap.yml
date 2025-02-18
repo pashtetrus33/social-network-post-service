@@ -3,7 +3,7 @@ spring:
     name: post-service
 
   profiles:
-    active: local
+    active: prod
 
   cloud:
     config:

@@ -61,7 +61,7 @@ public class PostController {
         // Получаем Authentication из SecurityContext
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        System.out.println("UserId: " + authentication.getPrincipal());
+        System.out.println("userId: " + authentication.getPrincipal());
 
 
         // Извлекаем роли

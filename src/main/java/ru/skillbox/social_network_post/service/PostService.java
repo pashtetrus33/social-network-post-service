@@ -6,7 +6,9 @@ import org.springframework.web.multipart.MultipartFile;
 import ru.skillbox.social_network_post.dto.PagePostDto;
 import ru.skillbox.social_network_post.dto.PostDto;
 import ru.skillbox.social_network_post.dto.PostSearchDto;
+import ru.skillbox.social_network_post.entity.Post;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface PostService {
@@ -22,4 +24,8 @@ public interface PostService {
     void create(PostDto postDto, Long publishDate);
 
     String uploadPhoto(MultipartFile file);
+
+    List<Post> getAllByAccountId(UUID accountId);
+
+    void saveAll(List<Post> posts);
 }

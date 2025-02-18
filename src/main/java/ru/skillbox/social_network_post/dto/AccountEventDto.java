@@ -9,9 +9,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DeletedAccountEventDto {
+public class AccountEventDto {
 
     private UUID accountId;
-
-    private UUID userId;
 }

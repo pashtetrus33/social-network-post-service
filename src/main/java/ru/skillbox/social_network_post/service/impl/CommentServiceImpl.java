@@ -74,7 +74,7 @@ public class CommentServiceImpl implements CommentService {
 
         KafkaDto kafkaDto = new KafkaDto(MessageFormat.format("Comment created for post ID {0}", postId));
 
-        kafkaService.produce(kafkaDto);
+        kafkaService.newCommentEvent(kafkaDto);
     }
 
     @Override
