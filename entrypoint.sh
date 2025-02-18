@@ -1,5 +1,5 @@
-#!/bin/sh -e
+#!/usr/bin/env sh
 
-echo "Starting post-service..."
 java -version
-exec java -jar /apps/app.jar
+
+java -jar /apps/app.jar
