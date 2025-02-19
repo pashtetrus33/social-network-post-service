@@ -7,4 +7,5 @@ COPY ./target/${JAR_FILE} /apps/app.jar
 COPY ./entrypoint.sh /apps/entrypoint.sh
 RUN chmod +x /apps/entrypoint.sh
 
-ENTRYPOINT ["/apps/entrypoint.sh"]
+EXPOSE 8761
+CMD ["/apps/entrypoint.sh"]

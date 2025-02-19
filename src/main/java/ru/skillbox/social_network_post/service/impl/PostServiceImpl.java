@@ -71,7 +71,6 @@ public class PostServiceImpl implements PostService {
                         MessageFormat.format("Post with id {0} not found", postId)
                 ));
 
-        kafkaService.deletedAccountEvent(UUID.fromString("123e4567-e89b-12d3-a456-426614174777"));
         return PostMapperFactory.toPostDto(post);
     }
 
@@ -127,9 +126,6 @@ public class PostServiceImpl implements PostService {
                 throw new CustomFreignException(MessageFormat.format("Error fetching account by name: {0}", searchDto.getAuthor()));
             }
         }
-
-        //Test kafka
-        kafkaService.blockedAccountEvent(UUID.fromString("123e4567-e89b-12d3-a456-426614174777"));
 
         if (searchDto.getWithFriends() != null && searchDto.getWithFriends().equals(true)) {
 

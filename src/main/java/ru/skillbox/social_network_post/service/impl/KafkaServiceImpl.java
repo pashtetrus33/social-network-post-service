@@ -15,7 +15,6 @@ import ru.skillbox.social_network_post.dto.KafkaDto;
 import ru.skillbox.social_network_post.service.PostService;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -52,17 +51,6 @@ public class KafkaServiceImpl implements KafkaService {
         kafkaTemplate.send(commentTopic, kafkaDto);
         log.info("Sent new comment message to Kafka -> '{}'", kafkaDto);
     }
-
-    public void deletedAccountEvent(UUID accountId) {
-        AccountEventDto accountEventDto = new AccountEventDto(accountId);
-        kafkaTemplate.send(deletedAccountTopic, accountEventDto);
-    }
-
-    public void blockedAccountEvent(UUID accountId) {
-        AccountEventDto accountEventDto = new AccountEventDto(accountId);
-        kafkaTemplate.send(blockedAccountTopic, accountEventDto);
-    }
-
 
     @Transactional
     @KafkaListener(topics = "${spring.kafka.blocked-account-topic}", groupId = "${spring.kafka.consumer.group-id}")
