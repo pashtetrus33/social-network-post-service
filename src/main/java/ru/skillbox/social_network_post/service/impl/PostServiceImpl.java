@@ -63,7 +63,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Cacheable(value = "posts", key = "#postId")
-    @Transactional
+    @Transactional(readOnly = true)
     public PostDto getById(UUID postId) {
         log.info("Fetching post with id: {}", postId);
         Post post = postRepository.findById(postId)
@@ -110,7 +110,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Cacheable(value = "post_pages", key = "#searchDto.toString() + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-    @Transactional
+    @Transactional(readOnly = true)
     public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
         log.info("Fetching all posts with pageable: {}", pageable);
 
@@ -138,9 +138,9 @@ public class PostServiceImpl implements PostService {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 userId = (UUID) authentication.getPrincipal();
                 //friendsIds = friendServiceClient.getFriendsIds(userId);
-                friendsIds.add(UUID.fromString("123e4567-e89b-12d3-a456-426614174777"));
+                //friendsIds.add(UUID.fromString("123e4567-e89b-12d3-a456-426614174777"));
 
-                searchDto.setAccountIds(friendsIds);
+                //searchDto.setAccountIds(friendsIds);
 
             } catch (FeignException e) {
                 throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", userId));

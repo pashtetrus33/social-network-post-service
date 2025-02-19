@@ -4,7 +4,7 @@ services:
     container_name: postgres
     restart: always
     ports:
-      - 5432:5432
+      - "5432:5432"
     env_file:
       - .env
     volumes:
@@ -15,24 +15,49 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:7.0.12
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+
+  redisinsight:
+    image: redislabs/redisinsight:1.14.0
+    container_name: redisinsight
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      - REDISINSIGHT_PORT=8001
+    networks:
+      - app-network
+    depends_on:
+      - redis
+
   zookeeper:
     image: confluentinc/cp-zookeeper:5.5.0
     container_name: zookeeper
+    restart: always
     ports:
       - "2181:2181"
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
-    restart: always
     networks:
       - app-network
+    depends_on:
+      - postgres
 
   kafka:
     image: wurstmeister/kafka:2.13-2.6.3
     container_name: kafka
+    restart: always
     ports:
-      - "9092:9092" # use this port in case you want to run application inside the docker container
-      - "9094:9094" # use this port in case you want to run applications from IDE
+      - "9092:9092"
+      - "9094:9094"
     environment:
       KAFKA_ADVERTISED_HOST_NAME: kafka
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -42,22 +67,58 @@ services:
       KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
     volumes:
       - kafka:/data
-    restart: always
     networks:
       - app-network
+    depends_on:
+      - postgres
+      - zookeeper
 
-  # Convenient UI for Apache Kafka https://github.com/provectus/kafka-ui
   kafka-ui:
     image: provectuslabs/kafka-ui
     container_name: kafka-ui
+    restart: always
     ports:
       - "9999:8080"
-    restart: always
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
     networks:
       - app-network
+    depends_on:
+      - kafka
+
+  discovery-service:
+    image: pashtet33/discovery-service:v1.0
+    container_name: discovery-service
+    restart: always
+    ports:
+      - "8761:8761"
+    networks:
+      - app-network
+    depends_on:
+      - kafka
+
+  config-service:
+    image: pashtet33/config-service:v1.0
+    container_name: config-service
+    restart: always
+    ports:
+      - "8888:8888"
+    networks:
+      - app-network
+    depends_on:
+      - discovery-service
+
+  gateway-service:
+    image: pashtet33/gateway-service:v1.0
+    container_name: gateway-service
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    depends_on:
+      - config-service
 
 volumes:
   database-data:
