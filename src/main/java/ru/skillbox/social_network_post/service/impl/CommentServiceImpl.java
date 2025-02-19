@@ -38,7 +38,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Cacheable(value = "comments", key = "#postId")
-    @Transactional
+    @Transactional(readOnly = true)
     public PageCommentDto getByPostId(UUID postId, Pageable pageable) {
         checkPostPresence(postId);
         Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
@@ -123,7 +123,7 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Cacheable(value = "subcomments", key = "#commentId")
-    @Transactional
+    @Transactional(readOnly = true)
     public PageCommentDto getSubcomments(UUID postId, UUID commentId, Pageable pageable) {
         checkPostPresence(postId);
         checkCommentPresence(commentId);

@@ -26,13 +26,26 @@ public class AccountController {
 //    }
 
     @GetMapping("/me")
-    public ResponseEntity<AccountDto> getAccount() {
-        //Account account = accountService.getAccount();
-//        if (account == null) {
-//            return ResponseEntity.notFound().build();
-//        }
+    public AccountDto getAccount() {
+        return getAccountDto();
+    }
 
-        AccountDto account = AccountDto.builder()
+    @GetMapping("/search")
+    public ResponseEntity<List<AccountDto>> searchAccount(
+            @RequestParam(required = false) AccountSearchDto accountSearchDto) {
+
+        AccountDto account = getAccountDto();
+        return ResponseEntity.ok(Collections.singletonList(account));
+    }
+
+    @GetMapping("/{id}")
+    public AccountDto getAccountById(@PathVariable UUID id) {
+
+        return getAccountDto();
+    }
+
+    private AccountDto getAccountDto() {
+        return AccountDto.builder()
                 .id(UUID.randomUUID())
                 .email("test@example.com")
                 .phone("+123456789")
@@ -57,8 +70,6 @@ public class AccountController {
                 .updatedOn(LocalDateTime.now())
                 .password("securepassword")
                 .build();
-
-        return ResponseEntity.ok((account));
     }
 
 
@@ -71,70 +82,6 @@ public class AccountController {
 //    }
 
 
-
-    @GetMapping("/{id}")
-    public ResponseEntity<AccountDto> getAccountById(@PathVariable UUID id) {
-
-        AccountDto account = AccountDto.builder()
-                .id(UUID.randomUUID())
-                .email("test@example.com")
-                .phone("+123456789")
-                .photo("photo.jpg")
-                .about("Test user")
-                .city("Moscow")
-                .country("Russia")
-                .token("test-token")
-                .statusCode(Status.FRIEND)
-                .firstName("John")
-                .lastName("Doe")
-                .regDate(LocalDateTime.now())
-                .birthDate(LocalDateTime.of(1990, 1, 1, 0, 0))
-                .messagePermission("ALL")
-                .lastOnlineTime(LocalDateTime.now().minusDays(1))
-                .isOnline(false)
-                .isBlocked(false)
-                .isDeleted(false)
-                .photoId(UUID.randomUUID().toString())
-                .photoName("avatar.png")
-                .createdOn(LocalDateTime.now())
-                .updatedOn(LocalDateTime.now())
-                .password("securepassword")
-                .build();
-
-        return ResponseEntity.ok((account));
-    }
-
-    @GetMapping("/search")
-    public ResponseEntity<List<AccountDto>> searchAccount(
-            @RequestParam(required = false) AccountSearchDto accountSearchDto) {
-
-        AccountDto account = AccountDto.builder()
-                .id(UUID.randomUUID())
-                .email("test@example.com")
-                .phone("+123456789")
-                .photo("photo.jpg")
-                .about("Test user")
-                .city("Moscow")
-                .country("Russia")
-                .token("test-token")
-                .statusCode(Status.FRIEND)
-                .firstName("John")
-                .lastName("Doe")
-                .regDate(LocalDateTime.now())
-                .birthDate(LocalDateTime.of(1990, 1, 1, 0, 0))
-                .messagePermission("ALL")
-                .lastOnlineTime(LocalDateTime.now().minusDays(1))
-                .isOnline(false)
-                .isBlocked(false)
-                .isDeleted(false)
-                .photoId(UUID.randomUUID().toString())
-                .photoName("avatar.png")
-                .createdOn(LocalDateTime.now())
-                .updatedOn(LocalDateTime.now())
-                .password("securepassword")
-                .build();
-        return ResponseEntity.ok(Collections.singletonList(account));
-    }
 
 //    @GetMapping("/ids")
 //    public ResponseEntity<String> getAllAccountsIds() {

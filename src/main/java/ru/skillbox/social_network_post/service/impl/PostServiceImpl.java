@@ -63,7 +63,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Cacheable(value = "posts", key = "#postId")
-    @Transactional
+    @Transactional(readOnly = true)
     public PostDto getById(UUID postId) {
         log.info("Fetching post with id: {}", postId);
         Post post = postRepository.findById(postId)
@@ -110,7 +110,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     @Cacheable(value = "post_pages", key = "#searchDto.toString() + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-    @Transactional
+    @Transactional(readOnly = true)
     public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
         log.info("Fetching all posts with pageable: {}", pageable);
 
