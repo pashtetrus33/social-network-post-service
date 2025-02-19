@@ -138,9 +138,9 @@ public class PostServiceImpl implements PostService {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 userId = (UUID) authentication.getPrincipal();
                 //friendsIds = friendServiceClient.getFriendsIds(userId);
-                friendsIds.add(UUID.fromString("123e4567-e89b-12d3-a456-426614174777"));
+                //friendsIds.add(UUID.fromString("123e4567-e89b-12d3-a456-426614174777"));
 
-                searchDto.setAccountIds(friendsIds);
+                //searchDto.setAccountIds(friendsIds);
 
             } catch (FeignException e) {
                 throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", userId));

@@ -3,6 +3,9 @@ spring:
     name: post-service
 
   profiles:
+    #local remote bd but by ip (not by container name)
+    #active: local
+    #prod
     active: prod
 
   cloud:
