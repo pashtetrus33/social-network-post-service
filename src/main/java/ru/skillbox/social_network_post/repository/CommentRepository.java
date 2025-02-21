@@ -19,9 +19,28 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
     Page<Comment> findByParentCommentIdAndPostId(UUID commentId, UUID postId, Pageable pageable);
 
-    void deleteByPostId(UUID postId);
+    @Modifying
+    @Query("UPDATE Comment c SET c.isDeleted = true WHERE c.post.id = :postId")
+    void markAllAsDeletedByPostId(@Param("postId") UUID postId);
 
     @Modifying
-    @Query("DELETE FROM Comment c WHERE c.parentComment.id = :parentId")
-    void deleteAllByParentId(@Param("parentId") UUID parentId);
+    @Query("UPDATE Comment c SET c.likeAmount = c.likeAmount + 1, c.myLike = true WHERE c.id = :commentId")
+    void incrementLikeAmountAndSetMyLike(@Param("commentId") UUID commentId);
+
+    @Modifying
+    @Query("UPDATE Comment c SET c.likeAmount = c.likeAmount + 1 WHERE c.id = :commentId")
+    void incrementLikeAmount(@Param("commentId") UUID commentId);
+
+    boolean existsByPostIdAndId(UUID postId, UUID commentId);
+
+
+    @Query("SELECT COUNT(c) > 0 FROM Comment c WHERE c.id = :commentId AND c.authorId = :userId")
+    boolean isAuthorOfComment(@Param("commentId") UUID commentId, @Param("userId") UUID userId);
+
+    @Modifying
+    @Query("UPDATE Comment c SET c.likeAmount = c.likeAmount - 1, c.myLike = false WHERE c.id = :commentId AND c.myLike = true")
+    void updateLikeAmount(@Param("commentId") UUID commentId);
+
+    @Query("SELECT c.likeAmount FROM Comment c WHERE c.id = :commentId")
+    int getLikeAmount(@Param("commentId") UUID commentId);
 }

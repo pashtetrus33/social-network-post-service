@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +20,8 @@ import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
+import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.exception.IdMismatchException;
-import ru.skillbox.social_network_post.exception.PostNotFoundException;
 import ru.skillbox.social_network_post.mapper.PostMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
@@ -31,10 +32,9 @@ import ru.skillbox.social_network_post.service.PostService;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -65,9 +65,11 @@ public class PostServiceImpl implements PostService {
     @Cacheable(value = "posts", key = "#postId")
     @Transactional(readOnly = true)
     public PostDto getById(UUID postId) {
+
         log.info("Fetching post with id: {}", postId);
+
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new PostNotFoundException(
+                .orElseThrow(() -> new EntityNotFoundException(
                         MessageFormat.format("Post with id {0} not found", postId)
                 ));
 
@@ -80,17 +82,29 @@ public class PostServiceImpl implements PostService {
     public void update(UUID postId, PostDto postDto) {
         log.info("Updating post with id: {}", postId);
 
-        if (!postId.equals(postDto.getId())) {
+        checkPostPresence(postId);
+        checkPostDto(postDto);
+
+        if (!Objects.equals(postId, postDto.getId())) {
             throw new IdMismatchException(
                     MessageFormat.format("Id in body {0} and in path request {1} are different", postDto.getId(), postId));
         }
 
-        Post post = checkPostPresence(postId);
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> {
+                    log.warn("Post with ID {} not found", postId);
+                    return new EntityNotFoundException("Post with ID " + postId + " not found");
+                });
+
+        if (postDto.getTimeChanged() == null) {
+            post.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
+        }
 
         PostMapperFactory.updatePostFromDto(postDto, post);
-        postRepository.save(post);
+
         log.info("Post with id: {} updated successfully", postId);
     }
+
 
     @Override
     @CacheEvict(value = "posts", key = "#postId")
@@ -100,12 +114,20 @@ public class PostServiceImpl implements PostService {
 
         checkPostPresence(postId);
 
+        // Помечаем все комментарии поста как удаленные
+        commentRepository.markAllAsDeletedByPostId(postId);
 
-        commentRepository.deleteByPostId(postId);
+        // Обновляем флаг удаления поста без загрузки сущности
+        postRepository.markAsDeleted(postId);
 
-        postRepository.deleteById(postId);
-        log.info("Post with id: {} deleted successfully", postId);
+        log.info("Post with id: {} marked as deleted", postId);
+
+        // Отправляем сообщение в Kafka о пометке поста как удалённого
+        kafkaService.newPostEvent(
+                new KafkaDto(MessageFormat.format("Post with id {0} marked as deleted", postId))
+        );
     }
+
 
     @Override
     @Cacheable(value = "post_pages", key = "#searchDto.toString() + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
@@ -114,13 +136,13 @@ public class PostServiceImpl implements PostService {
         log.info("Fetching all posts with pageable: {}", pageable);
 
         if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
-            AccountSearchDto accountSearchDto = new AccountSearchDto();
-            accountSearchDto.setAuthor(searchDto.getAuthor());
+            //AccountSearchDto accountSearchDto = new AccountSearchDto();
+            //accountSearchDto.setAuthor(searchDto.getAuthor());
 
             // Вызов Feign-клиента с обработкой ошибок
             try {
                 //authorId = accountServiceClient.getAccountByName(accountSearchDto);
-                authorId = UUID.fromString("123e4567-e89b-12d3-a456-426614174777");
+                authorId = UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eb0");
 
             } catch (FeignException e) {
                 throw new CustomFreignException(MessageFormat.format("Error fetching account by name: {0}", searchDto.getAuthor()));
@@ -134,9 +156,9 @@ public class PostServiceImpl implements PostService {
                 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
                 userId = (UUID) authentication.getPrincipal();
                 //friendsIds = friendServiceClient.getFriendsIds(userId);
-                //friendsIds.add(UUID.fromString("123e4567-e89b-12d3-a456-426614174777"));
+                friendsIds.add(UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eba"));
 
-                //searchDto.setAccountIds(friendsIds);
+                searchDto.setAccountIds(friendsIds);
 
             } catch (FeignException e) {
                 throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", userId));
@@ -153,16 +175,34 @@ public class PostServiceImpl implements PostService {
     @CacheEvict(value = {"posts", "post_pages"}, allEntries = true)
     @Transactional
     public void create(PostDto postDto, Long publishDate) {
-        log.info("Creating new post");
+
+        checkPostDto(postDto);
+
+        // Получаем Authentication из SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Извлекаем роли
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        postDto.setAuthorId((UUID) authentication.getPrincipal());
+
+        log.info("Creating new post by User: {} userId: {} with roles: {}",
+                authentication.getName(), postDto.getAuthorId(), roles);
+
 
         Post post = PostMapperFactory.toPost(postDto);
+
+        // Устанавливаем publishDate, если он передан, иначе текущее время
         if (publishDate != null) {
-            LocalDateTime publishDateTime = Instant.ofEpochMilli(publishDate)
-                    .atZone(ZoneId.of("UTC"))
-                    .toLocalDateTime();
-            post.setPublishDate(publishDateTime);
+            post.setPublishDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(publishDate), ZoneOffset.UTC));
         } else {
-            post.setPublishDate(LocalDateTime.now(ZoneId.of("UTC")));
+            post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
+        }
+
+        if (postDto.getTime() == null) {
+            post.setTime(LocalDateTime.now(ZoneOffset.UTC));
         }
 
         post.setId(null); // Сбрасываем ID, чтобы Hibernate сгенерировал новый
@@ -170,21 +210,11 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post);
         log.info("Created post with ID {} successfully", post.getId());
 
-        KafkaDto kafkaDto = new KafkaDto(MessageFormat.format("Post with id {0} created successfully", post.getId()));
-
-        kafkaService.newPostEvent(kafkaDto);
+        kafkaService.newPostEvent(
+                new KafkaDto(
+                        MessageFormat.format("Post with id {0} created successfully", post.getId())));
     }
 
-    @Override
-    @Cacheable(value = "imageCache", key = "#file.originalFilename")
-    @Transactional
-    public String uploadPhoto(MultipartFile file) {
-        log.info("Uploading photo: {}", file.getOriginalFilename());
-        // File upload logic (should be implemented properly)
-        String uploadedPath = file.getName();
-        log.info("Photo uploaded successfully: {}", uploadedPath);
-        return uploadedPath;
-    }
 
     @Override
     public List<Post> getAllByAccountId(UUID accountId) {
@@ -196,11 +226,18 @@ public class PostServiceImpl implements PostService {
         postRepository.saveAll(posts);
     }
 
-    private Post checkPostPresence(UUID postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> {
-                    log.warn("Post with ID {} not found", postId);
-                    return new PostNotFoundException(MessageFormat.format("Post with id {0} not found", postId));
-                });
+    private void checkPostPresence(UUID postId) {
+        // Проверка существования поста
+        if (!postRepository.existsById(postId)) {
+            throw new EntityNotFoundException(
+                    MessageFormat.format("Post with id {0} not found", postId));
+        }
+    }
+
+
+    private void checkPostDto(PostDto postDto) {
+        if (postDto == null) {
+            throw new IllegalArgumentException("Post data must not be null");
+        }
     }
 }

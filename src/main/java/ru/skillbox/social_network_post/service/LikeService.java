@@ -1,13 +1,15 @@
 package ru.skillbox.social_network_post.service;
 
+import ru.skillbox.social_network_post.dto.LikeDto;
+
 import java.util.UUID;
 
 public interface LikeService {
-    void addLikeToPost(UUID postId);
+    void addLikeToPost(UUID postId, LikeDto likeDto);
 
     void removeLikeFromPost(UUID postId);
 
-    void addLikeToComment(UUID postId, UUID commentId);
+    void addLikeToComment(UUID postId, UUID commentId, LikeDto likeDto);
 
     void removeLikeFromComment(UUID postId, UUID commentId);
 }
