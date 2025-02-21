@@ -35,9 +35,21 @@ CREATE TABLE IF NOT EXISTS schema_post.comments (
     FOREIGN KEY (post_id) REFERENCES schema_post.posts(id)
     );
 
+-- Создание таблицы likes в схеме schema_post
+CREATE TABLE IF NOT EXISTS schema_post.likes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    author_id UUID NOT NULL,
+    post_id UUID,
+    comment_id UUID,
+    type VARCHAR(50),
+    reaction_type VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (post_id) REFERENCES schema_post.posts(id),
+    FOREIGN KEY (comment_id) REFERENCES schema_post.comments(id)
+    );
+
+
 -- Создание таблицы post_tags в схеме schema_post
-CREATE TABLE IF NOT EXISTS schema_post.post_tags (
-                                                     post_id UUID NOT NULL,
-                                                     tag VARCHAR(255) NOT NULL,
+CREATE TABLE IF NOT EXISTS schema_post.post_tags (post_id UUID NOT NULL,tag VARCHAR(255) NOT NULL,
     FOREIGN KEY (post_id) REFERENCES schema_post.posts(id)
     );

@@ -4,31 +4,34 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 
 @Entity
 @Table(name = "likes", schema = "schema_post")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Like {
-
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @NotNull
-    @Positive
-    private Long userId;
+    private UUID authorId;
 
-    @ManyToOne
-    @JoinColumn(name = "post_id")
-    private Post post;
+    private UUID postId;
 
-    @ManyToOne
-    @JoinColumn(name = "comment_id")
-    private Comment comment;
+    private UUID commentId;
+
+    private String type;
+
+    private String reactionType;
+
+    @CreationTimestamp
+    private LocalDateTime createdAt;
 }

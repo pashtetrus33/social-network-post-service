@@ -1,6 +1,5 @@
 package ru.skillbox.social_network_post.controller;
 
-import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
@@ -8,14 +7,12 @@ import org.springframework.messaging.handler.annotation.support.MethodArgumentNo
 import org.springframework.messaging.handler.annotation.support.MethodArgumentTypeMismatchException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.skillbox.social_network_post.dto.ErrorResponse;
 import ru.skillbox.social_network_post.exception.*;
 
-import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +25,7 @@ public class GlobalExceptionHandler {
         return new ErrorResponse(ex.getLocalizedMessage());
     }
 
-    @ExceptionHandler({PostNotFoundException.class, CommentNotFoundException.class})
+    @ExceptionHandler(EntityNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse notFound(RuntimeException ex) {
         return handleException(ex, HttpStatus.NOT_FOUND);

@@ -23,8 +23,6 @@ public interface PostService {
 
     void create(PostDto postDto, Long publishDate);
 
-    String uploadPhoto(MultipartFile file);
-
     List<Post> getAllByAccountId(UUID accountId);
 
     void saveAll(List<Post> posts);

@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ru.skillbox.social_network_post.dto.LikeDto;
 import ru.skillbox.social_network_post.service.LikeService;
 import ru.skillbox.social_network_post.service.PostService;
 import ru.skillbox.social_network_post.dto.PagePostDto;
@@ -54,22 +55,7 @@ public class PostController {
     @GetMapping
     public PagePostDto getAll(
             @Valid @ModelAttribute PostSearchDto searchDto,
-            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable, Principal principal) {
-
-        System.out.println("Username: " + principal.getName());
-
-        // Получаем Authentication из SecurityContext
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        System.out.println("userId: " + authentication.getPrincipal());
-
-
-        // Извлекаем роли
-        List<String> roles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-
-        System.out.println("Roles: " + roles);
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
 
         return postService.getAll(searchDto, pageable);
     }
@@ -84,8 +70,8 @@ public class PostController {
 
     @PostMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addLikeToPost(@PathVariable UUID postId) {
-        likeService.addLikeToPost(postId);
+    public void addLikeToPost(@PathVariable UUID postId, @Valid @RequestBody LikeDto likeDto) {
+        likeService.addLikeToPost(postId, likeDto);
     }
 
 
@@ -93,11 +79,5 @@ public class PostController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLikeFromPost(@PathVariable UUID postId) {
         likeService.removeLikeFromPost(postId);
-    }
-
-
-    @PostMapping("/storagePostPhoto")
-    public String uploadFile(@RequestParam("file") MultipartFile file) {
-        return postService.uploadPhoto(file);
     }
 }
