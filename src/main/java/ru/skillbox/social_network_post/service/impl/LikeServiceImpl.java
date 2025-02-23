@@ -92,6 +92,8 @@ public class LikeServiceImpl implements LikeService {
             // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
             postRepository.updateLikeAmount(postId);
         }
+
+        likeRepository.existsByPostIdAndAuthorId(postId, accountId);
     }
 
 
@@ -170,6 +172,8 @@ public class LikeServiceImpl implements LikeService {
         }
 
         log.info("Like removed from comment with id: {}", commentId);
+
+        likeRepository.deleteByCommentIdAndAuthorId(commentId, accountId);
     }
 
     private void checkPostPresence(UUID postId) {
