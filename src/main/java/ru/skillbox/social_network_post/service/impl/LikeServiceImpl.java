@@ -29,7 +29,7 @@ public class LikeServiceImpl implements LikeService {
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
     private UUID accountId;
-    private KafkaService kafkaService;
+    private final KafkaService kafkaService;
 
     @Override
     @Transactional
