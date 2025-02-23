@@ -28,7 +28,7 @@ public class KafkaServiceImpl implements KafkaService {
     @Value("${spring.kafka.new-comment-to-post-topic}")
     private String newCommentToPostTopic;
 
-    @Value("${spring.kafka.new-comment-to-comment--topic}")
+    @Value("${spring.kafka.new-comment-to-comment-topic}")
     private String newCommentToCommentTopic;
 
     @Value("${spring.kafka.new-like-to-post-topic}")
@@ -48,8 +48,6 @@ public class KafkaServiceImpl implements KafkaService {
     private final KafkaTemplate<Long, Object> kafkaTemplate;
 
     private final PostService postService;
-
-    private final CommentService commentService;
 
 
     @Override
