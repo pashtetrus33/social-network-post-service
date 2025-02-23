@@ -8,4 +8,6 @@ import java.util.UUID;
 public interface LikeRepository extends JpaRepository<Like, Long> {
 
     boolean existsByPostIdAndAuthorId(UUID postId, UUID userId);
+
+    boolean existsByCommentIdAndAuthorId(UUID postId, UUID userId);
 }

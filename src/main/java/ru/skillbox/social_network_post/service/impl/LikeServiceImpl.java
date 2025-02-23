@@ -106,17 +106,17 @@ public class LikeServiceImpl implements LikeService {
 
         accountId = getAccountId();
 
-        // Проверяем, ставил ли пользователь лайк для данного комментария
-        if (likeRepository.existsByPostIdAndAuthorId(commentId, accountId)) {
-            log.warn("Like already exists for post with id {} and comment with id {}", postId, commentId);
-            throw new IllegalStateException(
-                    MessageFormat.format("Like already exists for post with id {0} and comment with id {1}", postId, commentId));
-        }
-
         // Проверка, существует ли комментарий с таким ID и связан ли он с постом
         if (!commentRepository.existsByPostIdAndId(postId, commentId)) {
             throw new EntityNotFoundException(
                     MessageFormat.format("Comment with id {0} not found for post with id {1}", commentId, postId));
+        }
+
+        // Проверяем, ставил ли пользователь лайк для данного комментария
+        if (likeRepository.existsByCommentIdAndAuthorId(commentId, accountId)) {
+            log.warn("Like already exists for post with id {} and comment with id {}", postId, commentId);
+            throw new IllegalStateException(
+                    MessageFormat.format("Like already exists for post with id {0} and comment with id {1}", postId, commentId));
         }
 
 
