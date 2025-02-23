@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.dto.AccountEventDto;
 import ru.skillbox.social_network_post.entity.Post;
+import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.dto.KafkaDto;
 import ru.skillbox.social_network_post.service.PostService;
@@ -21,11 +22,20 @@ import java.util.List;
 @Slf4j
 public class KafkaServiceImpl implements KafkaService {
 
-    @Value("${spring.kafka.post-service-topic}")
-    private String postTopic;
+    @Value("${spring.kafka.new-post--topic}")
+    private String newPostTopic;
 
-    @Value("${spring.kafka.comment-service-topic}")
-    private String commentTopic;
+    @Value("${spring.kafka.new-comment-to-post-topic}")
+    private String newCommentToPostTopic;
+
+    @Value("${spring.kafka.new-comment-to-comment--topic}")
+    private String newCommentToCommentTopic;
+
+    @Value("${spring.kafka.new-like-to-post-topic}")
+    private String newLikeToPostTopic;
+
+    @Value("${spring.kafka.new-like-to-comment-topic}")
+    private String newLikeToCommentTopic;
 
     @Value("${spring.kafka.blocked-account-topic}")
     private String blockedAccountTopic;
@@ -39,47 +49,64 @@ public class KafkaServiceImpl implements KafkaService {
 
     private final PostService postService;
 
+    private final CommentService commentService;
+
 
     @Override
     public void newPostEvent(KafkaDto kafkaDto) {
-        kafkaTemplate.send(postTopic, kafkaDto);
-        log.info("Sent new post message to Kafka -> '{}'", kafkaDto);
+        kafkaTemplate.send(newPostTopic, kafkaDto);
+        log.info("Sent new post -> '{}'", kafkaDto);
     }
 
     @Override
-    public void newCommentEvent(KafkaDto kafkaDto) {
-        kafkaTemplate.send(commentTopic, kafkaDto);
-        log.info("Sent new comment message to Kafka -> '{}'", kafkaDto);
+    public void newCommentToPostEvent(KafkaDto kafkaDto) {
+        kafkaTemplate.send(newCommentToPostTopic, kafkaDto);
+        log.info("Sent new comment to post -> '{}'", kafkaDto);
+    }
+
+    @Override
+    public void newCommentToCommentEvent(KafkaDto kafkaDto) {
+        kafkaTemplate.send(newCommentToCommentTopic, kafkaDto);
+        log.info("Sent new comment to comment -> '{}'", kafkaDto);
+    }
+
+    @Override
+    public void newLikeToPostEvent(KafkaDto kafkaDto) {
+        kafkaTemplate.send(newLikeToPostTopic, kafkaDto);
+        log.info("Sent new like to post -> '{}'", kafkaDto);
+    }
+
+    @Override
+    public void newLikeToCommentEvent(KafkaDto kafkaDto) {
+        kafkaTemplate.send(newLikeToCommentTopic, kafkaDto);
+        log.info("Sent new like to comment -> '{}'", kafkaDto);
     }
 
     @Transactional
     @KafkaListener(topics = "${spring.kafka.blocked-account-topic}", groupId = "${spring.kafka.consumer.group-id}")
     public void listenBlockedAccount(String message) {
-        try {
-            AccountEventDto blockedAccountEventDto = objectMapper.readValue(message, AccountEventDto.class);
-            System.out.println("Получено Blocked account DTO: " + blockedAccountEventDto.getAccountId());
-            List<Post> posts = postService.getAllByAccountId(blockedAccountEventDto.getAccountId());
-            posts.forEach(post -> post.setIsBlocked(true));
-            postService.saveAll(posts);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        processAccountEvent(message, "Blocked");
     }
 
     @Transactional
     @KafkaListener(topics = "${spring.kafka.deleted-account-topic}", groupId = "${spring.kafka.consumer.group-id}")
     public void listenDeletedAccount(String message) {
+        processAccountEvent(message, "Deleted");
+    }
+
+    private void processAccountEvent(String message, String accountStatus) {
         try {
             AccountEventDto accountEventDto = objectMapper.readValue(message, AccountEventDto.class);
-            System.out.println("Получено Deleted account DTO: " + accountEventDto.getAccountId());
+            log.info("Account {}: {}", accountStatus, accountEventDto.accountId());
 
-            List<Post> posts = postService.getAllByAccountId(accountEventDto.getAccountId());
-            posts.forEach(post -> post.setIsDeleted(true));
-            postService.saveAll(posts);
+            if (accountStatus.equals("Blocked")) {
+                postService.updateBlockedStatusForAccount(accountEventDto.accountId());
+            } else if (accountStatus.equals("Deleted")) {
+                postService.updateDeletedStatusForAccount(accountEventDto.accountId());
+            }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error processing {} account message: {}", accountStatus, message, e);
         }
     }
 }

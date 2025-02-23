@@ -22,9 +22,6 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
 //    Page<Post> findAll(Specification specification, Pageable pageable);
 
     @EntityGraph(attributePaths = {"comments", "tags"})
-    List<Post> findAllByAuthorId(UUID accountId);
-
-    @EntityGraph(attributePaths = {"comments", "tags"})
     Optional<Post> findById(UUID postId);
 
     @Modifying
@@ -57,4 +54,12 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
 
     @Query("SELECT COUNT(p) > 0 FROM Post p WHERE p.id = :postId AND p.authorId = :userId")
     boolean isAuthorOfPost(@Param("postId") UUID postId, @Param("userId") UUID userId);
+
+    @Modifying
+    @Query("UPDATE Post p SET p.isBlocked = true WHERE p.authorId = :uuid")
+    void updateBlockedStatusForAccount(UUID uuid);
+
+    @Modifying
+    @Query("UPDATE Post p SET p.isDeleted = true WHERE p.authorId = :uuid")
+    void updateDeletedStatusForAccount(UUID uuid);
 }

@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skillbox.social_network_post.dto.KafkaDto;
 import ru.skillbox.social_network_post.dto.LikeDto;
 import ru.skillbox.social_network_post.entity.Like;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
@@ -13,6 +14,7 @@ import ru.skillbox.social_network_post.mapper.LikeMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.LikeRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
+import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.LikeService;
 
 import java.text.MessageFormat;
@@ -26,7 +28,8 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
-    private UUID userId;
+    private UUID accountId;
+    private KafkaService kafkaService;
 
     @Override
     @Transactional
@@ -38,28 +41,29 @@ public class LikeServiceImpl implements LikeService {
 
         checkLikeDto(likeDto);
 
-        userId = getUserId();
+        accountId = getAccountId();
 
         // Проверяем, ставил ли пользователь лайк ранее
-        if (likeRepository.existsByPostIdAndAuthorId(postId, userId)) {
+        if (likeRepository.existsByPostIdAndAuthorId(postId, accountId)) {
             throw new IllegalStateException(
                     MessageFormat.format("Like already exists for post with id {0}", postId));
         }
 
         Like like = LikeMapperFactory.toLike(likeDto);
         like.setPostId(postId);
-        like.setAuthorId(userId);
+        like.setAuthorId(accountId);
         likeRepository.save(like);
 
         // Проверяем, является ли текущий пользователь автором поста
-        if (postRepository.isAuthorOfPost(postId, userId)) {
+        if (postRepository.isAuthorOfPost(postId, accountId)) {
             // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
             postRepository.incrementLikeAmountAndSetMyLike(postId);
         } else {
             // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
             postRepository.incrementLikeAmount(postId);
         }
-        log.info("Like added to post with id: {}", postId);
+
+        kafkaService.newLikeToPostEvent(new KafkaDto(accountId, postId));
     }
 
 
@@ -78,19 +82,16 @@ public class LikeServiceImpl implements LikeService {
                     MessageFormat.format("Невозможно удалить лайк с поста {0}: количество лайков уже 0", postId));
         }
 
-        userId = getUserId();
+        accountId = getAccountId();
 
         // Проверяем, является ли текущий пользователь автором поста
-        if (postRepository.isAuthorOfPost(postId, userId)) {
+        if (postRepository.isAuthorOfPost(postId, accountId)) {
             // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
             postRepository.updateLikeAmountAndUnsetMyLike(postId);
         } else {
             // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
             postRepository.updateLikeAmount(postId);
         }
-
-
-        log.info("Лайк удалён с поста с id: {}", postId);
     }
 
 
@@ -103,10 +104,10 @@ public class LikeServiceImpl implements LikeService {
         checkPostPresence(postId);
         checkCommentPresence(commentId);
 
-        userId = getUserId();
+        accountId = getAccountId();
 
         // Проверяем, ставил ли пользователь лайк для данного комментария
-        if (likeRepository.existsByPostIdAndAuthorId(commentId, userId)) {
+        if (likeRepository.existsByPostIdAndAuthorId(commentId, accountId)) {
             log.warn("Like already exists for post with id {} and comment with id {}", postId, commentId);
             throw new IllegalStateException(
                     MessageFormat.format("Like already exists for post with id {0} and comment with id {1}", postId, commentId));
@@ -120,7 +121,7 @@ public class LikeServiceImpl implements LikeService {
 
 
         // Проверяем, является ли текущий пользователь автором коме комментария
-        if (commentRepository.isAuthorOfComment(commentId, userId)) {
+        if (commentRepository.isAuthorOfComment(commentId, accountId)) {
             // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
             commentRepository.incrementLikeAmountAndSetMyLike(commentId);
         } else {
@@ -128,7 +129,7 @@ public class LikeServiceImpl implements LikeService {
             commentRepository.incrementLikeAmount(commentId);
         }
 
-        log.info("Like added to comment with id: {}", commentId);
+        kafkaService.newLikeToCommentEvent(new KafkaDto(accountId, commentId));
     }
 
 
@@ -148,10 +149,10 @@ public class LikeServiceImpl implements LikeService {
                     MessageFormat.format("Cannot remove like from post {0} and comment {1}: like count is already 0", postId, commentId));
         }
 
-        userId = getUserId();
+        accountId = getAccountId();
 
         // Проверяем, является ли текущий пользователь автором коме комментария
-        if (commentRepository.isAuthorOfComment(commentId, userId)) {
+        if (commentRepository.isAuthorOfComment(commentId, accountId)) {
             // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
             commentRepository.updateLikeAmountAndUnsetMyLike(commentId);
         } else {
@@ -184,7 +185,7 @@ public class LikeServiceImpl implements LikeService {
         }
     }
 
-    private UUID getUserId() {
+    private UUID getAccountId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return (UUID) authentication.getPrincipal();
     }

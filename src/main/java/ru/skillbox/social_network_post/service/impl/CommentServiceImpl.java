@@ -7,11 +7,9 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.skillbox.social_network_post.dto.PostDto;
 import ru.skillbox.social_network_post.entity.Comment;
 import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
@@ -29,10 +27,8 @@ import ru.skillbox.social_network_post.dto.PageCommentDto;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -92,7 +88,10 @@ public class CommentServiceImpl implements CommentService {
         comment.setLikeAmount(0);
         comment.setCommentsCount(0);
         comment.setMyLike(false);
-        comment.setAuthorId(getUserInfo());
+
+        UUID accountId = getAccountId();
+
+        comment.setAuthorId(accountId);
 
         post.setCommentsCount(post.getCommentsCount() + 1);
 
@@ -102,12 +101,13 @@ public class CommentServiceImpl implements CommentService {
 
         commentRepository.save(comment);
 
+        if (comment.getCommentType().equals(CommentType.POST)) {
+            kafkaService.newCommentToPostEvent(new KafkaDto(accountId, postId));
+        }
 
-        log.info("Created comment with ID {} for post ID {}", comment.getId(), postId);
-
-        KafkaDto kafkaDto = new KafkaDto(MessageFormat.format("Comment created for post ID {0}", postId));
-
-        kafkaService.newCommentEvent(kafkaDto);
+        if (comment.getCommentType().equals(CommentType.COMMENT)) {
+            kafkaService.newCommentToCommentEvent(new KafkaDto(accountId, parentId));
+        }
     }
 
 
@@ -188,10 +188,8 @@ public class CommentServiceImpl implements CommentService {
         }
     }
 
-    private static UUID getUserInfo() {
-        // Получаем Authentication из SecurityContext
+    private static UUID getAccountId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
         return ((UUID) authentication.getPrincipal());
     }
 }

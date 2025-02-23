@@ -2,6 +2,7 @@ package ru.skillbox.social_network_post.service.impl;
 
 import feign.FeignException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -9,8 +10,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +36,6 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -46,9 +47,9 @@ public class PostServiceImpl implements PostService {
     private final KafkaService kafkaService;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-    private UUID authorId;
-    private UUID userId;
-    private final List<UUID> friendsIds = new ArrayList<>();
+    private List<UUID> authorIds;
+    private List<UUID> friendsIds = new ArrayList<>();
+    private UUID accountId;
 
     public PostServiceImpl(AccountServiceClient accountServiceClient,
                            FriendServiceClient friendServiceClient, @Lazy KafkaService kafkaService,
@@ -58,11 +59,6 @@ public class PostServiceImpl implements PostService {
         this.kafkaService = kafkaService;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
-    }
-
-    @Override
-    public List<Post> getAllByAccountId(UUID accountId) {
-        return postRepository.findAllByAuthorId(accountId);
     }
 
 
@@ -85,43 +81,56 @@ public class PostServiceImpl implements PostService {
     @Override
     @Cacheable(value = "post_pages", key = "#searchDto.toString() + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
+
         log.info("Fetching all posts with pageable: {}", pageable);
 
+        // Проверка автора и получение его ID
         if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
-            //AccountSearchDto accountSearchDto = new AccountSearchDto();
-            //accountSearchDto.setAuthor(searchDto.getAuthor());
-
-            // Вызов Feign-клиента с обработкой ошибок
             try {
-                //authorId = accountServiceClient.getAccountByName(accountSearchDto);
-                authorId = UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eb0");
+
+                // Получаем список идентификаторов по имени автора из сервиса аккаунтов
+                //authorIds = getAuthorIds(searchDto.getAuthor());
+
+                //TODO: Убрать тестовую заглушку
+                authorIds = new ArrayList<>(Collections.singleton(UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eb0")));
+
+                searchDto.setAccountIds(authorIds);
 
             } catch (FeignException e) {
-                throw new CustomFreignException(MessageFormat.format("Error fetching account by name: {0}", searchDto.getAuthor()));
+                // Обработка ошибки при попытке получить данные через FeignClient
+                log.error("Error fetching accounts by author name: {}", searchDto.getAuthor(), e);
+                throw new CustomFreignException(MessageFormat.format("Error fetching accounts by name: {0}", searchDto.getAuthor()));
             }
         }
 
+        // Проверка флага с друзьями и получение их ID
         if (searchDto.getWithFriends() != null && searchDto.getWithFriends().equals(true)) {
-
-            // Вызов Feign-клиента с обработкой ошибок
+            accountId = getAccountId();
             try {
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                userId = (UUID) authentication.getPrincipal();
-                //friendsIds = friendServiceClient.getFriendsIds(userId);
+
+                // Получаем список друзей из сервиса друзей
+                //friendsIds = getFriendsIds(accountId);
+
+                //TODO: Убрать тестовую заглушку
                 friendsIds.add(UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eba"));
 
                 searchDto.setAccountIds(friendsIds);
 
-            } catch (FeignException e) {
-                throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", userId));
+            } catch (Exception e) {
+                log.error("Error fetching friends for accountId: {}", accountId, e);
             }
         }
 
-        Specification<Post> spec = PostSpecification.withFilters(searchDto, authorId);
+        // Формируем спецификацию для поиска
+        Specification<Post> spec = PostSpecification.withFilters(searchDto);
 
+        // Запрашиваем посты из репозитория
         Page<Post> posts = postRepository.findAll(spec, pageable);
+
+        // Преобразуем результат в DTO и возвращаем
         return PostMapperFactory.toPagePostDto(posts);
     }
+
 
     @Override
     @CacheEvict(value = {"posts", "post_pages"}, allEntries = true)
@@ -130,7 +139,7 @@ public class PostServiceImpl implements PostService {
 
         checkPostDto(postDto);
 
-        getUserInfo(postDto);
+        accountId = getAccountId();
 
         Post post = PostMapperFactory.toPost(postDto);
 
@@ -150,27 +159,10 @@ public class PostServiceImpl implements PostService {
         post.setCommentsCount(0);
 
         postRepository.save(post);
-        log.info("Created post with ID {} successfully", post.getId());
 
-        kafkaService.newPostEvent(
-                new KafkaDto(
-                        MessageFormat.format("Post with id {0} created successfully", post.getId())));
+        kafkaService.newPostEvent(new KafkaDto(accountId, post.getId()));
     }
 
-    private static void getUserInfo(PostDto postDto) {
-        // Получаем Authentication из SecurityContext
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // Извлекаем роли
-        List<String> roles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-
-        postDto.setAuthorId((UUID) authentication.getPrincipal());
-
-        log.info("Creating new post by User: {} userId: {} with roles: {}",
-                authentication.getName(), postDto.getAuthorId(), roles);
-    }
 
     @Override
     @CacheEvict(value = "posts", key = "#postId")
@@ -217,17 +209,17 @@ public class PostServiceImpl implements PostService {
         postRepository.markAsDeleted(postId);
 
         log.info("Post with id: {} marked as deleted", postId);
-
-        // Отправляем сообщение в Kafka о пометке поста как удалённого
-        kafkaService.newPostEvent(
-                new KafkaDto(MessageFormat.format("Post with id {0} marked as deleted", postId))
-        );
     }
 
+    @Override
+    @Transactional
+    public void updateBlockedStatusForAccount(UUID uuid) {
+        postRepository.updateBlockedStatusForAccount(uuid);
+    }
 
     @Override
-    public void saveAll(List<Post> posts) {
-        postRepository.saveAll(posts);
+    public void updateDeletedStatusForAccount(UUID uuid) {
+        postRepository.updateDeletedStatusForAccount(uuid);
     }
 
     private void checkPostPresence(UUID postId) {
@@ -242,6 +234,34 @@ public class PostServiceImpl implements PostService {
     private void checkPostDto(PostDto postDto) {
         if (postDto == null) {
             throw new IllegalArgumentException("Post data must not be null");
+        }
+    }
+
+    private static UUID getAccountId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return ((UUID) authentication.getPrincipal());
+    }
+
+
+    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
+    private List<UUID> getFriendsIds(UUID accountId) {
+        try {
+            return friendServiceClient.getFriendsIds(accountId);
+        } catch (FeignException e) {
+            log.error("Attempt to fetch friends for accountId {} failed. Feign exception: {}", accountId, e.getMessage(), e);
+            throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", accountId));
+        }
+    }
+
+    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
+    private List<UUID> getAuthorIds(@Size(max = 255, message = "Author name must not exceed 255 characters") String author) {
+        try {
+            AccountSearchDto accountSearchDto = new AccountSearchDto();
+            accountSearchDto.setAuthor(author);
+            return accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
+        } catch (FeignException e) {
+            log.error("Attempt to fetch authorId for Author {} failed. Feign exception: {}", author, e.getMessage(), e);
+            throw new CustomFreignException(MessageFormat.format("Error fetching authorId by name: {0}", author));
         }
     }
 }

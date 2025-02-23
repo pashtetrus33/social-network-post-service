@@ -53,11 +53,9 @@ public class AccountController {
                 .about("Test user")
                 .city("Moscow")
                 .country("Russia")
-                .token("test-token")
                 .statusCode(Status.FRIEND)
                 .firstName("John")
                 .lastName("Doe")
-                .regDate(LocalDateTime.now())
                 .birthDate(LocalDateTime.of(1990, 1, 1, 0, 0))
                 .messagePermission("ALL")
                 .lastOnlineTime(LocalDateTime.now().minusDays(1))
@@ -66,9 +64,6 @@ public class AccountController {
                 .isDeleted(false)
                 .photoId(UUID.randomUUID().toString())
                 .photoName("avatar.png")
-                .createdOn(LocalDateTime.now())
-                .updatedOn(LocalDateTime.now())
-                .password("securepassword")
                 .build();
     }
 

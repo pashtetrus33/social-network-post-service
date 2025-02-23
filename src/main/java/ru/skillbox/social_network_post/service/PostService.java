@@ -23,7 +23,7 @@ public interface PostService {
 
     void create(PostDto postDto, Long publishDate);
 
-    List<Post> getAllByAccountId(UUID accountId);
+    void updateBlockedStatusForAccount(UUID uuid);
 
-    void saveAll(List<Post> posts);
+    void updateDeletedStatusForAccount(UUID uuid);
 }

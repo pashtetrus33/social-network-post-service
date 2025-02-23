@@ -6,15 +6,15 @@ import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.dto.PostSearchDto;
 
 import jakarta.persistence.criteria.Predicate;
+
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class PostSpecification {
 
-    public static Specification<Post> withFilters(PostSearchDto searchDto, UUID authorId) {
+    public static Specification<Post> withFilters(PostSearchDto searchDto) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -35,7 +35,12 @@ public class PostSpecification {
 
             // Фильтрация по признаку блокировки поста
             if (searchDto.getIsBlocked() != null && searchDto.getIsBlocked()) {
-                predicates.add(criteriaBuilder.isTrue(root.get("isBlocked")).not());
+                predicates.add(criteriaBuilder.isTrue(root.get("isBlocked")));
+            }
+
+            // Фильтрация по статусу удаления поста
+            if (searchDto.getIsDeleted() != null && searchDto.getIsDeleted()) {
+                predicates.add(criteriaBuilder.isTrue(root.get("isDeleted")));
             }
 
             //Фильтрация по названию поста
@@ -48,10 +53,6 @@ public class PostSpecification {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("postText")), "%" + searchDto.getPostText().toLowerCase() + "%"));
             }
 
-            // Фильтрация по статусу удаления поста
-            if (searchDto.getIsDeleted() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("isDeleted"), searchDto.getIsDeleted()));
-            }
 
             // Фильтрация по тегам
             if (searchDto.getTags() != null && !searchDto.getTags().isEmpty()) {
@@ -73,16 +74,6 @@ public class PostSpecification {
                         root.get("publishDate"),
                         Instant.ofEpochMilli(searchDto.getDateTo()).atZone(ZoneId.systemDefault()).toLocalDateTime()
                 ));
-            }
-
-            // Фильтрация по автору поста
-            if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
-                if (authorId != null) {
-                    predicates.add(criteriaBuilder.equal(root.get("authorId"), authorId));
-                } else {
-                    // Если автор не указан, игнорируем это условие
-                    return criteriaBuilder.disjunction();
-                }
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

@@ -14,5 +14,5 @@ public interface AccountServiceClient {
     List<AccountDto> getAccountsByIds(@RequestParam List<UUID> ids);
 
     @PostMapping("/searchByFilter")
-    UUID getAccountByName(@RequestBody AccountSearchDto name);
+    List<AccountDto> searchAccount(@RequestBody AccountSearchDto accountSearchDto);
 }
