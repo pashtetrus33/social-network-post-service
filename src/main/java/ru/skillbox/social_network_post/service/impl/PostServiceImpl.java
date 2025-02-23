@@ -152,6 +152,7 @@ public class PostServiceImpl implements PostService {
             post.setType(PostType.POSTED);
         }
 
+        post.setAuthorId(accountId);
         post.setId(null);// Сбрасываем ID, чтобы Hibernate сгенерировал новый
         post.setIsBlocked(false);
         post.setIsDeleted(false);
