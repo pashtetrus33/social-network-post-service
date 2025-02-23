@@ -55,8 +55,8 @@ public class CommentController {
 
     @PostMapping("/{commentId}/like")
     @ResponseStatus(HttpStatus.CREATED)
-    public void addLikeToComment(@PathVariable UUID id, @PathVariable UUID commentId, @Valid @RequestBody LikeDto likeDto) {
-        likeService.addLikeToComment(id, commentId, likeDto);
+    public void addLikeToComment(@PathVariable UUID id, @PathVariable UUID commentId) {
+        likeService.addLikeToComment(id, commentId);
     }
 
 

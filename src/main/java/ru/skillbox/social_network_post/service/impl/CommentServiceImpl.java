@@ -6,9 +6,14 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skillbox.social_network_post.dto.PostDto;
 import ru.skillbox.social_network_post.entity.Comment;
+import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.exception.IdMismatchException;
@@ -24,8 +29,10 @@ import ru.skillbox.social_network_post.dto.PageCommentDto;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -41,13 +48,23 @@ public class CommentServiceImpl implements CommentService {
     @Cacheable(value = "comments", key = "#postId")
     @Transactional(readOnly = true)
     public PageCommentDto getByPostId(UUID postId, Pageable pageable) {
-
-
-
         Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
         log.info("Fetched {} comments for post ID {}", comments.getTotalElements(), postId);
         return CommentMapperFactory.toPageCommentDto(comments);
     }
+
+
+    @Override
+    @Cacheable(value = "subcomments", key = "#commentId")
+    @Transactional(readOnly = true)
+    public PageCommentDto getSubcomments(UUID postId, UUID commentId, Pageable pageable) {
+        checkPostPresence(postId);
+        checkCommentPresence(commentId);
+        Page<Comment> subcomments = commentRepository.findByParentCommentIdAndPostId(commentId, postId, pageable);
+        log.info("Fetched {} subcomments for comment ID {}", subcomments.getTotalElements(), commentId);
+        return CommentMapperFactory.toPageCommentDto(subcomments);
+    }
+
 
     @Override
     @CacheEvict(value = "comments", key = "#postId")
@@ -62,11 +79,20 @@ public class CommentServiceImpl implements CommentService {
 
         if (parentId != null) {
             comment.setParentComment(checkCommentPresence(parentId));
+            comment.setCommentType(CommentType.COMMENT);
+        } else {
+            comment.setCommentType(CommentType.POST);
         }
 
         comment.setPost(post);
 
         comment.setId(null); // Сбрасываем ID, чтобы Hibernate сгенерировал новый
+        comment.setIsBlocked(false);
+        comment.setIsDeleted(false);
+        comment.setLikeAmount(0);
+        comment.setCommentsCount(0);
+        comment.setMyLike(false);
+        comment.setAuthorId(getUserInfo());
 
         post.setCommentsCount(post.getCommentsCount() + 1);
 
@@ -83,6 +109,7 @@ public class CommentServiceImpl implements CommentService {
 
         kafkaService.newCommentEvent(kafkaDto);
     }
+
 
     @Override
     @CacheEvict(value = "comments", key = "#postId")
@@ -131,18 +158,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-    @Override
-    @Cacheable(value = "subcomments", key = "#commentId")
-    @Transactional(readOnly = true)
-    public PageCommentDto getSubcomments(UUID postId, UUID commentId, Pageable pageable) {
-        checkPostPresence(postId);
-        checkCommentPresence(commentId);
-        Page<Comment> subcomments = commentRepository.findByParentCommentIdAndPostId(commentId, postId, pageable);
-        log.info("Fetched {} subcomments for comment ID {}", subcomments.getTotalElements(), commentId);
-        return CommentMapperFactory.toPageCommentDto(subcomments);
-    }
-
-
     private Post checkPostPresence(UUID postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> {
@@ -151,6 +166,7 @@ public class CommentServiceImpl implements CommentService {
                 });
     }
 
+
     private Comment checkCommentPresence(UUID commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> {
@@ -158,6 +174,7 @@ public class CommentServiceImpl implements CommentService {
                     return new EntityNotFoundException(MessageFormat.format("Comment with id {0} not found", commentId));
                 });
     }
+
 
     private void checkCommentAndPostPresence(UUID postId, UUID commentId) {
         if (!commentRepository.existsById(commentId)) {
@@ -169,5 +186,12 @@ public class CommentServiceImpl implements CommentService {
             log.warn("Post with ID {} not found", postId);
             throw new EntityNotFoundException("Post with ID " + postId + " not found");
         }
+    }
+
+    private static UUID getUserInfo() {
+        // Получаем Authentication из SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        return ((UUID) authentication.getPrincipal());
     }
 }

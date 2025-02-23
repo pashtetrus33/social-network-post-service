@@ -6,22 +6,25 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "posts", schema = "schema_post")
+@Table(name = "posts")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Builder
-@Data
 public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
+
+    private UUID authorId;
 
     @CreationTimestamp
     private LocalDateTime time;
@@ -29,14 +32,18 @@ public class Post {
     @UpdateTimestamp
     private LocalDateTime timeChanged;
 
-    private UUID authorId;
+    @NotNull
+    private LocalDateTime publishDate;
+
+    @Min(0)
+    private Integer likeAmount = 0;
+
+    @Min(0)
+    private Integer commentsCount = 0;
 
     @NotBlank
     @Size(max = 255)
     private String title;
-
-    @Enumerated(EnumType.STRING)
-    private PostType type;
 
     @NotBlank
     @Column(columnDefinition = "TEXT")
@@ -46,22 +53,20 @@ public class Post {
 
     private Boolean isDeleted;
 
-    @Min(0)
-    private Integer commentsCount;
-
-    @ElementCollection
-    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"), schema = "schema_post")
-    @Column(name = "tag")
-    private List<String> tags;
-
-    @Min(0)
-    private Integer likeAmount;
-
-    @NotNull
     private Boolean myLike;
 
     @Size(max = 512)
     private String imagePath;
 
-    private LocalDateTime publishDate;
+    @Enumerated(EnumType.STRING)
+    private PostType type;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"))
+    @Column(name = "tag")
+    private List<String> tags;
 }

@@ -9,7 +9,7 @@ public interface LikeService {
 
     void removeLikeFromPost(UUID postId);
 
-    void addLikeToComment(UUID postId, UUID commentId, LikeDto likeDto);
+    void addLikeToComment(UUID postId, UUID commentId);
 
     void removeLikeFromComment(UUID postId, UUID commentId);
 }
