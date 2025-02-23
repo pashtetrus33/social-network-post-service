@@ -112,12 +112,21 @@ public class LikeServiceImpl implements LikeService {
                     MessageFormat.format("Comment with id {0} not found for post with id {1}", commentId, postId));
         }
 
+
         // Проверяем, ставил ли пользователь лайк для данного комментария
         if (likeRepository.existsByCommentIdAndAuthorId(commentId, accountId)) {
             log.warn("Like already exists for post with id {} and comment with id {}", postId, commentId);
             throw new IllegalStateException(
                     MessageFormat.format("Like already exists for post with id {0} and comment with id {1}", postId, commentId));
         }
+
+        Like like = new Like();
+        like.setPostId(postId);
+        like.setCommentId(commentId);
+        like.setAuthorId(accountId);
+        like.setType("No_type");
+        like.setReactionType("No_reaction");
+        likeRepository.save(like);
 
 
         // Проверяем, является ли текущий пользователь автором коме комментария
