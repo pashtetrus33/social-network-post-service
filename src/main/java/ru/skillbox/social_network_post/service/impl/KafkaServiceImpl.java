@@ -22,7 +22,7 @@ import java.util.List;
 @Slf4j
 public class KafkaServiceImpl implements KafkaService {
 
-    @Value("${spring.kafka.new-post--topic}")
+    @Value("${spring.kafka.new-post-topic}")
     private String newPostTopic;
 
     @Value("${spring.kafka.new-comment-to-post-topic}")
