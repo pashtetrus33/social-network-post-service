@@ -88,7 +88,7 @@ services:
       - kafka
 
   discovery-service:
-    image: pashtet33/discovery-service:v1.0
+    image: pashtet33/discovery-service:latest
     container_name: discovery-service
     restart: always
     ports:
@@ -99,7 +99,7 @@ services:
       - kafka
 
   config-service:
-    image: pashtet33/config-service:v1.0
+    image: pashtet33/config-service:latest
     container_name: config-service
     restart: always
     ports:
@@ -110,7 +110,7 @@ services:
       - discovery-service
 
   gateway-service:
-    image: pashtet33/gateway-service:v1.0
+    image: pashtet33/gateway-service:latest
     container_name: gateway-service
     restart: always
     ports:

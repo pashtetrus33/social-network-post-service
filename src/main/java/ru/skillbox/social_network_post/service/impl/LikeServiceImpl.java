@@ -26,6 +26,7 @@ public class LikeServiceImpl implements LikeService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final LikeRepository likeRepository;
+    private UUID userId;
 
     @Override
     @Transactional
@@ -37,9 +38,7 @@ public class LikeServiceImpl implements LikeService {
 
         checkLikeDto(likeDto);
 
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UUID userId = (UUID) authentication.getPrincipal();
+        userId = getUserId();
 
         // Проверяем, ставил ли пользователь лайк ранее
         if (likeRepository.existsByPostIdAndAuthorId(postId, userId)) {
@@ -79,8 +78,17 @@ public class LikeServiceImpl implements LikeService {
                     MessageFormat.format("Невозможно удалить лайк с поста {0}: количество лайков уже 0", postId));
         }
 
-        // Выполняем обновление сразу
-        postRepository.updateLikeAmount(postId);
+        userId = getUserId();
+
+        // Проверяем, является ли текущий пользователь автором поста
+        if (postRepository.isAuthorOfPost(postId, userId)) {
+            // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
+            postRepository.updateLikeAmountAndUnsetMyLike(postId);
+        } else {
+            // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
+            postRepository.updateLikeAmount(postId);
+        }
+
 
         log.info("Лайк удалён с поста с id: {}", postId);
     }
@@ -88,17 +96,14 @@ public class LikeServiceImpl implements LikeService {
 
     @Override
     @Transactional
-    public void addLikeToComment(UUID postId, UUID commentId, LikeDto likeDto) {
+    public void addLikeToComment(UUID postId, UUID commentId) {
 
         log.info("Adding like to comment with id: {} on post id: {}", commentId, postId);
 
         checkPostPresence(postId);
         checkCommentPresence(commentId);
-        checkLikeDto(likeDto);
 
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        UUID userId = (UUID) authentication.getPrincipal();
+        userId = getUserId();
 
         // Проверяем, ставил ли пользователь лайк для данного комментария
         if (likeRepository.existsByPostIdAndAuthorId(commentId, userId)) {
@@ -113,11 +118,6 @@ public class LikeServiceImpl implements LikeService {
                     MessageFormat.format("Comment with id {0} not found for post with id {1}", commentId, postId));
         }
 
-        Like like = LikeMapperFactory.toLike(likeDto);
-        like.setCommentId(commentId);
-        like.setAuthorId(userId);
-
-        likeRepository.save(like);
 
         // Проверяем, является ли текущий пользователь автором коме комментария
         if (commentRepository.isAuthorOfComment(commentId, userId)) {
@@ -148,8 +148,16 @@ public class LikeServiceImpl implements LikeService {
                     MessageFormat.format("Cannot remove like from post {0} and comment {1}: like count is already 0", postId, commentId));
         }
 
-        // Обновляем лайк в базе
-        commentRepository.updateLikeAmount(commentId);
+        userId = getUserId();
+
+        // Проверяем, является ли текущий пользователь автором коме комментария
+        if (commentRepository.isAuthorOfComment(commentId, userId)) {
+            // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
+            commentRepository.updateLikeAmountAndUnsetMyLike(commentId);
+        } else {
+            // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
+            commentRepository.updateLikeAmount(commentId);
+        }
 
         log.info("Like removed from comment with id: {}", commentId);
     }
@@ -174,5 +182,10 @@ public class LikeServiceImpl implements LikeService {
         if (likeDto == null) {
             throw new IllegalArgumentException("Like data must not be null");
         }
+    }
+
+    private UUID getUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return (UUID) authentication.getPrincipal();
     }
 }

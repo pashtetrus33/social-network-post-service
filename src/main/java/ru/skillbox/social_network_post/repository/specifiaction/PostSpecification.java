@@ -1,4 +1,4 @@
-package ru.skillbox.social_network_post.repository;
+package ru.skillbox.social_network_post.repository.specifiaction;
 
 import jakarta.persistence.criteria.Join;
 import org.springframework.data.jpa.domain.Specification;

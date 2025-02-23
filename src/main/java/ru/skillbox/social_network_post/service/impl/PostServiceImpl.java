@@ -14,18 +14,18 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
 import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.entity.Post;
+import ru.skillbox.social_network_post.entity.PostType;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.exception.IdMismatchException;
 import ru.skillbox.social_network_post.mapper.PostMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
-import ru.skillbox.social_network_post.repository.PostSpecification;
+import ru.skillbox.social_network_post.repository.specifiaction.PostSpecification;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.PostService;
 
@@ -60,6 +60,11 @@ public class PostServiceImpl implements PostService {
         this.commentRepository = commentRepository;
     }
 
+    @Override
+    public List<Post> getAllByAccountId(UUID accountId) {
+        return postRepository.findAllByAuthorId(accountId);
+    }
+
 
     @Override
     @Cacheable(value = "posts", key = "#postId")
@@ -74,6 +79,97 @@ public class PostServiceImpl implements PostService {
                 ));
 
         return PostMapperFactory.toPostDto(post);
+    }
+
+    @Transactional
+    @Override
+    @Cacheable(value = "post_pages", key = "#searchDto.toString() + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
+        log.info("Fetching all posts with pageable: {}", pageable);
+
+        if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
+            //AccountSearchDto accountSearchDto = new AccountSearchDto();
+            //accountSearchDto.setAuthor(searchDto.getAuthor());
+
+            // Вызов Feign-клиента с обработкой ошибок
+            try {
+                //authorId = accountServiceClient.getAccountByName(accountSearchDto);
+                authorId = UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eb0");
+
+            } catch (FeignException e) {
+                throw new CustomFreignException(MessageFormat.format("Error fetching account by name: {0}", searchDto.getAuthor()));
+            }
+        }
+
+        if (searchDto.getWithFriends() != null && searchDto.getWithFriends().equals(true)) {
+
+            // Вызов Feign-клиента с обработкой ошибок
+            try {
+                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+                userId = (UUID) authentication.getPrincipal();
+                //friendsIds = friendServiceClient.getFriendsIds(userId);
+                friendsIds.add(UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eba"));
+
+                searchDto.setAccountIds(friendsIds);
+
+            } catch (FeignException e) {
+                throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", userId));
+            }
+        }
+
+        Specification<Post> spec = PostSpecification.withFilters(searchDto, authorId);
+
+        Page<Post> posts = postRepository.findAll(spec, pageable);
+        return PostMapperFactory.toPagePostDto(posts);
+    }
+
+    @Override
+    @CacheEvict(value = {"posts", "post_pages"}, allEntries = true)
+    @Transactional
+    public void create(PostDto postDto, Long publishDate) {
+
+        checkPostDto(postDto);
+
+        getUserInfo(postDto);
+
+        Post post = PostMapperFactory.toPost(postDto);
+
+        // Устанавливаем publishDate, если он передан, иначе текущее время
+        if (publishDate != null) {
+            post.setPublishDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(publishDate), ZoneOffset.UTC));
+            post.setType(PostType.QUEUED);
+        } else {
+            post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
+            post.setType(PostType.POSTED);
+        }
+
+        post.setId(null);// Сбрасываем ID, чтобы Hibernate сгенерировал новый
+        post.setIsBlocked(false);
+        post.setIsDeleted(false);
+        post.setLikeAmount(0);
+        post.setCommentsCount(0);
+
+        postRepository.save(post);
+        log.info("Created post with ID {} successfully", post.getId());
+
+        kafkaService.newPostEvent(
+                new KafkaDto(
+                        MessageFormat.format("Post with id {0} created successfully", post.getId())));
+    }
+
+    private static void getUserInfo(PostDto postDto) {
+        // Получаем Authentication из SecurityContext
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        // Извлекаем роли
+        List<String> roles = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.toList());
+
+        postDto.setAuthorId((UUID) authentication.getPrincipal());
+
+        log.info("Creating new post by User: {} userId: {} with roles: {}",
+                authentication.getName(), postDto.getAuthorId(), roles);
     }
 
     @Override
@@ -128,98 +224,6 @@ public class PostServiceImpl implements PostService {
         );
     }
 
-
-    @Override
-    @Cacheable(value = "post_pages", key = "#searchDto.toString() + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
-    @Transactional(readOnly = true)
-    public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
-        log.info("Fetching all posts with pageable: {}", pageable);
-
-        if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
-            //AccountSearchDto accountSearchDto = new AccountSearchDto();
-            //accountSearchDto.setAuthor(searchDto.getAuthor());
-
-            // Вызов Feign-клиента с обработкой ошибок
-            try {
-                //authorId = accountServiceClient.getAccountByName(accountSearchDto);
-                authorId = UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eb0");
-
-            } catch (FeignException e) {
-                throw new CustomFreignException(MessageFormat.format("Error fetching account by name: {0}", searchDto.getAuthor()));
-            }
-        }
-
-        if (searchDto.getWithFriends() != null && searchDto.getWithFriends().equals(true)) {
-
-            // Вызов Feign-клиента с обработкой ошибок
-            try {
-                Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-                userId = (UUID) authentication.getPrincipal();
-                //friendsIds = friendServiceClient.getFriendsIds(userId);
-                friendsIds.add(UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eba"));
-
-                searchDto.setAccountIds(friendsIds);
-
-            } catch (FeignException e) {
-                throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", userId));
-            }
-        }
-
-        Specification<Post> spec = PostSpecification.withFilters(searchDto, authorId);
-
-        Page<Post> posts = postRepository.findAll(spec, pageable);
-        return PostMapperFactory.toPagePostDto(posts);
-    }
-
-    @Override
-    @CacheEvict(value = {"posts", "post_pages"}, allEntries = true)
-    @Transactional
-    public void create(PostDto postDto, Long publishDate) {
-
-        checkPostDto(postDto);
-
-        // Получаем Authentication из SecurityContext
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        // Извлекаем роли
-        List<String> roles = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-
-        postDto.setAuthorId((UUID) authentication.getPrincipal());
-
-        log.info("Creating new post by User: {} userId: {} with roles: {}",
-                authentication.getName(), postDto.getAuthorId(), roles);
-
-
-        Post post = PostMapperFactory.toPost(postDto);
-
-        // Устанавливаем publishDate, если он передан, иначе текущее время
-        if (publishDate != null) {
-            post.setPublishDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(publishDate), ZoneOffset.UTC));
-        } else {
-            post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
-        }
-
-        if (postDto.getTime() == null) {
-            post.setTime(LocalDateTime.now(ZoneOffset.UTC));
-        }
-
-        post.setId(null); // Сбрасываем ID, чтобы Hibernate сгенерировал новый
-
-        postRepository.save(post);
-        log.info("Created post with ID {} successfully", post.getId());
-
-        kafkaService.newPostEvent(
-                new KafkaDto(
-                        MessageFormat.format("Post with id {0} created successfully", post.getId())));
-    }
-
-
-    @Override
-    public List<Post> getAllByAccountId(UUID accountId) {
-        return postRepository.findAllByAuthorId(accountId);
-    }
 
     @Override
     public void saveAll(List<Post> posts) {

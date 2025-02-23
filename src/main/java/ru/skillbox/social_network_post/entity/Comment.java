@@ -10,20 +10,19 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "comments", schema = "schema_post")
+@Table(name = "comments")
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 @Builder
-@Data
 public class Comment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
-    @NotNull
-    @Enumerated(EnumType.STRING)
-    private CommentType commentType;
+    private UUID authorId;
 
     @CreationTimestamp
     private LocalDateTime time;
@@ -31,22 +30,11 @@ public class Comment {
     @UpdateTimestamp
     private LocalDateTime timeChanged;
 
-    @NotNull
-    @Positive
-    private Long authorId;
+    @Min(0)
+    private Integer likeAmount;
 
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
-    private Comment parentComment;
-
-    @NotBlank
-    @Column(columnDefinition = "TEXT")
-    private String commentText;
-
-    @NotNull
-    @JoinColumn(name = "post_id", nullable = false)
-    @ManyToOne
-    private Post post;
+    @Min(0)
+    private Integer commentsCount;
 
     @NotNull
     private Boolean isBlocked;
@@ -54,15 +42,25 @@ public class Comment {
     @NotNull
     private Boolean isDeleted;
 
-    @Min(0)
-    private Integer likeAmount;
-
     @NotNull
     private Boolean myLike;
 
-    @Min(0)
-    private Integer commentsCount;
+    @NotBlank
+    @Column(columnDefinition = "TEXT")
+    private String commentText;
 
     @Size(max = 512)
     private String imagePath;
+
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    private CommentType commentType;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_id")
+    private Comment parentComment;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
 }
