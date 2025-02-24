@@ -101,13 +101,7 @@ public class CommentServiceImpl implements CommentService {
 
         commentRepository.save(comment);
 
-        if (comment.getCommentType().equals(CommentType.POST)) {
-            kafkaService.newCommentToPostEvent(new KafkaDto(accountId, postId));
-        }
-
-        if (comment.getCommentType().equals(CommentType.COMMENT)) {
-            kafkaService.newCommentToCommentEvent(new KafkaDto(accountId, parentId));
-        }
+        kafkaService.newCommentEvent(new KafkaDto(accountId, comment.getId()));
     }
 
 

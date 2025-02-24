@@ -7,11 +7,7 @@ public interface KafkaService {
 
     void newPostEvent(KafkaDto kafkaDto);
 
-    void newCommentToPostEvent(KafkaDto kafkaDto);
+    void newCommentEvent(KafkaDto kafkaDto);
 
-    void newCommentToCommentEvent(KafkaDto kafkaDto);
-
-    void newLikeToCommentEvent(KafkaDto kafkaDto);
-
-    void newLikeToPostEvent(KafkaDto kafkaDto);
+    void newLikeEvent(KafkaDto kafkaDto);
 }

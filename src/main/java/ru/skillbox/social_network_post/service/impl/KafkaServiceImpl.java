@@ -9,13 +9,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.dto.AccountEventDto;
-import ru.skillbox.social_network_post.entity.Post;
-import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.dto.KafkaDto;
 import ru.skillbox.social_network_post.service.PostService;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -25,17 +21,11 @@ public class KafkaServiceImpl implements KafkaService {
     @Value("${spring.kafka.new-post-topic}")
     private String newPostTopic;
 
-    @Value("${spring.kafka.new-comment-to-post-topic}")
-    private String newCommentToPostTopic;
+    @Value("${spring.kafka.new-comment-topic}")
+    private String newCommentTopic;
 
-    @Value("${spring.kafka.new-comment-to-comment-topic}")
-    private String newCommentToCommentTopic;
-
-    @Value("${spring.kafka.new-like-to-post-topic}")
-    private String newLikeToPostTopic;
-
-    @Value("${spring.kafka.new-like-to-comment-topic}")
-    private String newLikeToCommentTopic;
+    @Value("${spring.kafka.new-like-topic}")
+    private String newLikeTopic;
 
     @Value("${spring.kafka.blocked-account-topic}")
     private String blockedAccountTopic;
@@ -57,28 +47,18 @@ public class KafkaServiceImpl implements KafkaService {
     }
 
     @Override
-    public void newCommentToPostEvent(KafkaDto kafkaDto) {
-        kafkaTemplate.send(newCommentToPostTopic, kafkaDto);
-        log.info("Sent new comment to post -> '{}'", kafkaDto);
+    public void newCommentEvent(KafkaDto kafkaDto) {
+        kafkaTemplate.send(newCommentTopic, kafkaDto);
+        log.info("Sent new comment -> '{}'", kafkaDto);
     }
 
-    @Override
-    public void newCommentToCommentEvent(KafkaDto kafkaDto) {
-        kafkaTemplate.send(newCommentToCommentTopic, kafkaDto);
-        log.info("Sent new comment to comment -> '{}'", kafkaDto);
-    }
 
     @Override
-    public void newLikeToPostEvent(KafkaDto kafkaDto) {
-        kafkaTemplate.send(newLikeToPostTopic, kafkaDto);
-        log.info("Sent new like to post -> '{}'", kafkaDto);
+    public void newLikeEvent(KafkaDto kafkaDto) {
+        kafkaTemplate.send(newLikeTopic, kafkaDto);
+        log.info("Sent new like -> '{}'", kafkaDto);
     }
 
-    @Override
-    public void newLikeToCommentEvent(KafkaDto kafkaDto) {
-        kafkaTemplate.send(newLikeToCommentTopic, kafkaDto);
-        log.info("Sent new like to comment -> '{}'", kafkaDto);
-    }
 
     @Transactional
     @KafkaListener(topics = "${spring.kafka.blocked-account-topic}", groupId = "${spring.kafka.consumer.group-id}")

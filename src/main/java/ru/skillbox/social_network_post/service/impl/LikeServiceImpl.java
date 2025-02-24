@@ -63,7 +63,7 @@ public class LikeServiceImpl implements LikeService {
             postRepository.incrementLikeAmount(postId);
         }
 
-        kafkaService.newLikeToPostEvent(new KafkaDto(accountId, postId));
+        kafkaService.newLikeEvent(new KafkaDto(accountId, like.getId()));
     }
 
 
@@ -142,7 +142,7 @@ public class LikeServiceImpl implements LikeService {
             commentRepository.incrementLikeAmount(commentId);
         }
 
-        kafkaService.newLikeToCommentEvent(new KafkaDto(accountId, commentId));
+        kafkaService.newLikeEvent(new KafkaDto(accountId, like.getId()));
     }
 
 
