@@ -93,7 +93,9 @@ public class LikeServiceImpl implements LikeService {
             postRepository.updateLikeAmount(postId);
         }
 
-        likeRepository.existsByPostIdAndAuthorId(postId, accountId);
+        log.info("Like removed from post with id: {}", postId);
+
+        likeRepository.deleteByPostIdAndAuthorId(postId, accountId);
     }
 
 
