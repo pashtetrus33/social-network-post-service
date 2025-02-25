@@ -1,7 +1,6 @@
 package ru.skillbox.social_network_post.repository.specifiaction;
 
 import jakarta.persistence.criteria.Join;
-import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.dto.PostSearchDto;
@@ -16,9 +15,6 @@ public class PostSpecification {
     public static Specification<Post> withFilters(PostSearchDto searchDto) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
-
-            // Применяем JOIN FETCH для комментариев
-            root.fetch("comments", JoinType.LEFT); // Загружаем комментарии сразу
 
             // Фильтрация по ID постов
             if (searchDto.getIds() != null && !searchDto.getIds().isEmpty()) {

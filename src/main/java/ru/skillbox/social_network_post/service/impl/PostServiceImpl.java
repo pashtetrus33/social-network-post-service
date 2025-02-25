@@ -77,6 +77,7 @@ public class PostServiceImpl implements PostService {
         return PostMapperFactory.toPostDto(post);
     }
 
+
     @Override
     @Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
     public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
