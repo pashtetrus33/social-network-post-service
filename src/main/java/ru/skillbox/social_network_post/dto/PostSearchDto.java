@@ -37,9 +37,7 @@ public class PostSearchDto {
     @Size(max = 50, message = "Maximum number of tags is 50")
     private List<String> tags;
 
-    @Min(value = 0, message = "Date from must be zero or a positive number")
     private String dateFrom;
 
-    @Min(value = 0, message = "Date to must be zero or a positive number")
     private String dateTo;
 }
