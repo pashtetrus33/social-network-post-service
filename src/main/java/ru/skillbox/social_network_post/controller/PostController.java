@@ -63,8 +63,8 @@ public class PostController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void create(@Valid @RequestBody PostDto postDto, @RequestParam(required = false) Long publishDate) {
-        postService.create(postDto, publishDate);
+    public void create(@Valid @RequestBody PostDto postDto) {
+        postService.create(postDto);
     }
 
 

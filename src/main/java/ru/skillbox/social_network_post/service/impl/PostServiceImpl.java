@@ -135,7 +135,7 @@ public class PostServiceImpl implements PostService {
     @Override
     @CacheEvict(value = {"posts", "post_pages"}, allEntries = true)
     @Transactional
-    public void create(PostDto postDto, Long publishDate) {
+    public void create(PostDto postDto) {
 
         checkPostDto(postDto);
 
@@ -144,8 +144,8 @@ public class PostServiceImpl implements PostService {
         Post post = PostMapperFactory.toPost(postDto);
 
         // Устанавливаем publishDate, если он передан, иначе текущее время
-        if (publishDate != null) {
-            post.setPublishDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(publishDate), ZoneOffset.UTC));
+        if (postDto.getPublishDate() != null) {
+            post.setPublishDate(postDto.getPublishDate());
             post.setType(PostType.QUEUED);
         } else {
             post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));

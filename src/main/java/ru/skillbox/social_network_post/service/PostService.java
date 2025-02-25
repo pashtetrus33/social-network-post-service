@@ -21,7 +21,7 @@ public interface PostService {
 
     PagePostDto getAll(PostSearchDto searchDto, Pageable pageable);
 
-    void create(PostDto postDto, Long publishDate);
+    void create(PostDto postDto);
 
     void updateBlockedStatusForAccount(UUID uuid);
 
