@@ -61,7 +61,7 @@ public class PostSpecification {
             if (searchDto.getDateFrom() != null) {
                 predicates.add(criteriaBuilder.greaterThanOrEqualTo(
                         root.get("publishDate"),
-                        Instant.ofEpochMilli(searchDto.getDateFrom()).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                        Instant.ofEpochMilli(Long.parseLong(searchDto.getDateFrom())).atZone(ZoneId.systemDefault()).toLocalDateTime()
                 ));
             }
 
@@ -69,7 +69,7 @@ public class PostSpecification {
             if (searchDto.getDateTo() != null) {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(
                         root.get("publishDate"),
-                        Instant.ofEpochMilli(searchDto.getDateTo()).atZone(ZoneId.systemDefault()).toLocalDateTime()
+                        Instant.ofEpochMilli(Long.parseLong(searchDto.getDateTo())).atZone(ZoneId.systemDefault()).toLocalDateTime()
                 ));
             }
 

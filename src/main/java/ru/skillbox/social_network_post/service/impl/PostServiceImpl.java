@@ -122,7 +122,8 @@ public class PostServiceImpl implements PostService {
         }
 
         if (searchDto.getDateTo() == null) {
-            searchDto.setDateTo(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
+            //searchDto.setDateTo(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
+            searchDto.setDateTo(String.valueOf(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)));
         }
 
         // Формируем спецификацию для поиска

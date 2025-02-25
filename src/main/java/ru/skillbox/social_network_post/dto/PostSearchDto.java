@@ -38,8 +38,8 @@ public class PostSearchDto {
     private List<String> tags;
 
     @Min(value = 0, message = "Date from must be zero or a positive number")
-    private Long dateFrom;
+    private String dateFrom;
 
     @Min(value = 0, message = "Date to must be zero or a positive number")
-    private Long dateTo;
+    private String dateTo;
 }
