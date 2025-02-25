@@ -4,6 +4,7 @@ import feign.FeignException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.Hibernate;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
@@ -12,15 +13,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
 import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.entity.Post;
-import ru.skillbox.social_network_post.entity.PostType;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.exception.IdMismatchException;
@@ -28,12 +26,14 @@ import ru.skillbox.social_network_post.mapper.PostMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.repository.specifiaction.PostSpecification;
+import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.PostService;
 
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 
@@ -47,7 +47,7 @@ public class PostServiceImpl implements PostService {
     private final KafkaService kafkaService;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-    private List<UUID> authorIds;
+    private List<UUID> authorIds = new ArrayList<>();
     private List<UUID> friendsIds = new ArrayList<>();
     private UUID accountId;
 
@@ -77,12 +77,11 @@ public class PostServiceImpl implements PostService {
         return PostMapperFactory.toPostDto(post);
     }
 
-    @Transactional
     @Override
-    @Cacheable(value = "post_pages", key = "#searchDto.toString() + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    @Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
     public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
 
-        log.info("Fetching all posts with pageable: {}", pageable);
+        log.info("Fetching posts, page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
 
         // Проверка автора и получение его ID
         if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
@@ -104,8 +103,8 @@ public class PostServiceImpl implements PostService {
         }
 
         // Проверка флага с друзьями и получение их ID
-        if (searchDto.getWithFriends() != null && searchDto.getWithFriends().equals(true)) {
-            accountId = getAccountId();
+        if (Boolean.TRUE.equals(searchDto.getWithFriends())) {
+            accountId = SecurityUtils.getAccountId();
             try {
 
                 // Получаем список друзей из сервиса друзей
@@ -119,6 +118,10 @@ public class PostServiceImpl implements PostService {
             } catch (Exception e) {
                 log.error("Error fetching friends for accountId: {}", accountId, e);
             }
+        }
+
+        if (searchDto.getDateTo() == null) {
+            searchDto.setDateTo(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
         }
 
         // Формируем спецификацию для поиска
@@ -139,17 +142,16 @@ public class PostServiceImpl implements PostService {
 
         checkPostDto(postDto);
 
-        accountId = getAccountId();
+        accountId = SecurityUtils.getAccountId();
 
         Post post = PostMapperFactory.toPost(postDto);
 
         // Устанавливаем publishDate, если он передан, иначе текущее время
         if (postDto.getPublishDate() != null) {
             post.setPublishDate(postDto.getPublishDate());
-            post.setType(PostType.QUEUED);
         } else {
             post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
-            post.setType(PostType.POSTED);
+
         }
 
         post.setAuthorId(accountId);
@@ -160,7 +162,6 @@ public class PostServiceImpl implements PostService {
         post.setCommentsCount(0);
 
         postRepository.save(post);
-
         kafkaService.newPostEvent(new KafkaDto(accountId, post.getId()));
     }
 
@@ -236,11 +237,6 @@ public class PostServiceImpl implements PostService {
         if (postDto == null) {
             throw new IllegalArgumentException("Post data must not be null");
         }
-    }
-
-    private static UUID getAccountId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return ((UUID) authentication.getPrincipal());
     }
 
 

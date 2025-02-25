@@ -5,7 +5,6 @@ CREATE TABLE IF NOT EXISTS schema_post.posts (
     time_changed TIMESTAMP,
     author_id UUID NOT NULL,
     title VARCHAR(255) NOT NULL,
-    type VARCHAR(20) NOT NULL,
     post_text TEXT NOT NULL,
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,

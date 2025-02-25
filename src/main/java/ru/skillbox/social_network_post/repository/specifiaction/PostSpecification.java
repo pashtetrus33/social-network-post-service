@@ -1,12 +1,11 @@
 package ru.skillbox.social_network_post.repository.specifiaction;
 
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import org.springframework.data.jpa.domain.Specification;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.dto.PostSearchDto;
-
 import jakarta.persistence.criteria.Predicate;
-
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -17,6 +16,9 @@ public class PostSpecification {
     public static Specification<Post> withFilters(PostSearchDto searchDto) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            // Применяем JOIN FETCH для комментариев
+            root.fetch("comments", JoinType.LEFT); // Загружаем комментарии сразу
 
             // Фильтрация по ID постов
             if (searchDto.getIds() != null && !searchDto.getIds().isEmpty()) {
@@ -43,7 +45,7 @@ public class PostSpecification {
                 predicates.add(criteriaBuilder.isTrue(root.get("isDeleted")));
             }
 
-            //Фильтрация по названию поста
+            // Фильтрация по названию поста
             if (searchDto.getTitle() != null && !searchDto.getTitle().isBlank()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + searchDto.getTitle().toLowerCase() + "%"));
             }
@@ -52,7 +54,6 @@ public class PostSpecification {
             if (searchDto.getPostText() != null && !searchDto.getPostText().isBlank()) {
                 predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("postText")), "%" + searchDto.getPostText().toLowerCase() + "%"));
             }
-
 
             // Фильтрация по тегам
             if (searchDto.getTags() != null && !searchDto.getTags().isEmpty()) {

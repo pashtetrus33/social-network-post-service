@@ -1,10 +1,10 @@
 package ru.skillbox.social_network_post.dto;
 
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import ru.skillbox.social_network_post.entity.PostType;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -13,6 +13,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class PostDto {
 
     private UUID id;
@@ -32,17 +33,22 @@ public class PostDto {
     @NotNull(message = "Post text must not be null")
     private String postText;
 
-    private Boolean isBlocked;
+    @Builder.Default
+    private Boolean isBlocked = false;
 
-    private Boolean isDeleted;
+    @Builder.Default
+    private Boolean isDeleted = false;
 
-    private Integer commentsCount;
+    @Builder.Default
+    private Integer commentsCount = 0;
 
     @Size(max = 50, message = "Tags list size must not exceed 50")
     private List<String> tags;
 
-    private Integer likeAmount;
+    @Builder.Default
+    private Integer likeAmount = 0;
 
+    @Builder.Default
     private Boolean myLike = false;
 
     @Size(max = 512, message = "Image path must not exceed 512 characters")

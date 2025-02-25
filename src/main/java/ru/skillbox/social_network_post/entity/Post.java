@@ -36,9 +36,11 @@ public class Post {
     private LocalDateTime publishDate;
 
     @Min(0)
+    @Builder.Default
     private Integer likeAmount = 0;
 
     @Min(0)
+    @Builder.Default
     private Integer commentsCount = 0;
 
     @NotBlank
@@ -49,17 +51,17 @@ public class Post {
     @Column(columnDefinition = "TEXT")
     private String postText;
 
-    private Boolean isBlocked;
+    @Builder.Default
+    private Boolean isBlocked = false;
 
-    private Boolean isDeleted;
+    @Builder.Default
+    private Boolean isDeleted = false;
 
-    private Boolean myLike;
+    @Builder.Default
+    private Boolean myLike = false;
 
     @Size(max = 512)
     private String imagePath;
-
-    @Enumerated(EnumType.STRING)
-    private PostType type;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @Builder.Default

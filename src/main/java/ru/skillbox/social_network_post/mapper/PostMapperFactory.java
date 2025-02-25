@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.dto.PagePostDto;
 import ru.skillbox.social_network_post.dto.PostDto;
+import ru.skillbox.social_network_post.dto.PostType;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,23 +20,23 @@ public final class PostMapperFactory {
             return null;
         }
 
-        return new PostDto(
-                post.getId(),
-                post.getTime(),
-                post.getTimeChanged(),
-                post.getAuthorId(),
-                post.getTitle(),
-                post.getType(),
-                post.getPostText(),
-                post.getIsBlocked(),
-                post.getIsDeleted(),
-                post.getCommentsCount(),
-                post.getTags() != null ? new ArrayList<>(post.getTags()) : null,
-                post.getLikeAmount(),
-                post.getMyLike(),
-                post.getImagePath(),
-                post.getPublishDate()
-        );
+        return PostDto.builder()
+                .id(post.getId())
+                .time(post.getTime())
+                .timeChanged(post.getTimeChanged())
+                .authorId(post.getAuthorId())
+                .title(post.getTitle())
+                .type(PostType.POSTED)
+                .postText(post.getPostText())
+                .isBlocked(post.getIsBlocked())
+                .isDeleted(post.getIsDeleted())
+                .commentsCount(post.getCommentsCount())
+                .tags(post.getTags() != null ? new ArrayList<>(post.getTags()) : null)
+                .likeAmount(post.getLikeAmount())
+                .myLike(post.getMyLike())
+                .imagePath(post.getImagePath())
+                .publishDate(post.getPublishDate())
+                .build();
     }
 
     public static PagePostDto toPagePostDto(Page<Post> posts) {
@@ -43,19 +44,19 @@ public final class PostMapperFactory {
             return null;
         }
 
-        return new PagePostDto(
-                posts.getTotalElements(),
-                posts.getTotalPages(),
-                posts.getNumber(),
-                posts.getSize(),
-                posts.hasContent() ? toPostDtoList(posts.getContent()) : List.of(),
-                posts.getSort(),
-                posts.isFirst(),
-                posts.isLast(),
-                posts.getNumberOfElements(),
-                posts.getPageable(),
-                posts.isEmpty()
-        );
+        return PagePostDto.builder()
+                .totalElements(posts.getTotalElements())
+                .totalPages(posts.getTotalPages())
+                .number(posts.getNumber())
+                .size(posts.getSize())
+                .content(posts.hasContent() ? toPostDtoList(posts.getContent()) : List.of())
+                .sort(posts.getSort())
+                .first(posts.isFirst())
+                .last(posts.isLast())
+                .numberOfElements(posts.getNumberOfElements())
+                .pageable(posts.getPageable())
+                .empty(posts.isEmpty())
+                .build();
     }
 
     public static Post toPost(PostDto postDto) {
@@ -68,7 +69,6 @@ public final class PostMapperFactory {
                 .timeChanged(postDto.getTimeChanged())
                 .authorId(postDto.getAuthorId())
                 .title(postDto.getTitle())
-                .type(postDto.getType())
                 .postText(postDto.getPostText())
                 .isBlocked(postDto.getIsBlocked())
                 .isDeleted(postDto.getIsDeleted())
@@ -90,7 +90,6 @@ public final class PostMapperFactory {
         post.setTimeChanged(postDto.getTimeChanged());
         post.setAuthorId(postDto.getAuthorId());
         post.setTitle(postDto.getTitle());
-        post.setType(postDto.getType());
         post.setPostText(postDto.getPostText());
         post.setIsBlocked(postDto.getIsBlocked());
         post.setIsDeleted(postDto.getIsDeleted());

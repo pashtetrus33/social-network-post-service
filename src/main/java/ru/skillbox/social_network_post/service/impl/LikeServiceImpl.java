@@ -2,8 +2,6 @@ package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.dto.KafkaDto;
@@ -14,6 +12,7 @@ import ru.skillbox.social_network_post.mapper.LikeMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.LikeRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
+import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.LikeService;
 
@@ -41,7 +40,7 @@ public class LikeServiceImpl implements LikeService {
 
         checkLikeDto(likeDto);
 
-        accountId = getAccountId();
+        accountId = SecurityUtils.getAccountId();
 
         // Проверяем, ставил ли пользователь лайк ранее
         if (likeRepository.existsByPostIdAndAuthorId(postId, accountId)) {
@@ -82,7 +81,7 @@ public class LikeServiceImpl implements LikeService {
                     MessageFormat.format("Невозможно удалить лайк с поста {0}: количество лайков уже 0", postId));
         }
 
-        accountId = getAccountId();
+        accountId = SecurityUtils.getAccountId();
 
         // Проверяем, является ли текущий пользователь автором поста
         if (postRepository.isAuthorOfPost(postId, accountId)) {
@@ -108,7 +107,7 @@ public class LikeServiceImpl implements LikeService {
         checkPostPresence(postId);
         checkCommentPresence(commentId);
 
-        accountId = getAccountId();
+        accountId = SecurityUtils.getAccountId();
 
         // Проверка, существует ли комментарий с таким ID и связан ли он с постом
         if (!commentRepository.existsByPostIdAndId(postId, commentId)) {
@@ -162,7 +161,7 @@ public class LikeServiceImpl implements LikeService {
                     MessageFormat.format("Cannot remove like from post {0} and comment {1}: like count is already 0", postId, commentId));
         }
 
-        accountId = getAccountId();
+        accountId = SecurityUtils.getAccountId();
 
         // Проверяем, является ли текущий пользователь автором коме комментария
         if (commentRepository.isAuthorOfComment(commentId, accountId)) {
@@ -198,10 +197,5 @@ public class LikeServiceImpl implements LikeService {
         if (likeDto == null) {
             throw new IllegalArgumentException("Like data must not be null");
         }
-    }
-
-    private UUID getAccountId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return (UUID) authentication.getPrincipal();
     }
 }

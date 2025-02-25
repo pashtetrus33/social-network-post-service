@@ -6,8 +6,6 @@ import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.entity.Comment;
@@ -18,6 +16,7 @@ import ru.skillbox.social_network_post.exception.IdMismatchException;
 import ru.skillbox.social_network_post.mapper.CommentMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
+import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.dto.CommentDto;
@@ -89,7 +88,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setCommentsCount(0);
         comment.setMyLike(false);
 
-        UUID accountId = getAccountId();
+        UUID accountId = SecurityUtils.getAccountId();
 
         comment.setAuthorId(accountId);
 
@@ -180,10 +179,5 @@ public class CommentServiceImpl implements CommentService {
             log.warn("Post with ID {} not found", postId);
             throw new EntityNotFoundException("Post with ID " + postId + " not found");
         }
-    }
-
-    private static UUID getAccountId() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return ((UUID) authentication.getPrincipal());
     }
 }

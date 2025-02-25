@@ -18,9 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 @Repository
 public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificationExecutor<Post> {
 
-//    @EntityGraph(attributePaths = {"comments", "tags"})
-//    Page<Post> findAll(Specification specification, Pageable pageable);
-
     @EntityGraph(attributePaths = {"comments", "tags"})
     Optional<Post> findById(UUID postId);
 
