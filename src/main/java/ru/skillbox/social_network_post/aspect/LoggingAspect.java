@@ -6,22 +6,26 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+
+import java.util.Objects;
 
 @Aspect
 @Component
 @Slf4j
 public class LoggingAspect {
 
-    @Value("${custom.logging.enabled}")
-    private boolean loggingEnabled;
+    private final Environment environment;
+    private final boolean loggingEnabled;
 
-    @Value("${custom.logging.level:INFO}")
-    private String logLevel;
+    public LoggingAspect(Environment environment, @Value("${custom.logging.enabled:true}") boolean loggingEnabled) {
+        this.environment = environment;
+        this.loggingEnabled = loggingEnabled;
+    }
 
-    @Around("execution(* ru.skillbox.social_network_post.controller.*(..)) || execution(* ru.skillbox.social_network_post.service.*(..))")
+    @Around("execution(* ru.skillbox.social_network_post.controller..*(..)) || execution(* ru.skillbox.social_network_post.service..*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         if (!loggingEnabled) {
             return joinPoint.proceed();
@@ -31,18 +35,19 @@ public class LoggingAspect {
         String methodName = signature.getDeclaringTypeName() + "." + signature.getName();
         Object[] args = joinPoint.getArgs();
 
-        logAtLevel("Calling method: " + methodName + " with arguments: " + Arrays.toString(args));
+        logAtLevel("Calling method: " + methodName + " with arguments: " + Objects.toString(args));
 
         long start = System.currentTimeMillis();
         Object result = joinPoint.proceed();
         long executionTime = System.currentTimeMillis() - start;
 
-        logAtLevel("Method " + methodName + " executed in " + executionTime + "ms, return: " + result);
+        logAtLevel("Method " + methodName + " executed in " + executionTime + "ms, return: " + Objects.toString(result));
         return result;
     }
 
     private void logAtLevel(String message) {
-        switch (logLevel.toUpperCase()) {
+        String logLevel = environment.getProperty("custom.logging.level", "INFO").toUpperCase();
+        switch (logLevel) {
             case "DEBUG": log.debug(message); break;
             case "WARN": log.warn(message); break;
             case "ERROR": log.error(message); break;
