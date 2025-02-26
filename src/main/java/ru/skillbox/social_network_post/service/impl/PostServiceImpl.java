@@ -15,6 +15,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
 import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.dto.*;
@@ -29,6 +30,7 @@ import ru.skillbox.social_network_post.repository.specifiaction.PostSpecificatio
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.PostService;
+import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
 import java.time.Instant;
@@ -62,6 +64,7 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Override
     @Cacheable(value = "posts", key = "#postId")
     @Transactional(readOnly = true)
@@ -78,6 +81,7 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Transactional
     @Override
     //@Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
@@ -141,12 +145,13 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = {"posts", "post_pages"}, allEntries = true)
     @Transactional
     public void create(PostDto postDto) {
 
-        checkPostDto(postDto);
+        EntityCheckUtils.checkPostDto(postDto);
 
         accountId = SecurityUtils.getAccountId();
 
@@ -172,14 +177,16 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = "posts", key = "#postId")
     @Transactional
     public void update(UUID postId, PostDto postDto) {
         log.info("Updating post with id: {}", postId);
 
-        checkPostPresence(postId);
-        checkPostDto(postDto);
+        EntityCheckUtils.checkPostPresence(postRepository, postId);
+
+        EntityCheckUtils.checkPostDto(postDto);
 
         if (!Objects.equals(postId, postDto.getId())) {
             throw new IdMismatchException(
@@ -202,13 +209,14 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = "posts", key = "#postId")
     @Transactional
     public void delete(UUID postId) {
         log.info("Deleting post with id: {}", postId);
 
-        checkPostPresence(postId);
+        EntityCheckUtils.checkPostPresence(postRepository, postId);
 
         // Помечаем все комментарии поста как удаленные
         commentRepository.markAllAsDeletedByPostId(postId);
@@ -219,33 +227,20 @@ public class PostServiceImpl implements PostService {
         log.info("Post with id: {} marked as deleted", postId);
     }
 
+    @LogExecutionTime
     @Override
     @Transactional
     public void updateBlockedStatusForAccount(UUID uuid) {
         postRepository.updateBlockedStatusForAccount(uuid);
     }
 
+    @LogExecutionTime
     @Override
     public void updateDeletedStatusForAccount(UUID uuid) {
         postRepository.updateDeletedStatusForAccount(uuid);
     }
 
-    private void checkPostPresence(UUID postId) {
-        // Проверка существования поста
-        if (!postRepository.existsById(postId)) {
-            throw new EntityNotFoundException(
-                    MessageFormat.format("Post with id {0} not found", postId));
-        }
-    }
-
-
-    private void checkPostDto(PostDto postDto) {
-        if (postDto == null) {
-            throw new IllegalArgumentException("Post data must not be null");
-        }
-    }
-
-
+    @LogExecutionTime
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     private List<UUID> getFriendsIds(UUID accountId) {
         try {
@@ -256,6 +251,7 @@ public class PostServiceImpl implements PostService {
         }
     }
 
+    @LogExecutionTime
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     private List<UUID> getAuthorIds(@Size(max = 255, message = "Author name must not exceed 255 characters") String author) {
         try {

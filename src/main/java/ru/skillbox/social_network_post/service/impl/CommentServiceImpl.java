@@ -8,10 +8,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.entity.Comment;
 import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
-import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.exception.IdMismatchException;
 import ru.skillbox.social_network_post.mapper.CommentMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
@@ -22,6 +22,7 @@ import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.dto.CommentDto;
 import ru.skillbox.social_network_post.dto.KafkaDto;
 import ru.skillbox.social_network_post.dto.PageCommentDto;
+import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
@@ -39,6 +40,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
 
 
+    @LogExecutionTime
     @Override
     @Cacheable(value = "comments", key = "#postId")
     @Transactional(readOnly = true)
@@ -49,31 +51,33 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
+    @LogExecutionTime
     @Override
     @Cacheable(value = "subcomments", key = "#commentId")
     @Transactional(readOnly = true)
     public PageCommentDto getSubcomments(UUID postId, UUID commentId, Pageable pageable) {
-        checkPostPresence(postId);
-        checkCommentPresence(commentId);
+        EntityCheckUtils.checkPostPresence(postRepository, postId);
+        EntityCheckUtils.checkCommentPresence(commentRepository, commentId);
         Page<Comment> subcomments = commentRepository.findByParentCommentIdAndPostId(commentId, postId, pageable);
         log.info("Fetched {} subcomments for comment ID {}", subcomments.getTotalElements(), commentId);
         return CommentMapperFactory.toPageCommentDto(subcomments);
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
     public void create(UUID postId, CommentDto commentDto) {
 
-        Post post = checkPostPresence(postId);
+        Post post = EntityCheckUtils.checkPostPresence(postRepository, postId);
 
         Comment comment = CommentMapperFactory.toComment(commentDto);
 
         UUID parentId = commentDto.getParentId();
 
         if (parentId != null) {
-            comment.setParentComment(checkCommentPresence(parentId));
+            comment.setParentComment(EntityCheckUtils.checkCommentPresence(commentRepository, parentId));
             comment.setCommentType(CommentType.COMMENT);
         } else {
             comment.setCommentType(CommentType.POST);
@@ -104,6 +108,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
@@ -114,18 +119,18 @@ public class CommentServiceImpl implements CommentService {
                     MessageFormat.format("Id in body {0} and in path request {1} are different", commentDto.getId(), commentId));
         }
 
-        checkCommentAndPostPresence(postId, commentId);
+        EntityCheckUtils.checkCommentAndPostPresence(commentRepository, postRepository, postId, commentId);
 
-        Comment comment = checkCommentPresence(commentId);
+        Comment comment = EntityCheckUtils.checkCommentPresence(commentRepository, commentId);
 
         CommentMapperFactory.updateCommentFromDto(commentDto, comment);
 
         if (!Objects.equals(commentDto.getParentId(), comment.getParentComment().getId())) {
-            comment.setParentComment(checkCommentPresence(commentDto.getParentId()));
+            comment.setParentComment(EntityCheckUtils.checkCommentPresence(commentRepository, commentDto.getParentId()));
         }
 
         if (!Objects.equals(commentDto.getPostId(), comment.getPost().getId())) {
-            comment.setPost(checkPostPresence(commentDto.getPostId()));
+            comment.setPost(EntityCheckUtils.checkPostPresence(postRepository, commentDto.getPostId()));
         }
 
         if (commentDto.getTimeChanged() == null) {
@@ -138,46 +143,16 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
     public void delete(UUID postId, UUID commentId) {
 
-        checkCommentAndPostPresence(postId, commentId);
+        EntityCheckUtils.checkCommentAndPostPresence(commentRepository, postRepository, postId, commentId);
 
         // Помечаем комментарии как удаленные
         commentRepository.markAllAsDeletedByPostId(postId);
         log.info("Marked as deleted comment with ID {} and all its children for post ID {}", commentId, postId);
-    }
-
-
-    private Post checkPostPresence(UUID postId) {
-        return postRepository.findById(postId)
-                .orElseThrow(() -> {
-                    log.warn("Post with ID {} not found", postId);
-                    return new EntityNotFoundException(MessageFormat.format("Post with id {0} not found", postId));
-                });
-    }
-
-
-    private Comment checkCommentPresence(UUID commentId) {
-        return commentRepository.findById(commentId)
-                .orElseThrow(() -> {
-                    log.warn("Comment with ID {} not found", commentId);
-                    return new EntityNotFoundException(MessageFormat.format("Comment with id {0} not found", commentId));
-                });
-    }
-
-
-    private void checkCommentAndPostPresence(UUID postId, UUID commentId) {
-        if (!commentRepository.existsById(commentId)) {
-            log.warn("Comment with ID {} not found", commentId);
-            throw new EntityNotFoundException("Comment with ID " + commentId + " not found");
-        }
-
-        if (!postRepository.existsById(postId)) {
-            log.warn("Post with ID {} not found", postId);
-            throw new EntityNotFoundException("Post with ID " + postId + " not found");
-        }
     }
 }

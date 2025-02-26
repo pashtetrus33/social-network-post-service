@@ -1,0 +1,59 @@
+package ru.skillbox.social_network_post.utils;
+
+import lombok.extern.slf4j.Slf4j;
+import ru.skillbox.social_network_post.dto.LikeDto;
+import ru.skillbox.social_network_post.dto.PostDto;
+import ru.skillbox.social_network_post.entity.Comment;
+import ru.skillbox.social_network_post.entity.Post;
+import ru.skillbox.social_network_post.exception.EntityNotFoundException;
+import ru.skillbox.social_network_post.repository.CommentRepository;
+import ru.skillbox.social_network_post.repository.PostRepository;
+
+import java.text.MessageFormat;
+import java.util.UUID;
+
+@Slf4j
+public class EntityCheckUtils {
+
+    //Utility method to check comment presence
+    public static Comment checkCommentPresence(CommentRepository commentRepository, UUID commentId) {
+        return commentRepository.findById(commentId)
+                .orElseThrow(() -> {
+                    log.warn("Comment with ID {} not found", commentId);
+                    return new EntityNotFoundException(MessageFormat.format("Comment with id {0} not found", commentId));
+                });
+    }
+
+    // Utility method to check if both comment and post are present
+    public static void checkCommentAndPostPresence(CommentRepository commentRepository, PostRepository postRepository, UUID postId, UUID commentId) {
+        if (!commentRepository.existsById(commentId)) {
+            log.warn("Comment with ID {} not found", commentId);
+            throw new EntityNotFoundException("Comment with ID " + commentId + " not found");
+        }
+
+        if (!postRepository.existsById(postId)) {
+            log.warn("Post with ID {} not found", postId);
+            throw new EntityNotFoundException("Post with ID " + postId + " not found");
+        }
+    }
+
+    // Utility method to check post presence and return the post if found
+    public static Post checkPostPresence(PostRepository postRepository, UUID postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException(MessageFormat.format("Post with id {0} not found", postId)));
+    }
+
+    // Utility method to validate LikeDto
+    public static void checkLikeDto(LikeDto likeDto) {
+        if (likeDto == null) {
+            throw new IllegalArgumentException("Like data must not be null");
+        }
+    }
+
+    // Utility method to validate PostDto
+    public static void checkPostDto(PostDto postDto) {
+        if (postDto == null) {
+            throw new IllegalArgumentException("Post data must not be null");
+        }
+    }
+}

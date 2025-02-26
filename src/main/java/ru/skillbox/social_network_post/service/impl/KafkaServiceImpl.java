@@ -8,6 +8,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.dto.AccountEventDto;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.dto.KafkaDto;
@@ -39,20 +40,21 @@ public class KafkaServiceImpl implements KafkaService {
 
     private final PostService postService;
 
-
+    @LogExecutionTime
     @Override
     public void newPostEvent(KafkaDto kafkaDto) {
         kafkaTemplate.send(newPostTopic, kafkaDto);
         log.info("Sent new post -> '{}'", kafkaDto);
     }
 
+    @LogExecutionTime
     @Override
     public void newCommentEvent(KafkaDto kafkaDto) {
         kafkaTemplate.send(newCommentTopic, kafkaDto);
         log.info("Sent new comment -> '{}'", kafkaDto);
     }
 
-
+    @LogExecutionTime
     @Override
     public void newLikeEvent(KafkaDto kafkaDto) {
         kafkaTemplate.send(newLikeTopic, kafkaDto);

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.dto.KafkaDto;
 import ru.skillbox.social_network_post.dto.LikeDto;
 import ru.skillbox.social_network_post.entity.Like;
@@ -15,6 +16,7 @@ import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.LikeService;
+import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
 import java.util.UUID;
@@ -30,15 +32,15 @@ public class LikeServiceImpl implements LikeService {
     private UUID accountId;
     private final KafkaService kafkaService;
 
+    @LogExecutionTime
     @Override
     @Transactional
     public void addLikeToPost(UUID postId, LikeDto likeDto) {
 
         log.info("Adding like to post with id: {}", postId);
 
-        checkPostPresence(postId);
-
-        checkLikeDto(likeDto);
+        EntityCheckUtils.checkPostPresence(postRepository, postId);
+        EntityCheckUtils.checkLikeDto(likeDto);
 
         accountId = SecurityUtils.getAccountId();
 
@@ -66,13 +68,14 @@ public class LikeServiceImpl implements LikeService {
     }
 
 
+    @LogExecutionTime
     @Override
     @Transactional
     public void removeLikeFromPost(UUID postId) {
 
         log.info("Removing like from post with id: {}", postId);
 
-        checkPostPresence(postId);
+        EntityCheckUtils.checkPostPresence(postRepository, postId);
 
         int likeAmount = postRepository.getLikeAmount(postId);
 
@@ -98,14 +101,15 @@ public class LikeServiceImpl implements LikeService {
     }
 
 
+    @LogExecutionTime
     @Override
     @Transactional
     public void addLikeToComment(UUID postId, UUID commentId) {
 
         log.info("Adding like to comment with id: {} on post id: {}", commentId, postId);
 
-        checkPostPresence(postId);
-        checkCommentPresence(commentId);
+        EntityCheckUtils.checkPostPresence(postRepository, postId);
+        EntityCheckUtils.checkCommentPresence(commentRepository, commentId);
 
         accountId = SecurityUtils.getAccountId();
 
@@ -145,14 +149,15 @@ public class LikeServiceImpl implements LikeService {
     }
 
 
+    @LogExecutionTime
     @Override
     @Transactional
     public void removeLikeFromComment(UUID postId, UUID commentId) {
 
         log.info("Removing like from comment with id: {} on post id: {}", commentId, postId);
 
-        checkPostPresence(postId);
-        checkCommentPresence(commentId);
+        EntityCheckUtils.checkPostPresence(postRepository, postId);
+        EntityCheckUtils.checkCommentPresence(commentRepository, commentId);
 
         int likeAmount = commentRepository.getLikeAmount(commentId);
 
@@ -175,27 +180,5 @@ public class LikeServiceImpl implements LikeService {
         log.info("Like removed from comment with id: {}", commentId);
 
         likeRepository.deleteByCommentIdAndAuthorId(commentId, accountId);
-    }
-
-    private void checkPostPresence(UUID postId) {
-        // Проверка существования поста
-        if (!postRepository.existsById(postId)) {
-            throw new EntityNotFoundException(
-                    MessageFormat.format("Post with id {0} not found", postId));
-        }
-    }
-
-    private void checkCommentPresence(UUID commentId) {
-        // Проверка существования комментария
-        if (!commentRepository.existsById(commentId)) {
-            throw new EntityNotFoundException(
-                    MessageFormat.format("Comment with id {0} not found", commentId));
-        }
-    }
-
-    private void checkLikeDto(LikeDto likeDto) {
-        if (likeDto == null) {
-            throw new IllegalArgumentException("Like data must not be null");
-        }
     }
 }

@@ -11,6 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.dto.LikeDto;
 import ru.skillbox.social_network_post.service.LikeService;
 import ru.skillbox.social_network_post.service.PostService;
@@ -31,13 +32,14 @@ public class PostController {
     private final PostService postService;
     private final LikeService likeService;
 
-
+    @LogExecutionTime
     @GetMapping("/{id}")
     public PostDto getById(@PathVariable UUID id) {
         return postService.getById(id);
     }
 
 
+    @LogExecutionTime
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@PathVariable UUID id, @Valid @RequestBody PostDto postDto) {
@@ -45,6 +47,7 @@ public class PostController {
     }
 
 
+    @LogExecutionTime
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable UUID id) {
@@ -52,6 +55,7 @@ public class PostController {
     }
 
 
+    @LogExecutionTime
     @GetMapping
     public PagePostDto getAll(
             @Valid @ModelAttribute PostSearchDto searchDto,
@@ -61,6 +65,7 @@ public class PostController {
     }
 
 
+    @LogExecutionTime
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void create(@Valid @RequestBody PostDto postDto) {
@@ -68,6 +73,7 @@ public class PostController {
     }
 
 
+    @LogExecutionTime
     @PostMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
     public void addLikeToPost(@PathVariable UUID postId, @Valid @RequestBody LikeDto likeDto) {
@@ -75,6 +81,7 @@ public class PostController {
     }
 
 
+    @LogExecutionTime
     @DeleteMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLikeFromPost(@PathVariable UUID postId) {
