@@ -5,14 +5,15 @@ ARG JAR_FILE
 # Создаем директорию для приложения и логов
 RUN mkdir -p /apps /var/logs
 
-# Копируем JAR файл и entrypoint.sh
+# Копируем JAR файл, конфигурацию логов и entrypoint.sh
 COPY ./target/${JAR_FILE} /apps/app.jar
+COPY ./logback-spring.xml /apps/logback-spring.xml
 COPY ./entrypoint.sh /apps/entrypoint.sh
 
 # Делаем entrypoint.sh исполнимым
 RUN chmod +x /apps/entrypoint.sh
 
-# Указываем переменную окружения для пути логов
+# Указываем переменные окружения
 ENV LOG_PATH=/var/logs
 ENV LOGGING_ENABLED=true
 ENV LOG_LEVEL=INFO
