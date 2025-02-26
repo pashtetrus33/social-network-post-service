@@ -15,7 +15,7 @@ import java.util.Arrays;
 @Slf4j
 public class LoggingAspect {
 
-    @Value("${custom.logging.enabled:true}")
+    @Value("${custom.logging.enabled:false}")
     private boolean loggingEnabled;
 
     @Value("${custom.logging.level:INFO}")
