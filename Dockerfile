@@ -17,8 +17,5 @@ ENV LOG_PATH=/var/logs
 ENV LOGGING_ENABLED=true
 ENV LOG_LEVEL=INFO
 
-# Открываем порт, если необходимо для приложения
-EXPOSE 8761
-
 # Запускаем контейнер с entrypoint.sh
 CMD ["/apps/entrypoint.sh"]
