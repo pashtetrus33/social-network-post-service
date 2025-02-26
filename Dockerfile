@@ -7,7 +7,7 @@ RUN mkdir -p /apps /var/logs
 
 # Копируем JAR файл, конфигурацию логов и entrypoint.sh
 COPY ./target/${JAR_FILE} /apps/app.jar
-COPY ./logback-spring.xml /apps/logback-spring.xml
+COPY ./target/classes/logback-spring.xml /apps/logback-spring.xml
 COPY ./entrypoint.sh /apps/entrypoint.sh
 
 # Делаем entrypoint.sh исполнимым
