@@ -4,7 +4,6 @@ import feign.FeignException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.Hibernate;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
@@ -15,7 +14,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
 import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.dto.*;
@@ -64,7 +62,6 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    @LogExecutionTime
     @Override
     @Cacheable(value = "posts", key = "#postId")
     @Transactional(readOnly = true)
@@ -81,7 +78,6 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    @LogExecutionTime
     @Transactional
     @Override
     //@Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
@@ -145,7 +141,6 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    @LogExecutionTime
     @Override
     @CacheEvict(value = {"posts", "post_pages"}, allEntries = true)
     @Transactional
@@ -177,7 +172,6 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    @LogExecutionTime
     @Override
     @CacheEvict(value = "posts", key = "#postId")
     @Transactional
@@ -209,7 +203,6 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    @LogExecutionTime
     @Override
     @CacheEvict(value = "posts", key = "#postId")
     @Transactional
@@ -227,20 +220,19 @@ public class PostServiceImpl implements PostService {
         log.info("Post with id: {} marked as deleted", postId);
     }
 
-    @LogExecutionTime
     @Override
     @Transactional
     public void updateBlockedStatusForAccount(UUID uuid) {
         postRepository.updateBlockedStatusForAccount(uuid);
     }
 
-    @LogExecutionTime
+
     @Override
     public void updateDeletedStatusForAccount(UUID uuid) {
         postRepository.updateDeletedStatusForAccount(uuid);
     }
 
-    @LogExecutionTime
+
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     private List<UUID> getFriendsIds(UUID accountId) {
         try {
@@ -251,7 +243,7 @@ public class PostServiceImpl implements PostService {
         }
     }
 
-    @LogExecutionTime
+
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     private List<UUID> getAuthorIds(@Size(max = 255, message = "Author name must not exceed 255 characters") String author) {
         try {

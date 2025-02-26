@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.dto.KafkaDto;
 import ru.skillbox.social_network_post.dto.LikeDto;
 import ru.skillbox.social_network_post.entity.Like;
@@ -32,7 +31,7 @@ public class LikeServiceImpl implements LikeService {
     private UUID accountId;
     private final KafkaService kafkaService;
 
-    @LogExecutionTime
+
     @Override
     @Transactional
     public void addLikeToPost(UUID postId, LikeDto likeDto) {
@@ -68,7 +67,7 @@ public class LikeServiceImpl implements LikeService {
     }
 
 
-    @LogExecutionTime
+
     @Override
     @Transactional
     public void removeLikeFromPost(UUID postId) {
@@ -101,7 +100,6 @@ public class LikeServiceImpl implements LikeService {
     }
 
 
-    @LogExecutionTime
     @Override
     @Transactional
     public void addLikeToComment(UUID postId, UUID commentId) {
@@ -149,7 +147,6 @@ public class LikeServiceImpl implements LikeService {
     }
 
 
-    @LogExecutionTime
     @Override
     @Transactional
     public void removeLikeFromComment(UUID postId, UUID commentId) {

@@ -7,8 +7,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.skillbox.social_network_post.aspect.LogExecutionTime;
-import ru.skillbox.social_network_post.dto.LikeDto;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.LikeService;
 import ru.skillbox.social_network_post.dto.CommentDto;
@@ -25,7 +23,6 @@ public class CommentController {
     private final LikeService likeService;
 
 
-    @LogExecutionTime
     @GetMapping
     public PageCommentDto getByPostId(
             @PathVariable UUID id,
@@ -34,7 +31,7 @@ public class CommentController {
         return commentService.getByPostId(id, pageable);
     }
 
-    @LogExecutionTime
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void create(@PathVariable UUID id, @Valid @RequestBody CommentDto commentDto) {
@@ -42,7 +39,6 @@ public class CommentController {
     }
 
 
-    @LogExecutionTime
     @PutMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@PathVariable UUID id, @PathVariable UUID commentId, @Valid @RequestBody CommentDto commentDto) {
@@ -50,7 +46,6 @@ public class CommentController {
     }
 
 
-    @LogExecutionTime
     @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable UUID id, @PathVariable UUID commentId) {
@@ -58,7 +53,6 @@ public class CommentController {
     }
 
 
-    @LogExecutionTime
     @PostMapping("/{commentId}/like")
     @ResponseStatus(HttpStatus.CREATED)
     public void addLikeToComment(@PathVariable UUID id, @PathVariable UUID commentId) {
@@ -66,7 +60,6 @@ public class CommentController {
     }
 
 
-    @LogExecutionTime
     @DeleteMapping("/{commentId}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLikeFromComment(@PathVariable UUID id, @PathVariable UUID commentId) {
@@ -74,7 +67,6 @@ public class CommentController {
     }
 
 
-    @LogExecutionTime
     @GetMapping("/{commentId}/subcomment")
     public PageCommentDto getSubcomments(
             @PathVariable UUID id,

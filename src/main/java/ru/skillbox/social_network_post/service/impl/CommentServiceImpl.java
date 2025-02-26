@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.entity.Comment;
 import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
@@ -40,7 +39,6 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
 
 
-    @LogExecutionTime
     @Override
     @Cacheable(value = "comments", key = "#postId")
     @Transactional(readOnly = true)
@@ -51,7 +49,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-    @LogExecutionTime
     @Override
     @Cacheable(value = "subcomments", key = "#commentId")
     @Transactional(readOnly = true)
@@ -64,7 +61,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-    @LogExecutionTime
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
@@ -108,7 +104,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-    @LogExecutionTime
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
@@ -143,7 +138,6 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-    @LogExecutionTime
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
