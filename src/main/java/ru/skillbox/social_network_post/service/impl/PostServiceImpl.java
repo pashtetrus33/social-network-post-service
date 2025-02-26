@@ -78,8 +78,9 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @Transactional
     @Override
-    @Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
+    //@Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
     public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
 
         log.info("Fetching posts, page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
@@ -122,10 +123,13 @@ public class PostServiceImpl implements PostService {
         }
 
         if (searchDto.getDateTo() == null) {
-            //searchDto.setDateTo(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC));
-            searchDto.setDateTo(String.valueOf(LocalDateTime.now().toEpochSecond(ZoneOffset.UTC)));
+            searchDto.setDateTo(String.valueOf(Instant.now().toEpochMilli()));
+        } else {
+            searchDto.setDateTo(String.valueOf(Instant.parse(searchDto.getDateTo()).toEpochMilli()));
         }
-
+        if (searchDto.getDateFrom() != null) {
+            searchDto.setDateFrom(String.valueOf(Instant.parse(searchDto.getDateFrom()).toEpochMilli()));
+        }
         // Формируем спецификацию для поиска
         Specification<Post> spec = PostSpecification.withFilters(searchDto);
 
