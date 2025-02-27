@@ -45,6 +45,9 @@ public class LoggingAspect {
 
         logAtLevel("Calling method: " + methodName + " with arguments: " + Objects.toString(args));
 
+        // *** Добавляем лог перед вызовом метода ***
+        log.info("Before proceeding with method: {}", methodName);
+
         long start = System.currentTimeMillis();
         Object result = joinPoint.proceed();
         long executionTime = System.currentTimeMillis() - start;
