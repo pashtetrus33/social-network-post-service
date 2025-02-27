@@ -1,8 +1,8 @@
 <configuration>
-    <!-- Регистрация правила преобразования цветов -->
-    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <!-- Регистрация правила преобразования цветов (обновлённый атрибут) -->
+    <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
 
-    <!-- Переменная для логов -->
+    <!-- Путь к файлу логов -->
     <property name="LOG_PATH" value="${custom.logging.path:-/var/logs}" />
 
     <!-- Консольный логгер с цветами -->
@@ -24,7 +24,7 @@
         </encoder>
     </appender>
 
-    <!-- Логирование настраивается через переменную custom.logging.level -->
+    <!-- Уровень логирования контролируется переменной custom.logging.level -->
     <root level="${custom.logging.level:-INFO}">
         <appender-ref ref="Console" />
         <appender-ref ref="FileAppender" />
