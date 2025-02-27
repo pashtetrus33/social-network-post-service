@@ -49,18 +49,25 @@ public class LoggingAspect {
     }
 
     private void logAtLevel(String message) {
+        String colorReset = "\u001B[0m"; // Сброс цвета
+        String color;
+
         switch (logLevel.toUpperCase()) {
             case "DEBUG":
-                log.debug(message);
+                color = "\u001B[36m"; // Голубой
+                log.debug(color + message + colorReset);
                 break;
             case "WARN":
-                log.warn(message);
+                color = "\u001B[33m"; // Желтый
+                log.warn(color + message + colorReset);
                 break;
             case "ERROR":
-                log.error(message);
+                color = "\u001B[31m"; // Красный
+                log.error(color + message + colorReset);
                 break;
             default:
-                log.info(message);
+                color = "\u001B[32m"; // Зеленый (INFO)
+                log.info(color + message + colorReset);
         }
     }
 }

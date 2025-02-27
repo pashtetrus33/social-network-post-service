@@ -1,13 +1,13 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.entity.Comment;
 import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
@@ -29,7 +29,7 @@ import java.time.ZoneOffset;
 import java.util.Objects;
 import java.util.UUID;
 
-@Slf4j
+
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
@@ -39,16 +39,17 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
 
 
+    @LogExecutionTime
     @Override
     @Cacheable(value = "comments", key = "#postId")
     @Transactional(readOnly = true)
     public PageCommentDto getByPostId(UUID postId, Pageable pageable) {
         Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
-        log.info("Fetched {} comments for post ID {}", comments.getTotalElements(), postId);
         return CommentMapperFactory.toPageCommentDto(comments);
     }
 
 
+    @LogExecutionTime
     @Override
     @Cacheable(value = "subcomments", key = "#commentId")
     @Transactional(readOnly = true)
@@ -56,11 +57,11 @@ public class CommentServiceImpl implements CommentService {
         EntityCheckUtils.checkPostPresence(postRepository, postId);
         EntityCheckUtils.checkCommentPresence(commentRepository, commentId);
         Page<Comment> subcomments = commentRepository.findByParentCommentIdAndPostId(commentId, postId, pageable);
-        log.info("Fetched {} subcomments for comment ID {}", subcomments.getTotalElements(), commentId);
         return CommentMapperFactory.toPageCommentDto(subcomments);
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
@@ -104,6 +105,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
@@ -133,11 +135,10 @@ public class CommentServiceImpl implements CommentService {
         }
 
         commentRepository.save(comment);
-
-        log.info("Updated comment with ID {} for post ID {}", commentId, postId);
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = "comments", key = "#postId")
     @Transactional
@@ -147,6 +148,5 @@ public class CommentServiceImpl implements CommentService {
 
         // Помечаем комментарии как удаленные
         commentRepository.markAllAsDeletedByPostId(postId);
-        log.info("Marked as deleted comment with ID {} and all its children for post ID {}", commentId, postId);
     }
 }

@@ -26,12 +26,13 @@ public class PostController {
     private final LikeService likeService;
 
 
+    @LogExecutionTime
     @GetMapping("/{id}")
     public PostDto getById(@PathVariable UUID id) {
         return postService.getById(id);
     }
 
-
+    @LogExecutionTime
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void update(@PathVariable UUID id, @Valid @RequestBody PostDto postDto) {
@@ -39,6 +40,7 @@ public class PostController {
     }
 
 
+    @LogExecutionTime
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteById(@PathVariable UUID id) {
@@ -56,6 +58,7 @@ public class PostController {
     }
 
 
+    @LogExecutionTime
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public void create(@Valid @RequestBody PostDto postDto) {
@@ -63,6 +66,7 @@ public class PostController {
     }
 
 
+    @LogExecutionTime
     @PostMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
     public void addLikeToPost(@PathVariable UUID postId, @Valid @RequestBody LikeDto likeDto) {
@@ -70,6 +74,7 @@ public class PostController {
     }
 
 
+    @LogExecutionTime
     @DeleteMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLikeFromPost(@PathVariable UUID postId) {

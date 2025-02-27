@@ -3,7 +3,6 @@ package ru.skillbox.social_network_post.service.impl;
 import feign.FeignException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
@@ -34,12 +33,10 @@ import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 
 
-@Slf4j
 @Service
 public class PostServiceImpl implements PostService {
 
@@ -68,9 +65,6 @@ public class PostServiceImpl implements PostService {
     @Cacheable(value = "posts", key = "#postId")
     @Transactional(readOnly = true)
     public PostDto getById(UUID postId) {
-
-        log.info("Fetching post with id: {}", postId);
-
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException(
                         MessageFormat.format("Post with id {0} not found", postId)
@@ -83,10 +77,8 @@ public class PostServiceImpl implements PostService {
     @LogExecutionTime
     @Transactional
     @Override
-    //@Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
+    @Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
     public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
-
-        log.info("Fetching posts, page: {}, size: {}", pageable.getPageNumber(), pageable.getPageSize());
 
         // Проверка автора и получение его ID
         if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
@@ -101,8 +93,6 @@ public class PostServiceImpl implements PostService {
                 searchDto.setAccountIds(authorIds);
 
             } catch (FeignException e) {
-                // Обработка ошибки при попытке получить данные через FeignClient
-                log.error("Error fetching accounts by author name: {}", searchDto.getAuthor(), e);
                 throw new CustomFreignException(MessageFormat.format("Error fetching accounts by name: {0}", searchDto.getAuthor()));
             }
         }
@@ -121,7 +111,7 @@ public class PostServiceImpl implements PostService {
                 searchDto.setAccountIds(friendsIds);
 
             } catch (Exception e) {
-                log.error("Error fetching friends for accountId: {}", accountId, e);
+                throw new CustomFreignException(MessageFormat.format("Error fetching friends for accountId: {0}", accountId));
             }
         }
 
@@ -181,7 +171,6 @@ public class PostServiceImpl implements PostService {
     @CacheEvict(value = "posts", key = "#postId")
     @Transactional
     public void update(UUID postId, PostDto postDto) {
-        log.info("Updating post with id: {}", postId);
 
         EntityCheckUtils.checkPostPresence(postRepository, postId);
 
@@ -194,7 +183,6 @@ public class PostServiceImpl implements PostService {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> {
-                    log.warn("Post with ID {} not found", postId);
                     return new EntityNotFoundException("Post with ID " + postId + " not found");
                 });
 
@@ -203,8 +191,6 @@ public class PostServiceImpl implements PostService {
         }
 
         PostMapperFactory.updatePostFromDto(postDto, post);
-
-        log.info("Post with id: {} updated successfully", postId);
     }
 
 
@@ -213,7 +199,6 @@ public class PostServiceImpl implements PostService {
     @CacheEvict(value = "posts", key = "#postId")
     @Transactional
     public void delete(UUID postId) {
-        log.info("Deleting post with id: {}", postId);
 
         EntityCheckUtils.checkPostPresence(postRepository, postId);
 
@@ -222,8 +207,6 @@ public class PostServiceImpl implements PostService {
 
         // Обновляем флаг удаления поста без загрузки сущности
         postRepository.markAsDeleted(postId);
-
-        log.info("Post with id: {} marked as deleted", postId);
     }
 
     @Override
@@ -239,17 +222,18 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     private List<UUID> getFriendsIds(UUID accountId) {
         try {
             return friendServiceClient.getFriendsIds(accountId);
         } catch (FeignException e) {
-            log.error("Attempt to fetch friends for accountId {} failed. Feign exception: {}", accountId, e.getMessage(), e);
             throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", accountId));
         }
     }
 
 
+    @LogExecutionTime
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     private List<UUID> getAuthorIds(@Size(max = 255, message = "Author name must not exceed 255 characters") String author) {
         try {
@@ -257,7 +241,6 @@ public class PostServiceImpl implements PostService {
             accountSearchDto.setAuthor(author);
             return accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
         } catch (FeignException e) {
-            log.error("Attempt to fetch authorId for Author {} failed. Feign exception: {}", author, e.getMessage(), e);
             throw new CustomFreignException(MessageFormat.format("Error fetching authorId by name: {0}", author));
         }
     }
