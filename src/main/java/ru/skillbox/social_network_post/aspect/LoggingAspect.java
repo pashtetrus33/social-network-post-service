@@ -37,59 +37,30 @@ public class LoggingAspect {
         String methodName = signature.getDeclaringTypeName() + "." + signature.getName();
         Object[] args = joinPoint.getArgs();
 
-        logAtLevel("Calling method: " + methodName + " with arguments: " + Arrays.toString(args), 0);
+        logAtLevel("Calling method: " + methodName + " with arguments: " + Arrays.toString(args));
 
         long start = System.currentTimeMillis();
         Object result = joinPoint.proceed();
         long executionTime = System.currentTimeMillis() - start;
 
-        logAtLevel("Method " + methodName + " executed in " + executionTime + "ms, return: " + result, executionTime);
+        logAtLevel("Method " + methodName + " executed in " + executionTime + "ms, return: " + result);
 
         return result;
     }
 
-    private void logAtLevel(String message, long executionTime) {
-        String colorReset = "\u001B[0m"; // Сброс цвета
-        String color;
-        String methodNameColor = "\u001B[35m"; // Фиолетовый для названия метода
-        String executionTimeColor = "\u001B[33m"; // Желтый для времени выполнения
-
+    private void logAtLevel(String message) {
         switch (logLevel.toUpperCase()) {
             case "DEBUG":
-                color = "\u001B[36m"; // Голубой
-                log.debug(color + message + colorReset);
+                log.debug(message);
                 break;
             case "WARN":
-                color = "\u001B[33m"; // Желтый
-                log.warn(color + message + colorReset);
+                log.warn(message);
                 break;
             case "ERROR":
-                color = "\u001B[31m"; // Красный
-                log.error(color + message + colorReset);
+                log.error(message);
                 break;
             default:
-                color = "\u001B[32m"; // Зеленый (INFO)
-                log.info(color + message + colorReset);
-        }
-
-        // Выделяем название метода
-        int methodNameStart = message.indexOf('.') + 1;
-        int methodNameEnd = message.indexOf('(', methodNameStart);
-
-        if (methodNameStart > 0 && methodNameEnd > 0) {
-            String methodName = message.substring(methodNameStart, methodNameEnd);
-            String coloredMethodName = methodNameColor + methodName + colorReset;
-            message = message.replace(methodName, coloredMethodName);
-        }
-
-        // Выделяем время выполнения
-        if (executionTime > 0) {
-            int executionTimeStart = message.indexOf("executed in") + 12;
-            if (executionTimeStart > 0) {
-                String executionTimeString = message.substring(executionTimeStart).trim();
-                String coloredExecutionTime = executionTimeColor + executionTimeString + colorReset;
-                message = message.replace(executionTimeString, coloredExecutionTime);
-            }
+                log.info(message);
         }
     }
 }

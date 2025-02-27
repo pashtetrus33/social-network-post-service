@@ -1,5 +1,5 @@
 <configuration>
-    <!-- Регистрация правила преобразования цветов (обновлённый атрибут) -->
+    <!-- Регистрация правила преобразования цветов -->
     <conversionRule conversionWord="clr" class="org.springframework.boot.logging.logback.ColorConverter"/>
 
     <!-- Путь к файлу логов -->
@@ -8,7 +8,10 @@
     <!-- Консольный логгер с цветами -->
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss}){cyan} [%thread] %clr(%-5level){red} %clr(%logger{36}){blue} - %msg%n</pattern>
+            <pattern>
+                %clr(%d{yyyy-MM-dd HH:mm:ss}){cyan} [%thread] %clr(%-5level){red} %clr(%logger{36}){blue} -
+                %clr(%M){yellow} - %clr(%msg){green} %n
+            </pattern>
         </encoder>
     </appender>
 
