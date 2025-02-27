@@ -13,6 +13,8 @@ spring:
         service-id: config-service
       fail-fast: true
 
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 eureka:
   client:
@@ -29,3 +31,5 @@ custom:
   logging:
     enabled: ${LOG_ENABLED:true}  # Читаем из ENV-переменной (по умолчанию true)
     level: ${LOG_LEVEL:INFO}      # Читаем уровень логов из ENV (по умолчанию INFO)
+
+
