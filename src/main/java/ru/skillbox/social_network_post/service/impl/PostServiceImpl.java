@@ -14,6 +14,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
 import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.dto.*;
@@ -62,6 +63,7 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Override
     @Cacheable(value = "posts", key = "#postId")
     @Transactional(readOnly = true)
@@ -78,6 +80,7 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Transactional
     @Override
     //@Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
@@ -141,6 +144,7 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = {"posts", "post_pages"}, allEntries = true)
     @Transactional
@@ -172,6 +176,7 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = "posts", key = "#postId")
     @Transactional
@@ -203,6 +208,7 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @LogExecutionTime
     @Override
     @CacheEvict(value = "posts", key = "#postId")
     @Transactional
