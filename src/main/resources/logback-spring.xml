@@ -1,4 +1,7 @@
 <configuration>
+    <!-- Регистрация правила преобразования цветов -->
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+
     <!-- Переменная для логов -->
     <property name="LOG_PATH" value="${custom.logging.path:-/var/logs}" />
 
@@ -21,7 +24,7 @@
         </encoder>
     </appender>
 
-    <!-- Логгирование настраивается через переменную custom.logging.level -->
+    <!-- Логирование настраивается через переменную custom.logging.level -->
     <root level="${custom.logging.level:-INFO}">
         <appender-ref ref="Console" />
         <appender-ref ref="FileAppender" />
