@@ -26,14 +26,17 @@ eureka:
     preferIpAddress: true  # Регистрировать IP-адрес контейнера в Eureka
 
 logging:
-  file:
-    name: ${LOG_PATH:/var/logs}/post-service.log # Путь к лог-файлу (можно задать через переменную окружения)
   level:
     root: INFO
     ru.skillbox.social_network_post.controller: ${LOG_LEVEL:INFO}
     ru.skillbox.social_network_post.service: ${LOG_LEVEL:INFO}
+  file:
+    name: ${LOG_PATH:/var/logs}/post-service.log
+  logback:
+    rolling policy:
+      max-history: 7
 
 custom:
   logging:
-    enabled: ${LOGGING_ENABLED:true} # Включение/выключение логирования через env
-    level: ${LOG_LEVEL:INFO} # Уровень логирования через env
+    enabled: true
+    level: INFO

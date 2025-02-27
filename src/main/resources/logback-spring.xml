@@ -3,19 +3,18 @@
     <!-- Добавляем Listener для вывода состояния Logback в консоль -->
     <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
 
-    <!-- Конфигурация аппендеров и логирования -->
+    <!-- Консольный аппендер -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>
-                %d{yyyy-MM-dd HH:mm:ss} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n
-            </pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %highlight(%-5level) %cyan(%logger{36}) - %msg%n</pattern>
         </encoder>
     </appender>
 
+    <!-- Аппендер для записи логов в файл -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/post-service.log</file>
+        <file>${LOG_PATH:/logs}/post-service.log</file> <!-- Путь к логам на хосте -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_PATH}/post-service-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${LOG_PATH:/logs}/post-service-%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>7</maxHistory>
         </rollingPolicy>
         <encoder>
@@ -23,9 +22,14 @@
         </encoder>
     </appender>
 
-    <root level="INFO">
+    <!-- Настройка root логгера -->
+    <root level="${LOG_LEVEL:INFO}">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </root>
+
+    <!-- Логгеры для контроллеров и сервисов -->
+    <logger name="ru.skillbox.social_network_post.controller" level="${LOG_LEVEL:INFO}"/>
+    <logger name="ru.skillbox.social_network_post.service" level="${LOG_LEVEL:INFO}"/>
 
 </configuration>
