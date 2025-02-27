@@ -16,11 +16,9 @@ import java.util.Arrays;
 @Slf4j
 public class LoggingAspect {
 
-    // Включено ли логирование (через конфигурацию)
     @Value("${custom.logging.enabled:true}")
     private boolean loggingEnabled;
 
-    // Уровень логирования (DEBUG, INFO, WARN, ERROR)
     @Value("${custom.logging.level:INFO}")
     private String logLevel;
 
@@ -29,7 +27,6 @@ public class LoggingAspect {
         log.info("LoggingAspect initialized! Logging enabled: {}", loggingEnabled);
     }
 
-    // Перехватываем все методы контроллеров и сервисов
     @Around("execution(* ru.skillbox.social_network_post.controller..*(..)) || execution(* ru.skillbox.social_network_post.service..*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         if (!loggingEnabled) {
@@ -40,20 +37,17 @@ public class LoggingAspect {
         String methodName = signature.getDeclaringTypeName() + "." + signature.getName();
         Object[] args = joinPoint.getArgs();
 
-        // Логирование до выполнения метода
         logAtLevel("Calling method: " + methodName + " with arguments: " + Arrays.toString(args));
 
         long start = System.currentTimeMillis();
         Object result = joinPoint.proceed();
         long executionTime = System.currentTimeMillis() - start;
 
-        // Логирование после выполнения метода
         logAtLevel("Method " + methodName + " executed in " + executionTime + "ms, return: " + result);
 
         return result;
     }
 
-    // Метод для логирования на нужном уровне
     private void logAtLevel(String message) {
         switch (logLevel.toUpperCase()) {
             case "DEBUG":
