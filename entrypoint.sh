@@ -6,9 +6,10 @@ LOG_PATH=${LOG_PATH:-/var/logs}
 # Создаем папку для логов, если её нет
 mkdir -p "$LOG_PATH"
 
-# Логируем переменные окружения
-echo "Using LOG_PATH: $LOG_PATH"
+# Проверяем и логируем переменные окружения
+echo "Using LOG_PATH: ${LOG_PATH:-/var/logs}"
 echo "Using LOG_LEVEL: ${LOG_LEVEL:-INFO}"
+echo "Using CUSTOM_LOGGING_ENABLED: ${CUSTOM_LOGGING_ENABLED:-TRUE}"
 
 # Запускаем приложение с правильными параметрами
 exec java \

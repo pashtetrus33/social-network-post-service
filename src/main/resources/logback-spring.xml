@@ -11,7 +11,7 @@
 
     <!-- Файловый логгер -->
     <appender name="FileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${LOG_PATH}/application.log</file>
+        <file>${LOG_PATH}/post-service.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <fileNamePattern>${LOG_PATH}/application-%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>7</maxHistory>
