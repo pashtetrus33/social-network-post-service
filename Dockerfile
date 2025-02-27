@@ -13,5 +13,11 @@ COPY ./entrypoint.sh /apps/entrypoint.sh
 # Делаем entrypoint.sh исполнимым
 RUN chmod +x /apps/entrypoint.sh
 
+# Указываем переменные окружения
+ENV LOG_PATH=/var/logs
+ENV LOGGING_ENABLED=true
+ENV LOG_LEVEL=INFO
+
+
 # Запускаем контейнер с entrypoint.sh
 CMD ["/apps/entrypoint.sh"]
