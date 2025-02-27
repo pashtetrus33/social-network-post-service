@@ -19,6 +19,8 @@ import ru.skillbox.social_network_post.service.LikeService;
 import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -64,7 +66,14 @@ public class LikeServiceImpl implements LikeService {
 
         kafkaService.newLikeEvent(new KafkaDto(accountId, like.getId()));
 
-        return new LikeResponseDTO(true, 2);
+        // Создание списка реакций с тестовыми данными
+        List<LikeResponseDTO.ReactionDTO> reactions = new ArrayList<>();
+        reactions.add(new LikeResponseDTO.ReactionDTO("like", 42));  // 42 лайка
+        reactions.add(new LikeResponseDTO.ReactionDTO("funny", 15)); // 15 смешных реакций
+        reactions.add(new LikeResponseDTO.ReactionDTO("wow", 7));    // 7 реакций "wow"
+
+        // Возвращаем объект LikeResponseDTO с заполненными данными
+        return new LikeResponseDTO(true, reactions);
     }
 
 
