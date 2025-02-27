@@ -23,13 +23,13 @@
     </appender>
 
     <!-- Настройка root логгера -->
-    <root level="${LOG_LEVEL:INFO}">
+    <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
     </root>
 
     <!-- Логгеры для контроллеров и сервисов -->
-    <logger name="ru.skillbox.social_network_post.controller" level="${LOG_LEVEL:INFO}"/>
-    <logger name="ru.skillbox.social_network_post.service" level="${LOG_LEVEL:INFO}"/>
+    <logger name="ru.skillbox.social_network_post.controller" level="INFO"/>
+    <logger name="ru.skillbox.social_network_post.service" level="INFO"/>
 
 </configuration>
