@@ -1,9 +1,9 @@
 <configuration>
 
-    <!--<property name="LOG_PATH" value="${LOG_PATH:-C:/Users/Pavel/Desktop/logs}"/> -->
-     <property name="LOG_PATH" value="${LOG_PATH:/var/logs}"/>
+    <!-- Добавляем Listener для вывода состояния Logback в консоль -->
+    <statusListener class="ch.qos.logback.core.status.OnConsoleStatusListener"/>
 
-    <!-- Консольный аппендер с цветным выводом -->
+    <!-- Конфигурация аппендеров и логирования -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <pattern>
@@ -12,7 +12,6 @@
         </encoder>
     </appender>
 
-    <!-- Аппендер для логов в файл с ротацией -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_PATH}/post-service.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
@@ -24,10 +23,9 @@
         </encoder>
     </appender>
 
-    <!-- Логирование для всего приложения -->
     <root level="INFO">
-        <appender-ref ref="CONSOLE"/>  <!-- Вывод в консоль с цветами -->
-        <appender-ref ref="FILE"/>     <!-- Запись в файл -->
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="FILE"/>
     </root>
 
 </configuration>
