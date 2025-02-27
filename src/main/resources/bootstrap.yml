@@ -35,5 +35,5 @@ logging:
 
 custom:
   logging:
-    enabled: ${LOGGING_ENABLED} # Включение/выключение логирования через env
+    enabled: ${LOGGING_ENABLED:true} # Включение/выключение логирования через env
     level: ${LOG_LEVEL:INFO} # Уровень логирования через env
