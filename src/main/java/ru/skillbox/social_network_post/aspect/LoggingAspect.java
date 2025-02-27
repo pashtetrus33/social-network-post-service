@@ -24,7 +24,6 @@ public class LoggingAspect {
     public LoggingAspect(Environment environment, @Value("${custom.logging.enabled:true}") boolean loggingEnabled) {
         this.environment = environment;
         this.loggingEnabled = loggingEnabled;
-        log.info("!!!!!!!!!!!!!!!!!!!!!!!!!!Logging enabled: {}", loggingEnabled);
     }
 
     @PostConstruct
