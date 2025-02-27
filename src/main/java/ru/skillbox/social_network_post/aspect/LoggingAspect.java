@@ -1,5 +1,6 @@
 package ru.skillbox.social_network_post.aspect;
 
+import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -25,6 +26,12 @@ public class LoggingAspect {
         this.loggingEnabled = loggingEnabled;
         log.info("!!!!!!!!!!!!!!!!!!!!!!!!!!Logging enabled: {}", loggingEnabled);
     }
+
+    @PostConstruct
+    public void init() {
+        log.info("LoggingAspect initialized! Logging enabled: {}", loggingEnabled);
+    }
+
 
     @Around("execution(* ru.skillbox.social_network_post.controller..*(..)) || execution(* ru.skillbox.social_network_post.service..*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
