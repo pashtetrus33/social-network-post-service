@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.dto.KafkaDto;
 import ru.skillbox.social_network_post.dto.LikeDto;
+import ru.skillbox.social_network_post.dto.LikeResponseDTO;
 import ru.skillbox.social_network_post.entity.Like;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.mapper.LikeMapperFactory;
@@ -34,7 +35,7 @@ public class LikeServiceImpl implements LikeService {
     @LogExecutionTime
     @Override
     @Transactional
-    public String addLikeToPost(UUID postId, LikeDto likeDto) {
+    public LikeResponseDTO addLikeToPost(UUID postId, LikeDto likeDto) {
 
         EntityCheckUtils.checkPostPresence(postRepository, postId);
         EntityCheckUtils.checkLikeDto(likeDto);
@@ -63,7 +64,7 @@ public class LikeServiceImpl implements LikeService {
 
         kafkaService.newLikeEvent(new KafkaDto(accountId, like.getId()));
 
-        return likeDto.reactionType();
+        return new LikeResponseDTO(true, 2);
     }
 
 
