@@ -25,18 +25,7 @@ eureka:
   instance:
     preferIpAddress: true  # Регистрировать IP-адрес контейнера в Eureka
 
-logging:
-  level:
-    root: INFO
-    ru.skillbox.social_network_post.controller: ${LOG_LEVEL:INFO}
-    ru.skillbox.social_network_post.service: ${LOG_LEVEL:INFO}
-  file:
-    name: ${LOG_PATH:/var/logs}/post-service.log
-  logback:
-    rolling policy:
-      max-history: 7
-
 custom:
   logging:
-    enabled: true
-    level: INFO
+    enabled: ${CUSTOM_LOGGING_ENABLED:true}  # Переменная окружения, по умолчанию true
+    level: ${CUSTOM_LOGGING_LEVEL:INFO}     # Переменная окружения, по умолчанию INFO

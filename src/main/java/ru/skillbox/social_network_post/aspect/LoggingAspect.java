@@ -7,31 +7,29 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
-
-import java.util.Objects;
+import java.util.Arrays;
 
 @Aspect
 @Component
 @Slf4j
 public class LoggingAspect {
 
-    private final Environment environment;
-    private final boolean loggingEnabled;
+    // Включено ли логирование (через конфигурацию)
+    @Value("${custom.logging.enabled:true}")
+    private boolean loggingEnabled;
 
-    public LoggingAspect(Environment environment, @Value("${custom.logging.enabled:true}") boolean loggingEnabled) {
-        this.environment = environment;
-        this.loggingEnabled = loggingEnabled;
-    }
+    // Уровень логирования (DEBUG, INFO, WARN, ERROR)
+    @Value("${custom.logging.level:INFO}")
+    private String logLevel;
 
     @PostConstruct
     public void init() {
         log.info("LoggingAspect initialized! Logging enabled: {}", loggingEnabled);
     }
 
-
+    // Перехватываем все методы контроллеров и сервисов
     @Around("execution(* ru.skillbox.social_network_post.controller..*(..)) || execution(* ru.skillbox.social_network_post.service..*(..))")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
         if (!loggingEnabled) {
@@ -42,26 +40,33 @@ public class LoggingAspect {
         String methodName = signature.getDeclaringTypeName() + "." + signature.getName();
         Object[] args = joinPoint.getArgs();
 
-        logAtLevel("Calling method: " + methodName + " with arguments: " + Objects.toString(args));
-
-        // *** Добавляем лог перед вызовом метода ***
-        log.info("Before proceeding with method: {}", methodName);
+        // Логирование до выполнения метода
+        logAtLevel("Calling method: " + methodName + " with arguments: " + Arrays.toString(args));
 
         long start = System.currentTimeMillis();
         Object result = joinPoint.proceed();
         long executionTime = System.currentTimeMillis() - start;
 
-        logAtLevel("Method " + methodName + " executed in " + executionTime + "ms, return: " + Objects.toString(result));
+        // Логирование после выполнения метода
+        logAtLevel("Method " + methodName + " executed in " + executionTime + "ms, return: " + result);
+
         return result;
     }
 
+    // Метод для логирования на нужном уровне
     private void logAtLevel(String message) {
-        String logLevel = environment.getProperty("custom.logging.level", "INFO").toUpperCase();
-        switch (logLevel) {
-            case "DEBUG": log.debug(message); break;
-            case "WARN": log.warn(message); break;
-            case "ERROR": log.error(message); break;
-            default: log.info(message);
+        switch (logLevel.toUpperCase()) {
+            case "DEBUG":
+                log.debug(message);
+                break;
+            case "WARN":
+                log.warn(message);
+                break;
+            case "ERROR":
+                log.error(message);
+                break;
+            default:
+                log.info(message);
         }
     }
 }
