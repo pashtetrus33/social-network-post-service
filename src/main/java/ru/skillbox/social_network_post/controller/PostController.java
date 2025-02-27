@@ -8,12 +8,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
-import ru.skillbox.social_network_post.dto.LikeDto;
+import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.service.LikeService;
 import ru.skillbox.social_network_post.service.PostService;
-import ru.skillbox.social_network_post.dto.PagePostDto;
-import ru.skillbox.social_network_post.dto.PostDto;
-import ru.skillbox.social_network_post.dto.PostSearchDto;
 
 import java.util.UUID;
 
@@ -69,7 +66,7 @@ public class PostController {
     @LogExecutionTime
     @PostMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
-    public String addLikeToPost(@PathVariable UUID postId, @Valid @RequestBody LikeDto likeDto) {
+    public LikeResponseDTO addLikeToPost(@PathVariable UUID postId, @Valid @RequestBody LikeDto likeDto) {
         return likeService.addLikeToPost(postId, likeDto);
     }
 
