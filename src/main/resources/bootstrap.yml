@@ -27,5 +27,5 @@ eureka:
 
 custom:
   logging:
-    enabled: ${CUSTOM_LOGGING_ENABLED:true}  # Переменная окружения, по умолчанию true
-    level: ${CUSTOM_LOGGING_LEVEL:INFO}     # Переменная окружения, по умолчанию INFO
+    enabled: ${LOG_ENABLED:true}  # Читаем из ENV-переменной (по умолчанию true)
+    level: ${LOG_LEVEL:INFO}      # Читаем уровень логов из ENV (по умолчанию INFO)
