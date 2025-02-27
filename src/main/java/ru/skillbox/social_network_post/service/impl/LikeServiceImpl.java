@@ -34,7 +34,7 @@ public class LikeServiceImpl implements LikeService {
     @LogExecutionTime
     @Override
     @Transactional
-    public void addLikeToPost(UUID postId, LikeDto likeDto) {
+    public String addLikeToPost(UUID postId, LikeDto likeDto) {
 
         EntityCheckUtils.checkPostPresence(postRepository, postId);
         EntityCheckUtils.checkLikeDto(likeDto);
@@ -62,8 +62,9 @@ public class LikeServiceImpl implements LikeService {
         }
 
         kafkaService.newLikeEvent(new KafkaDto(accountId, like.getId()));
-    }
 
+        return likeDto.reactionType();
+    }
 
 
     @LogExecutionTime

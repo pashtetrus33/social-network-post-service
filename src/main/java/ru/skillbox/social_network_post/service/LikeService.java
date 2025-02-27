@@ -5,7 +5,7 @@ import ru.skillbox.social_network_post.dto.LikeDto;
 import java.util.UUID;
 
 public interface LikeService {
-    void addLikeToPost(UUID postId, LikeDto likeDto);
+    String addLikeToPost(UUID postId, LikeDto likeDto);
 
     void removeLikeFromPost(UUID postId);
 
