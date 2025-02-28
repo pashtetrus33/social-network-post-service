@@ -9,8 +9,8 @@ CREATE TABLE IF NOT EXISTS schema_post.posts (
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     comments_count INT NOT NULL DEFAULT 0,
-    like_amount INT NOT NULL DEFAULT 0,
-    my_like BOOLEAN NOT NULL DEFAULT FALSE,
+    reactions_count INT NOT NULL DEFAULT 0,
+    my_reaction BOOLEAN NOT NULL DEFAULT FALSE,
     image_path VARCHAR(500),
     publish_date TIMESTAMP NOT NULL
     );

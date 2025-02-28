@@ -8,7 +8,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.skillbox.social_network_post.entity.Post;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -28,26 +27,26 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
 
     @Modifying
     @Transactional
-    @Query("UPDATE Post p SET p.likeAmount = p.likeAmount + 1, p.myLike = true WHERE p.id = :postId")
-    void incrementLikeAmountAndSetMyLike(@Param("postId") UUID postId);
+    @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount + 1, p.myReaction = true WHERE p.id = :postId")
+    void incrementReactionsCountAndSetMyReaction(@Param("postId") UUID postId);
 
     @Modifying
     @Transactional
-    @Query("UPDATE Post p SET p.likeAmount = p.likeAmount + 1 WHERE p.id = :postId")
-    void incrementLikeAmount(@Param("postId") UUID postId);
+    @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount + 1 WHERE p.id = :postId")
+    void incrementReactionsCount(@Param("postId") UUID postId);
 
     @Modifying
     @Transactional
-    @Query("UPDATE Post p SET p.likeAmount = p.likeAmount - 1 WHERE p.id = :postId")
-    void updateLikeAmount(@Param("postId") UUID postId);
+    @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount - 1 WHERE p.id = :postId")
+    void updateReactionsCount(@Param("postId") UUID postId);
 
     @Modifying
     @Transactional
-    @Query("UPDATE Post p SET p.likeAmount = p.likeAmount - 1, p.myLike = false WHERE p.id = :postId AND p.myLike = true")
-    void updateLikeAmountAndUnsetMyLike(UUID postId);
+    @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount - 1, p.myReaction = false WHERE p.id = :postId AND p.myReaction = true")
+    void updateReactionsCountAndUnsetMyReaction(UUID postId);
 
-    @Query("SELECT p.likeAmount FROM Post p WHERE p.id = :postId")
-    int getLikeAmount(@Param("postId") UUID postId);
+    @Query("SELECT p.reactionsCount FROM Post p WHERE p.id = :postId")
+    int getReactionsCount(@Param("postId") UUID postId);
 
     @Query("SELECT COUNT(p) > 0 FROM Post p WHERE p.id = :postId AND p.authorId = :userId")
     boolean isAuthorOfPost(@Param("postId") UUID postId, @Param("userId") UUID userId);

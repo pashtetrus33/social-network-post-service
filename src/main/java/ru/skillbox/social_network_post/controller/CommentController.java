@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.service.CommentService;
-import ru.skillbox.social_network_post.service.LikeService;
+import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.dto.CommentDto;
 import ru.skillbox.social_network_post.dto.PageCommentDto;
 
@@ -21,7 +21,7 @@ import java.util.UUID;
 public class CommentController {
 
     private final CommentService commentService;
-    private final LikeService likeService;
+    private final ReactionService reactionService;
 
 
     @LogExecutionTime
@@ -62,7 +62,7 @@ public class CommentController {
     @PostMapping("/{commentId}/like")
     @ResponseStatus(HttpStatus.CREATED)
     public void addLikeToComment(@PathVariable UUID id, @PathVariable UUID commentId) {
-        likeService.addLikeToComment(id, commentId);
+        reactionService.addLikeToComment(id, commentId);
     }
 
 
@@ -70,7 +70,7 @@ public class CommentController {
     @DeleteMapping("/{commentId}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLikeFromComment(@PathVariable UUID id, @PathVariable UUID commentId) {
-        likeService.removeLikeFromComment(id, commentId);
+        reactionService.removeLikeFromComment(id, commentId);
     }
 
 

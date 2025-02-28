@@ -5,7 +5,6 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import ru.skillbox.social_network_post.dto.ReactionDto;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ public class Post {
 
     @Min(0)
     @Builder.Default
-    private Integer likeAmount = 0;
+    private Integer reactionsCount = 0;
 
     @Min(0)
     @Builder.Default
@@ -59,7 +58,7 @@ public class Post {
     private Boolean isDeleted = false;
 
     @Builder.Default
-    private Boolean myLike = false;
+    private Boolean myReaction = false;
 
     @Size(max = 512)
     private String imagePath;

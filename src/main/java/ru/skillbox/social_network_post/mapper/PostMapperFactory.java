@@ -32,8 +32,8 @@ public final class PostMapperFactory {
                 .isDeleted(post.getIsDeleted())
                 .commentsCount(post.getCommentsCount())
                 .tags(post.getTags() != null ? new ArrayList<>(post.getTags()) : null)
-                .likeAmount(post.getLikeAmount())
-                .myLike(post.getMyLike())
+                .likeAmount(post.getReactionsCount())
+                .myLike(post.getMyReaction())
                 .imagePath(post.getImagePath())
                 .publishDate(post.getPublishDate())
                 .build();
@@ -74,8 +74,8 @@ public final class PostMapperFactory {
                 .isDeleted(postDto.getIsDeleted())
                 .commentsCount(postDto.getCommentsCount())
                 .tags(postDto.getTags() != null ? new ArrayList<>(postDto.getTags()) : null)
-                .likeAmount(postDto.getLikeAmount())
-                .myLike(postDto.getMyLike())
+                .reactionsCount(postDto.getLikeAmount())
+                .myReaction(postDto.getMyLike())
                 .imagePath(postDto.getImagePath())
                 .publishDate(postDto.getPublishDate())
                 .build();
@@ -101,8 +101,8 @@ public final class PostMapperFactory {
             post.setTags(null);
         }
 
-        post.setLikeAmount(postDto.getLikeAmount());
-        post.setMyLike(postDto.getMyLike());
+        post.setReactionsCount(postDto.getLikeAmount());
+        post.setMyReaction(postDto.getMyLike());
         post.setImagePath(postDto.getImagePath());
         post.setPublishDate(postDto.getPublishDate());
     }

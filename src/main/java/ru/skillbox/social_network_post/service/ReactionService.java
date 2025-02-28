@@ -4,7 +4,7 @@ import ru.skillbox.social_network_post.dto.ReactionDto;
 
 import java.util.UUID;
 
-public interface LikeService {
+public interface ReactionService {
     ReactionDto addLikeToPost(UUID postId, ReactionDto reactionDto);
 
     void removeLikeFromPost(UUID postId);

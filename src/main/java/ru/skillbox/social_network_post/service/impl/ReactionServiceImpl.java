@@ -11,11 +11,11 @@ import ru.skillbox.social_network_post.entity.Reaction;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.mapper.LikeMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
-import ru.skillbox.social_network_post.repository.LikeRepository;
+import ru.skillbox.social_network_post.repository.ReactionRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.KafkaService;
-import ru.skillbox.social_network_post.service.LikeService;
+import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
@@ -23,11 +23,11 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class LikeServiceImpl implements LikeService {
+public class ReactionServiceImpl implements ReactionService {
 
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-    private final LikeRepository likeRepository;
+    private final ReactionRepository reactionRepository;
     private UUID accountId;
     private final KafkaService kafkaService;
 
@@ -43,7 +43,7 @@ public class LikeServiceImpl implements LikeService {
         accountId = SecurityUtils.getAccountId();
 
         // Проверяем, ставил ли пользователь лайк ранее
-        if (likeRepository.existsByPostIdAndAuthorId(postId, accountId)) {
+        if (reactionRepository.existsByPostIdAndAuthorId(postId, accountId)) {
             throw new IllegalStateException(
                     MessageFormat.format("Like already exists for post with id {0}", postId));
         }
@@ -51,22 +51,25 @@ public class LikeServiceImpl implements LikeService {
         Reaction reaction = LikeMapperFactory.toLike(reactionDto);
         reaction.setPost(post);
         reaction.setAuthorId(accountId);
-        likeRepository.save(reaction);
+        reactionRepository.save(reaction);
 
         // Проверяем, является ли текущий пользователь автором поста
         if (postRepository.isAuthorOfPost(postId, accountId)) {
             // Увеличиваем количество лайков и устанавливаем флаг myLike в true только если пост принадлежит автору
-            postRepository.incrementLikeAmountAndSetMyLike(postId);
+            postRepository.incrementReactionsCountAndSetMyReaction(postId);
         } else {
             // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
-            postRepository.incrementLikeAmount(postId);
+            postRepository.incrementReactionsCount(postId);
         }
+
+        Long count = reactionRepository.countByCommentIdAndReactionType(postId, reactionDto.getReactionType());
 
         kafkaService.newLikeEvent(new KafkaDto(accountId, reaction.getId()));
 
         return ReactionDto.builder()
-                .reactionType("like")
-                .count(11L)
+                .type("POST")
+                .reactionType(reactionDto.getType())
+                .count(count)
                 .build();
     }
 
@@ -78,7 +81,7 @@ public class LikeServiceImpl implements LikeService {
 
         EntityCheckUtils.checkPostPresence(postRepository, postId);
 
-        int likeAmount = postRepository.getLikeAmount(postId);
+        int likeAmount = postRepository.getReactionsCount(postId);
 
         if (likeAmount <= 0) {
             throw new IllegalStateException(
@@ -90,13 +93,13 @@ public class LikeServiceImpl implements LikeService {
         // Проверяем, является ли текущий пользователь автором поста
         if (postRepository.isAuthorOfPost(postId, accountId)) {
             // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
-            postRepository.updateLikeAmountAndUnsetMyLike(postId);
+            postRepository.updateReactionsCountAndUnsetMyReaction(postId);
         } else {
             // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
-            postRepository.updateLikeAmount(postId);
+            postRepository.updateReactionsCount(postId);
         }
 
-        likeRepository.deleteByPostIdAndAuthorId(postId, accountId);
+        reactionRepository.deleteByPostIdAndAuthorId(postId, accountId);
     }
 
 
@@ -118,7 +121,7 @@ public class LikeServiceImpl implements LikeService {
 
 
         // Проверяем, ставил ли пользователь лайк для данного комментария
-        if (likeRepository.existsByCommentIdAndAuthorId(commentId, accountId)) {
+        if (reactionRepository.existsByCommentIdAndAuthorId(commentId, accountId)) {
             throw new IllegalStateException(
                     MessageFormat.format("Like already exists for post with id {0} and comment with id {1}", postId, commentId));
         }
@@ -129,7 +132,7 @@ public class LikeServiceImpl implements LikeService {
         reaction.setAuthorId(accountId);
         reaction.setType("No_type");
         reaction.setReactionType("No_reaction");
-        likeRepository.save(reaction);
+        reactionRepository.save(reaction);
 
 
         // Проверяем, является ли текущий пользователь автором коме комментария
@@ -171,6 +174,6 @@ public class LikeServiceImpl implements LikeService {
             commentRepository.updateLikeAmount(commentId);
         }
 
-        likeRepository.deleteByCommentIdAndAuthorId(commentId, accountId);
+        reactionRepository.deleteByCommentIdAndAuthorId(commentId, accountId);
     }
 }

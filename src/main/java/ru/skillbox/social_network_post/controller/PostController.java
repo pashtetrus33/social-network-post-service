@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.dto.*;
-import ru.skillbox.social_network_post.service.LikeService;
+import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.service.PostService;
 
 import java.util.UUID;
@@ -20,7 +20,7 @@ import java.util.UUID;
 public class PostController {
 
     private final PostService postService;
-    private final LikeService likeService;
+    private final ReactionService reactionService;
 
 
     @LogExecutionTime
@@ -67,7 +67,7 @@ public class PostController {
     @PostMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
     public ReactionDto addLikeToPost(@PathVariable UUID postId, @Valid @RequestBody ReactionDto reactionDto) {
-        return likeService.addLikeToPost(postId, reactionDto);
+        return reactionService.addLikeToPost(postId, reactionDto);
     }
 
 
@@ -75,6 +75,6 @@ public class PostController {
     @DeleteMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void removeLikeFromPost(@PathVariable UUID postId) {
-        likeService.removeLikeFromPost(postId);
+        reactionService.removeLikeFromPost(postId);
     }
 }
