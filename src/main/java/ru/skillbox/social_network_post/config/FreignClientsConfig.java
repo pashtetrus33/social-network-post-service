@@ -33,6 +33,7 @@ public class FreignClientsConfig {
         return Logger.Level.FULL;  // Полное логирование запросов
     }
 
+
     // Бин для AuthServiceClient
     @Bean
     public AuthServiceClient authServiceClient() {
@@ -42,7 +43,7 @@ public class FreignClientsConfig {
                 .logger(new feign.slf4j.Slf4jLogger(AuthServiceClient.class))
                 .logLevel(Logger.Level.FULL)
                 .requestInterceptor(requestInterceptor())
-                .target(AuthServiceClient.class, "http://auth-service");  // Замените на реальный URL
+                .target(AuthServiceClient.class, "http://auth-service");
     }
 
     // Бин для FriendServiceClient
@@ -54,7 +55,7 @@ public class FreignClientsConfig {
                 .logger(new feign.slf4j.Slf4jLogger(FriendServiceClient.class))
                 .logLevel(Logger.Level.FULL)
                 .requestInterceptor(requestInterceptor())
-                .target(FriendServiceClient.class, "http://friend-service");  // Замените на реальный URL
+                .target(FriendServiceClient.class, "friend-service");
     }
 
     // Бин для AccountServiceClient
@@ -66,7 +67,7 @@ public class FreignClientsConfig {
                 .logger(new feign.slf4j.Slf4jLogger(AccountServiceClient.class))
                 .logLevel(Logger.Level.FULL)
                 .requestInterceptor(requestInterceptor())
-                .target(AccountServiceClient.class, "http://account-service");  // Замените на реальный URL
+                .target(AccountServiceClient.class, "account-service");
     }
 
     // Бин для Jackson Encoder

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface AccountServiceClient {
+
     @GetMapping("/accountIds")
     List<AccountDto> getAccountsByIds(@RequestParam List<UUID> ids);
 
