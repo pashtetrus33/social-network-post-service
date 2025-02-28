@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -87,6 +88,9 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         List<GrantedAuthority> authorities = roles.stream()
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
+
+
+        SecurityUtils.saveToken(token);
 
         Authentication authentication = new HeaderAuthenticationToken(userId, userName, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
