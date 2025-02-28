@@ -239,7 +239,8 @@ public class PostServiceImpl implements PostService {
         try {
             AccountSearchDto accountSearchDto = new AccountSearchDto();
             accountSearchDto.setAuthor(author);
-            return accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
+            //TODO:
+            return null; //accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
         } catch (FeignException e) {
             throw new CustomFreignException(MessageFormat.format("Error fetching authorId by name: {0}", author));
         }
