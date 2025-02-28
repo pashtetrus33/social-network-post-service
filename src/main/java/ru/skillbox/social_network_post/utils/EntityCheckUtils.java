@@ -1,8 +1,8 @@
 package ru.skillbox.social_network_post.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import ru.skillbox.social_network_post.dto.LikeDto;
 import ru.skillbox.social_network_post.dto.PostDto;
+import ru.skillbox.social_network_post.dto.ReactionDto;
 import ru.skillbox.social_network_post.entity.Comment;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
@@ -44,8 +44,8 @@ public class EntityCheckUtils {
     }
 
     // Utility method to validate LikeDto
-    public static void checkLikeDto(LikeDto likeDto) {
-        if (likeDto == null) {
+    public static void checkReactionDto(ReactionDto reactionDto) {
+        if (reactionDto == null) {
             throw new IllegalArgumentException("Like data must not be null");
         }
     }

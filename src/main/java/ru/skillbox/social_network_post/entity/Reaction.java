@@ -10,21 +10,19 @@ import java.util.UUID;
 
 
 @Entity
-@Table(name = "likes")
+@Table(name = "reactions")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Like {
+public class Reaction {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
 
     @NotNull
     private UUID authorId;
-
-    private UUID postId;
 
     private UUID commentId;
 
@@ -36,4 +34,8 @@ public class Like {
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @ManyToOne
+    @JoinColumn(name = "post_id", nullable = false)
+    private Post post;
 }

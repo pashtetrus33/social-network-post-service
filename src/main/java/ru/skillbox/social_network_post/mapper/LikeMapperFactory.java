@@ -1,8 +1,8 @@
 package ru.skillbox.social_network_post.mapper;
 
 
-import ru.skillbox.social_network_post.dto.LikeDto;
-import ru.skillbox.social_network_post.entity.Like;
+import ru.skillbox.social_network_post.dto.ReactionDto;
+import ru.skillbox.social_network_post.entity.Reaction;
 
 
 public final class LikeMapperFactory {
@@ -11,26 +11,27 @@ public final class LikeMapperFactory {
         throw new UnsupportedOperationException("Utility class");
     }
 
-    public static LikeDto toLikeDto(Like like) {
-        if (like == null) {
+    public static ReactionDto toReactionDto(Reaction reaction) {
+        if (reaction == null) {
             return null;
         }
 
-        return new LikeDto(
-                like.getType(),
-                like.getReactionType()
-        );
+        return ReactionDto.builder()
+                .reactionType(reaction.getReactionType())
+                .type(reaction.getType())
+                .reactionType(reaction.getReactionType())
+                .build();
     }
 
 
-    public static Like toLike(LikeDto likeDto) {
-        if (likeDto == null) {
+    public static Reaction toLike(ReactionDto reactionDto) {
+        if (reactionDto == null) {
             return null;
         }
 
-        return Like.builder()
-                .type(likeDto.type())
-                .reactionType(likeDto.reactionType())
+        return Reaction.builder()
+                .type(reactionDto.getType())
+                .reactionType(reactionDto.getReactionType())
                 .build();
     }
 }

@@ -5,9 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.dto.KafkaDto;
-import ru.skillbox.social_network_post.dto.LikeDto;
-import ru.skillbox.social_network_post.dto.PostReactionDTO;
-import ru.skillbox.social_network_post.entity.Like;
+import ru.skillbox.social_network_post.dto.ReactionDto;
+import ru.skillbox.social_network_post.entity.Post;
+import ru.skillbox.social_network_post.entity.Reaction;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.mapper.LikeMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
@@ -35,10 +35,10 @@ public class LikeServiceImpl implements LikeService {
     @LogExecutionTime
     @Override
     @Transactional
-    public PostReactionDTO addLikeToPost(UUID postId, LikeDto likeDto) {
+    public ReactionDto addLikeToPost(UUID postId, ReactionDto reactionDto) {
 
-        EntityCheckUtils.checkPostPresence(postRepository, postId);
-        EntityCheckUtils.checkLikeDto(likeDto);
+        Post post = EntityCheckUtils.checkPostPresence(postRepository, postId);
+        EntityCheckUtils.checkReactionDto(reactionDto);
 
         accountId = SecurityUtils.getAccountId();
 
@@ -48,23 +48,26 @@ public class LikeServiceImpl implements LikeService {
                     MessageFormat.format("Like already exists for post with id {0}", postId));
         }
 
-        Like like = LikeMapperFactory.toLike(likeDto);
-        like.setPostId(postId);
-        like.setAuthorId(accountId);
-        likeRepository.save(like);
+        Reaction reaction = LikeMapperFactory.toLike(reactionDto);
+        reaction.setPost(post);
+        reaction.setAuthorId(accountId);
+        likeRepository.save(reaction);
 
         // Проверяем, является ли текущий пользователь автором поста
         if (postRepository.isAuthorOfPost(postId, accountId)) {
-            // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
+            // Увеличиваем количество лайков и устанавливаем флаг myLike в true только если пост принадлежит автору
             postRepository.incrementLikeAmountAndSetMyLike(postId);
         } else {
             // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
             postRepository.incrementLikeAmount(postId);
         }
 
-        kafkaService.newLikeEvent(new KafkaDto(accountId, like.getId()));
+        kafkaService.newLikeEvent(new KafkaDto(accountId, reaction.getId()));
 
-        return new PostReactionDTO("like", 11);
+        return ReactionDto.builder()
+                .reactionType("like")
+                .count(11L)
+                .build();
     }
 
 
@@ -102,7 +105,7 @@ public class LikeServiceImpl implements LikeService {
     @Transactional
     public void addLikeToComment(UUID postId, UUID commentId) {
 
-        EntityCheckUtils.checkPostPresence(postRepository, postId);
+        Post post = EntityCheckUtils.checkPostPresence(postRepository, postId);
         EntityCheckUtils.checkCommentPresence(commentRepository, commentId);
 
         accountId = SecurityUtils.getAccountId();
@@ -120,13 +123,13 @@ public class LikeServiceImpl implements LikeService {
                     MessageFormat.format("Like already exists for post with id {0} and comment with id {1}", postId, commentId));
         }
 
-        Like like = new Like();
-        like.setPostId(postId);
-        like.setCommentId(commentId);
-        like.setAuthorId(accountId);
-        like.setType("No_type");
-        like.setReactionType("No_reaction");
-        likeRepository.save(like);
+        Reaction reaction = new Reaction();
+        reaction.setPost(post);
+        reaction.setCommentId(commentId);
+        reaction.setAuthorId(accountId);
+        reaction.setType("No_type");
+        reaction.setReactionType("No_reaction");
+        likeRepository.save(reaction);
 
 
         // Проверяем, является ли текущий пользователь автором коме комментария
@@ -138,7 +141,7 @@ public class LikeServiceImpl implements LikeService {
             commentRepository.incrementLikeAmount(commentId);
         }
 
-        kafkaService.newLikeEvent(new KafkaDto(accountId, like.getId()));
+        kafkaService.newLikeEvent(new KafkaDto(accountId, reaction.getId()));
     }
 
 

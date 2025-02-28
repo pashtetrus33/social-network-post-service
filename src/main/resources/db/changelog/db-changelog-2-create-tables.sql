@@ -35,8 +35,8 @@ CREATE TABLE IF NOT EXISTS schema_post.comments (
     FOREIGN KEY (parent_id) REFERENCES schema_post.comments(id) ON DELETE CASCADE
     );
 
--- Создание таблицы likes в схеме schema_post
-CREATE TABLE IF NOT EXISTS schema_post.likes (
+-- Создание таблицы reactions в схеме schema_post
+CREATE TABLE IF NOT EXISTS schema_post.reactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     author_id UUID NOT NULL,
     post_id UUID,

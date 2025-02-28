@@ -66,8 +66,8 @@ public class PostController {
     @LogExecutionTime
     @PostMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
-    public PostReactionDTO addLikeToPost(@PathVariable UUID postId, @Valid @RequestBody LikeDto likeDto) {
-        return likeService.addLikeToPost(postId, likeDto);
+    public ReactionDto addLikeToPost(@PathVariable UUID postId, @Valid @RequestBody ReactionDto reactionDto) {
+        return likeService.addLikeToPost(postId, reactionDto);
     }
 
 
