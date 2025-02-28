@@ -1,6 +1,5 @@
 package ru.skillbox.social_network_post.aspect;
 
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -9,47 +8,46 @@ import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
+import java.lang.reflect.Method;
 
 @Aspect
 @Component
 @Slf4j
-public class LoggingAspect {
+public class ExecutionTimeAspect {
 
     @Value("${custom.logging.enabled:true}")
-    private boolean loggingEnabled;
+    private boolean globalLoggingEnabled;
 
     @Value("${custom.logging.level:INFO}")
-    private String logLevel;
+    private String globalLogLevel;
 
-    @PostConstruct
-    public void init() {
-        log.info("LoggingAspect initialized! Logging enabled: {}", loggingEnabled);
-    }
-
-    @Around("execution(* ru.skillbox.social_network_post.controller..*(..)) || execution(* ru.skillbox.social_network_post.service..*(..))")
+    @Around("@annotation(LogExecutionTime)")
     public Object logExecutionTime(ProceedingJoinPoint joinPoint) throws Throwable {
-        if (!loggingEnabled) {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Method method = signature.getMethod();
+        LogExecutionTime annotation = method.getAnnotation(LogExecutionTime.class);
+
+        // Если enabled = true в аннотации, смотрим глобальную настройку
+        boolean enabled = annotation.enabled() && globalLoggingEnabled;
+
+        // Если в аннотации явно задан level, берем его, иначе берем из application.yml
+        String level = annotation.level().equals("INFO") ? globalLogLevel : annotation.level();
+
+        if (!enabled) {
             return joinPoint.proceed();
         }
 
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         String methodName = signature.getDeclaringTypeName() + "." + signature.getName();
-        Object[] args = joinPoint.getArgs();
-
-        logAtLevel("Calling method: " + methodName + " with arguments: " + Arrays.toString(args));
-
         long start = System.currentTimeMillis();
         Object result = joinPoint.proceed();
         long executionTime = System.currentTimeMillis() - start;
 
-        logAtLevel("Method " + methodName + " executed in " + executionTime + "ms, return: " + result);
-
+        logAtLevel(level, "Method " + methodName + " executed in " + executionTime + "ms");
         return result;
     }
 
-    private void logAtLevel(String message) {
-        switch (logLevel.toUpperCase()) {
+    private void logAtLevel(String level, String message) {
+        switch (level.toUpperCase()) {
             case "DEBUG":
                 log.debug(message);
                 break;
