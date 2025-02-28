@@ -1,7 +1,5 @@
 package ru.skillbox.social_network_post.service.impl;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +19,6 @@ import ru.skillbox.social_network_post.service.LikeService;
 import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -68,16 +64,7 @@ public class LikeServiceImpl implements LikeService {
 
         kafkaService.newLikeEvent(new KafkaDto(accountId, like.getId()));
 
-
-        PostReactionDTO.ReactionDTO likeReaction = new PostReactionDTO.ReactionDTO("like", "Like", 42);
-        PostReactionDTO.ReactionDTO loveReaction = new PostReactionDTO.ReactionDTO("love", "Love", 15);
-        PostReactionDTO.ReactionDTO angryReaction = new PostReactionDTO.ReactionDTO("angry", "Angry", 5);
-
-        List<PostReactionDTO.ReactionDTO> reactions = Arrays.asList(likeReaction, loveReaction, angryReaction);
-
-        PostReactionDTO.ReactionDTO myReaction = new PostReactionDTO.ReactionDTO("like", "Like", 1);
-
-        return new PostReactionDTO(true, reactions, myReaction);
+        return new PostReactionDTO("like", 11);
     }
 
 
