@@ -66,14 +66,8 @@ public class LikeServiceImpl implements LikeService {
 
         kafkaService.newLikeEvent(new KafkaDto(accountId, like.getId()));
 
-        // Создание списка реакций с тестовыми данными
-        List<LikeResponseDTO.ReactionDTO> reactions = new ArrayList<>();
-        reactions.add(new LikeResponseDTO.ReactionDTO("like", 42));  // 42 лайка
-        reactions.add(new LikeResponseDTO.ReactionDTO("funny", 15)); // 15 смешных реакций
-        reactions.add(new LikeResponseDTO.ReactionDTO("wow", 7));    // 7 реакций "wow"
-
         // Возвращаем объект LikeResponseDTO с заполненными данными
-        return new LikeResponseDTO(true, reactions);
+        return new LikeResponseDTO(true, "like", 43);
     }
 
 
