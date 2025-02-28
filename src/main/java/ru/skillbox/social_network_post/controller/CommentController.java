@@ -8,6 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
+import ru.skillbox.social_network_post.aspect.LogMethodCall;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.dto.CommentDto;
@@ -24,6 +25,7 @@ public class CommentController {
     private final ReactionService reactionService;
 
 
+    @LogMethodCall
     @LogExecutionTime
     @GetMapping
     public PageCommentDto getByPostId(
@@ -34,6 +36,7 @@ public class CommentController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -42,6 +45,7 @@ public class CommentController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @PutMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -50,6 +54,7 @@ public class CommentController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -58,6 +63,7 @@ public class CommentController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @PostMapping("/{commentId}/like")
     @ResponseStatus(HttpStatus.CREATED)
@@ -66,6 +72,7 @@ public class CommentController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @DeleteMapping("/{commentId}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -74,6 +81,7 @@ public class CommentController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @GetMapping("/{commentId}/subcomment")
     public PageCommentDto getSubcomments(

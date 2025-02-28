@@ -8,6 +8,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
+import ru.skillbox.social_network_post.aspect.LogMethodCall;
 import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.service.PostService;
@@ -23,12 +24,14 @@ public class PostController {
     private final ReactionService reactionService;
 
 
+    @LogMethodCall
     @LogExecutionTime
     @GetMapping("/{id}")
     public PostDto getById(@PathVariable UUID id) {
         return postService.getById(id);
     }
 
+    @LogMethodCall
     @LogExecutionTime
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -37,6 +40,7 @@ public class PostController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
@@ -45,6 +49,7 @@ public class PostController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @GetMapping
     public PagePostDto getAll(
@@ -55,6 +60,7 @@ public class PostController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -63,6 +69,7 @@ public class PostController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @PostMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.CREATED)
@@ -71,6 +78,7 @@ public class PostController {
     }
 
 
+    @LogMethodCall
     @LogExecutionTime
     @DeleteMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
