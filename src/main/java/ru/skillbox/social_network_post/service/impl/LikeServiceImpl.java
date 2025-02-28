@@ -1,12 +1,14 @@
 package ru.skillbox.social_network_post.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.dto.KafkaDto;
 import ru.skillbox.social_network_post.dto.LikeDto;
-import ru.skillbox.social_network_post.dto.LikeResponseDTO;
+import ru.skillbox.social_network_post.dto.PostReactionDTO;
 import ru.skillbox.social_network_post.entity.Like;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.mapper.LikeMapperFactory;
@@ -19,7 +21,7 @@ import ru.skillbox.social_network_post.service.LikeService;
 import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -37,7 +39,7 @@ public class LikeServiceImpl implements LikeService {
     @LogExecutionTime
     @Override
     @Transactional
-    public LikeResponseDTO addLikeToPost(UUID postId, LikeDto likeDto) {
+    public PostReactionDTO addLikeToPost(UUID postId, LikeDto likeDto) {
 
         EntityCheckUtils.checkPostPresence(postRepository, postId);
         EntityCheckUtils.checkLikeDto(likeDto);
@@ -66,8 +68,16 @@ public class LikeServiceImpl implements LikeService {
 
         kafkaService.newLikeEvent(new KafkaDto(accountId, like.getId()));
 
-        // Возвращаем объект LikeResponseDTO с заполненными данными
-        return new LikeResponseDTO(true, "like", 43);
+
+        PostReactionDTO.ReactionDTO likeReaction = new PostReactionDTO.ReactionDTO("like", "Like", 42);
+        PostReactionDTO.ReactionDTO loveReaction = new PostReactionDTO.ReactionDTO("love", "Love", 15);
+        PostReactionDTO.ReactionDTO angryReaction = new PostReactionDTO.ReactionDTO("angry", "Angry", 5);
+
+        List<PostReactionDTO.ReactionDTO> reactions = Arrays.asList(likeReaction, loveReaction, angryReaction);
+
+        PostReactionDTO.ReactionDTO myReaction = new PostReactionDTO.ReactionDTO("like", "Like", 1);
+
+        return new PostReactionDTO(true, reactions, myReaction);
     }
 
 
