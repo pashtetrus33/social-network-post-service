@@ -13,8 +13,8 @@ import java.util.UUID;
 
 public interface AccountServiceClient {
 
-    @GetMapping("/accountIds")
-    List<AccountDto> getAccountsByIds(@RequestParam List<UUID> ids);
+    //@GetMapping("/accountIds")
+    //List<AccountDto> getAccountsByIds(@RequestParam List<UUID> ids);
 
     @PostMapping("/searchByFilter")
     List<AccountDto> searchAccount(@RequestBody AccountSearchDto accountSearchDto);
