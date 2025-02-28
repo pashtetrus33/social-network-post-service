@@ -7,7 +7,8 @@ import java.util.UUID;
 
 public interface ReactionRepository extends JpaRepository<Reaction, Long> {
 
-    boolean existsByPostIdAndAuthorId(UUID postId, UUID userId);
+
+    boolean existsByPostIdAndAuthorIdAndCommentIdIsNull(UUID postId, UUID userId);
 
     boolean existsByCommentIdAndAuthorId(UUID postId, UUID userId);
 

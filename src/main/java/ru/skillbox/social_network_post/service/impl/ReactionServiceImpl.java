@@ -43,7 +43,7 @@ public class ReactionServiceImpl implements ReactionService {
         accountId = SecurityUtils.getAccountId();
 
         // Проверяем, ставил ли пользователь лайк ранее
-        if (reactionRepository.existsByPostIdAndAuthorId(postId, accountId)) {
+        if (reactionRepository.existsByPostIdAndAuthorIdAndCommentIdIsNull(postId, accountId)) {
             throw new IllegalStateException(
                     MessageFormat.format("Like already exists for post with id {0}", postId));
         }
@@ -68,7 +68,7 @@ public class ReactionServiceImpl implements ReactionService {
 
         return ReactionDto.builder()
                 .type("POST")
-                .reactionType(reactionDto.getType())
+                .reactionType(reactionDto.getReactionType())
                 .count(count)
                 .build();
     }
