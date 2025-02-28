@@ -15,7 +15,6 @@ public class ReactionDto {
     @NotNull(message = "ReactionType must not be null")
     private final String reactionType;
 
-    @NotNull
     @Builder.Default
     private Long count = 0L;
 }
