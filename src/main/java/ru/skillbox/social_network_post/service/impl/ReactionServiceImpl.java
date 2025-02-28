@@ -67,7 +67,7 @@ public class ReactionServiceImpl implements ReactionService {
         kafkaService.newLikeEvent(new KafkaDto(accountId, reaction.getId()));
 
         return ReactionDto.builder()
-                .type("POST")
+                .type(reactionDto.getReactionType())
                 .reactionType(reactionDto.getReactionType())
                 .count(count)
                 .build();
