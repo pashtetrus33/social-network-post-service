@@ -6,12 +6,11 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 @EnableAspectJAutoProxy(proxyTargetClass = true)
-@EnableFeignClients(basePackages = "ru.skillbox.social_network_post.client")
+@EnableFeignClients
 @SpringBootApplication
 public class SocialNetworkPostApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(SocialNetworkPostApplication.class, args);
 	}
-
 }

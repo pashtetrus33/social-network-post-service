@@ -67,11 +67,13 @@ public class KafkaServiceImpl implements KafkaService {
         processAccountEvent(message, "Blocked");
     }
 
+
     @Transactional
     @KafkaListener(topics = "${spring.kafka.deleted-account-topic}", groupId = "${spring.kafka.consumer.group-id}")
     public void listenDeletedAccount(String message) {
         processAccountEvent(message, "Deleted");
     }
+
 
     private void processAccountEvent(String message, String accountStatus) {
         try {

@@ -71,7 +71,7 @@ public class Post {
     @Builder.Default
     private List<Reaction> reactionType = new ArrayList<>();
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"))
     @Column(name = "tag")
     private List<String> tags;
