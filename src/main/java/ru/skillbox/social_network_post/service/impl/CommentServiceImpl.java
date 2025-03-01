@@ -1,8 +1,6 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -41,7 +39,7 @@ public class CommentServiceImpl implements CommentService {
 
     @LogExecutionTime
     @Override
-    @Cacheable(value = "comments", key = "#postId")
+    //@Cacheable(value = "comments", key = "#postId")
     @Transactional(readOnly = true)
     public PageCommentDto getByPostId(UUID postId, Pageable pageable) {
         Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
@@ -51,7 +49,6 @@ public class CommentServiceImpl implements CommentService {
 
     @LogExecutionTime
     @Override
-    @Cacheable(value = "subcomments", key = "#commentId")
     @Transactional(readOnly = true)
     public PageCommentDto getSubcomments(UUID postId, UUID commentId, Pageable pageable) {
         EntityCheckUtils.checkPostPresence(postRepository, postId);
@@ -61,9 +58,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
+//    @Caching(evict = {
+//            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
+//            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
+//            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
+//    })
     @LogExecutionTime
     @Override
-    @CacheEvict(value = "comments", key = "#postId")
     @Transactional
     public void create(UUID postId, CommentDto commentDto) {
 
@@ -78,10 +79,10 @@ public class CommentServiceImpl implements CommentService {
             comment.setCommentType(CommentType.COMMENT);
         } else {
             comment.setCommentType(CommentType.POST);
+
         }
 
         comment.setPost(post);
-
         comment.setId(null); // Сбрасываем ID, чтобы Hibernate сгенерировал новый
         comment.setIsBlocked(false);
         comment.setIsDeleted(false);
@@ -105,9 +106,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
+//    @Caching(evict = {
+//            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
+//            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
+//            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
+//    })
     @LogExecutionTime
     @Override
-    @CacheEvict(value = "comments", key = "#postId")
     @Transactional
     public void update(UUID postId, UUID commentId, CommentDto commentDto) {
 
@@ -138,9 +143,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
+//    @Caching(evict = {
+//            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
+//            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
+//            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
+//    })
     @LogExecutionTime
     @Override
-    @CacheEvict(value = "comments", key = "#postId")
     @Transactional
     public void delete(UUID postId, UUID commentId) {
 

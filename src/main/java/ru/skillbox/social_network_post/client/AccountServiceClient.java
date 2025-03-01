@@ -1,10 +1,8 @@
 package ru.skillbox.social_network_post.client;
 
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import feign.Body;
+import feign.Param;
+import feign.RequestLine;
 import ru.skillbox.social_network_post.dto.AccountDto;
 import ru.skillbox.social_network_post.dto.AccountSearchDto;
 
@@ -13,9 +11,12 @@ import java.util.UUID;
 
 public interface AccountServiceClient {
 
-    //@GetMapping("/accountIds")
-    //List<AccountDto> getAccountsByIds(@RequestParam List<UUID> ids);
 
-    //@PostMapping("/searchByFilter")
-    //List<AccountDto> searchAccount(@RequestBody AccountSearchDto accountSearchDto);
+    // GET запрос для получения аккаунтов по списку идентификаторов
+    @RequestLine("GET /accountIds?ids={ids}")
+    List<AccountDto> getAccountsByIds(@Param("ids") List<UUID> ids);
+
+    @RequestLine("POST /search")
+    @Body("{{accountSearchDto}}") // Сериализация объекта AccountSearchDto в тело запроса
+    List<AccountDto> searchAccount(AccountSearchDto accountSearchDto);
 }

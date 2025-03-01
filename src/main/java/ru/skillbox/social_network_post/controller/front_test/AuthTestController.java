@@ -1,7 +1,6 @@
 package ru.skillbox.social_network_post.controller.front_test;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.common.protocol.types.Field;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

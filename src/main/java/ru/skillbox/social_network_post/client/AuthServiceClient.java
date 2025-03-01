@@ -1,10 +1,10 @@
 package ru.skillbox.social_network_post.client;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import feign.Param;
+import feign.RequestLine;
 
 public interface AuthServiceClient {
 
-    //@GetMapping("/validate")
-    //Boolean validateToken(@RequestParam("token") String token);
+    @RequestLine("GET /validateToken?token={token}")
+    Boolean validateToken(@Param("token") String token);
 }
