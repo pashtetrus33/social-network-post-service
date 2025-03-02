@@ -42,7 +42,7 @@ public class CommentServiceImpl implements CommentService {
     //@Cacheable(value = "comments", key = "#postId")
     @Transactional(readOnly = true)
     public PageCommentDto getByPostId(UUID postId, Pageable pageable) {
-        Page<Comment> comments = commentRepository.findByPostId(postId, pageable);
+        Page<Comment> comments = commentRepository.findByPostIdAndCommentType(postId, CommentType.POST, pageable);
         return CommentMapperFactory.toPageCommentDto(comments);
     }
 
@@ -58,7 +58,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-//    @Caching(evict = {
+    //    @Caching(evict = {
 //            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
 //            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
 //            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
@@ -106,7 +106,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-//    @Caching(evict = {
+    //    @Caching(evict = {
 //            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
 //            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
 //            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
@@ -143,7 +143,7 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-//    @Caching(evict = {
+    //    @Caching(evict = {
 //            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
 //            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
 //            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев

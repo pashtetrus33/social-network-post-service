@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import ru.skillbox.social_network_post.entity.Comment;
+import ru.skillbox.social_network_post.entity.CommentType;
 
 import java.util.UUID;
 
@@ -15,7 +16,7 @@ import java.util.UUID;
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, UUID> {
 
-    Page<Comment> findByPostId(UUID postId, Pageable pageable);
+    Page<Comment> findByPostIdAndCommentType(UUID postId, CommentType commentType, Pageable pageable);
 
     Page<Comment> findByParentCommentIdAndPostId(UUID commentId, UUID postId, Pageable pageable);
 
