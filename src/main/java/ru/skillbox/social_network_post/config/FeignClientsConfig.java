@@ -5,6 +5,7 @@ import feign.Logger;
 import feign.RequestInterceptor;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
@@ -13,8 +14,10 @@ import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 
 @Configuration
-public class FreignClientsConfig {
+public class FeignClientsConfig {
 
+    @Value("${gateway.api.url}")
+    private String gatewayApiUrl;
 
     @Bean
     public RequestInterceptor requestInterceptor() {
@@ -27,12 +30,10 @@ public class FreignClientsConfig {
     }
 
 
-    // Уровень логирования для Feign
     @Bean
     public Logger.Level feignLoggerLevel() {
-        return Logger.Level.FULL;  // Полное логирование запросов
+        return Logger.Level.FULL;
     }
-
 
     // Бин для AuthServiceClient
     @Bean
@@ -43,7 +44,7 @@ public class FreignClientsConfig {
                 .logger(new feign.slf4j.Slf4jLogger(AuthServiceClient.class))
                 .logLevel(Logger.Level.FULL)
                 .requestInterceptor(requestInterceptor())
-                .target(AuthServiceClient.class, "http://auth-service");
+                .target(AuthServiceClient.class, gatewayApiUrl + "/api/v1/auth");
     }
 
     // Бин для FriendServiceClient
@@ -55,7 +56,7 @@ public class FreignClientsConfig {
                 .logger(new feign.slf4j.Slf4jLogger(FriendServiceClient.class))
                 .logLevel(Logger.Level.FULL)
                 .requestInterceptor(requestInterceptor())
-                .target(FriendServiceClient.class, "friend-service");
+                .target(FriendServiceClient.class, gatewayApiUrl + "/api/v1/friends");
     }
 
     // Бин для AccountServiceClient
@@ -67,7 +68,7 @@ public class FreignClientsConfig {
                 .logger(new feign.slf4j.Slf4jLogger(AccountServiceClient.class))
                 .logLevel(Logger.Level.FULL)
                 .requestInterceptor(requestInterceptor())
-                .target(AccountServiceClient.class, "account-service");
+                .target(AccountServiceClient.class, gatewayApiUrl + "/api/v1/account");
     }
 
     // Бин для Jackson Encoder

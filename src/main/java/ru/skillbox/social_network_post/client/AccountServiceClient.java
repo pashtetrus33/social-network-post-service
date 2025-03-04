@@ -11,12 +11,10 @@ import java.util.UUID;
 
 public interface AccountServiceClient {
 
-
-    // GET запрос для получения аккаунтов по списку идентификаторов
     @RequestLine("GET /accountIds?ids={ids}")
     List<AccountDto> getAccountsByIds(@Param("ids") List<UUID> ids);
 
     @RequestLine("POST /search")
-    @Body("{{accountSearchDto}}") // Сериализация объекта AccountSearchDto в тело запроса
-    List<AccountDto> searchAccount(AccountSearchDto accountSearchDto);
+    @Body("%7B\"query\": \"{query}\"%7D")
+    List<AccountDto> searchAccount(@Param("query") AccountSearchDto accountSearchDto);
 }
