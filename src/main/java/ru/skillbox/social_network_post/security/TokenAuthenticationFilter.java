@@ -40,18 +40,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String path = request.getServletPath();
         log.info("Request path: {}", path);
 
-        // Пропустить проверку токена для маршрутов /auth/** и /account/**
-        if (path.startsWith("/api/v1/auth/login") || path.startsWith("/api/v1/account/me")) {
-            log.info("Request path: {}", path);
-
-            Authentication authentication = new HeaderAuthenticationToken(UUID.fromString("41d948a2-af59-4f88-a7b6-283d009934a0"),
-                    "test", Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         if (authHeader == null) {
             unauthorizedResponse(response, "{\"error\": \"Missing Authorization header\"}");
             return;
