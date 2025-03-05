@@ -191,9 +191,7 @@ public class PostServiceImpl implements PostService {
         }
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> {
-                    return new EntityNotFoundException("Post with ID " + postId + " not found");
-                });
+                .orElseThrow(() -> new EntityNotFoundException("Post with ID " + postId + " not found"));
 
         if (postDto.getTimeChanged() == null) {
             post.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
@@ -228,8 +226,7 @@ public class PostServiceImpl implements PostService {
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     public List<UUID> getFriendsIds(UUID accountId) {
         try {
-            //TODO:
-            return null; //friendServiceClient.getFriendsIds(accountId);
+            return Collections.emptyList(); //friendServiceClient.getFriendsIds(accountId);
         } catch (FeignException e) {
             throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", accountId));
         }
@@ -242,8 +239,7 @@ public class PostServiceImpl implements PostService {
         try {
             AccountSearchDto accountSearchDto = new AccountSearchDto();
             accountSearchDto.setAuthor(author);
-            //TODO:
-            return null; //accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
+            return Collections.emptyList(); //accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
         } catch (FeignException e) {
             throw new CustomFreignException(MessageFormat.format("Error fetching authorId by name: {0}", author));
         }

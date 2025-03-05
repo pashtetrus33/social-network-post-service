@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 
     private ErrorResponse handleException(Exception ex, HttpStatus status) {
         log.error(ex.getLocalizedMessage());
-        return new ErrorResponse(ex.getLocalizedMessage());
+        return new ErrorResponse(ex.getLocalizedMessage(), status.name());
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
                 .toList();
         String errorMessage = String.join("; ", errorMessages);
-        return new ErrorResponse(errorMessage);
+        return new ErrorResponse(errorMessage, HttpStatus.BAD_REQUEST.name());
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
@@ -84,6 +84,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(CustomFreignException.class)
     @ResponseStatus(HttpStatus.I_AM_A_TEAPOT)
     public ErrorResponse handleFeignException(CustomFreignException ex) {
-        return new ErrorResponse("Feign error occurred: " + ex.getMessage());
+        return new ErrorResponse("Feign error occurred: " + ex.getMessage(), HttpStatus.I_AM_A_TEAPOT.name());
     }
 }

@@ -1,6 +1,5 @@
 package ru.skillbox.social_network_post.dto;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;

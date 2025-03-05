@@ -21,11 +21,9 @@ public class AccountDto {
     private String about;
     private String city;
     private String country;
-    //private String token;
     private Status statusCode;
     private String firstName;
     private String lastName;
-    //private LocalDateTime regDate;
     private LocalDateTime birthDate;
     private String messagePermission;
     private LocalDateTime lastOnlineTime;
@@ -34,6 +32,4 @@ public class AccountDto {
     private boolean isDeleted;
     private String photoId;
     private String photoName;
-    //private LocalDateTime createdOn;
-    //private LocalDateTime updatedOn;
 }
