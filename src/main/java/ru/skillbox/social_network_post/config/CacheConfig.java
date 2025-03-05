@@ -1,29 +1,33 @@
 package ru.skillbox.social_network_post.config;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.caffeine.CaffeineCacheManager;
+import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 @EnableCaching
 public class CacheConfig {
 
     @Bean
-    public Caffeine<Object, Object> caffeineConfig() {
-        return Caffeine.newBuilder()
-                .expireAfterWrite(60, TimeUnit.MINUTES)  // Кэш будет истекать через 60 минут
-                .maximumSize(500);  // Максимум 500 элементов в кэше
-    }
+    public CacheManager cacheManager() {
+        return new ConcurrentMapCacheManager(
+                "posts",        // Кэш постов по ID
+                "post_pages",    // Кэш страниц с постами
+                "comments"     // Кэш комментариев
 
-    @Bean
-    public CacheManager cacheManager(Caffeine<Object, Object> caffeine) {
-        CaffeineCacheManager caffeineCacheManager = new CaffeineCacheManager();
-        caffeineCacheManager.setCaffeine(caffeine);
-        return caffeineCacheManager;
+        ) {
+            @Override
+            protected org.springframework.cache.concurrent.ConcurrentMapCache createConcurrentMapCache(String name) {
+                return new org.springframework.cache.concurrent.ConcurrentMapCache(
+                        name,
+                        new ConcurrentHashMap<>(500), // Ограничение в 500 записей
+                        false // Без сериализации
+                );
+            }
+        };
     }
 }
