@@ -3,6 +3,8 @@ package ru.skillbox.social_network_post.service.impl;
 import feign.FeignException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
@@ -58,10 +60,9 @@ public class PostServiceImpl implements PostService {
         this.commentRepository = commentRepository;
     }
 
-
+    @Cacheable(value = "posts", key = "#postId")
     @LogExecutionTime
     @Override
-    //@Cacheable(value = "posts", key = "#postId")
     @Transactional(readOnly = true)
     public PostDto getById(UUID postId) {
         Post post = postRepository.findById(postId)
@@ -73,9 +74,9 @@ public class PostServiceImpl implements PostService {
     }
 
 
+    @Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
     @LogExecutionTime
     @Override
-    //@Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
     public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
 
         // Проверка автора и получение его ID
@@ -132,11 +133,12 @@ public class PostServiceImpl implements PostService {
     }
 
 
-//    @Caching(evict = {
-//            //@CacheEvict(value = "posts", key = "#postId"),
-//            //@CacheEvict(value = "comments", key = "#postId"),
-//            //@CacheEvict(value = "post_pages", allEntries = true)
-//    })
+    // Очистка кэша при изменении данных
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#postId"),
+            @CacheEvict(value = "post_pages", allEntries = true),
+            @CacheEvict(value = "comments", key = "#postId")
+    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -168,11 +170,12 @@ public class PostServiceImpl implements PostService {
     }
 
 
-//    @Caching(evict = {
-//            //@CacheEvict(value = "posts", key = "#postId"),
-//            //@CacheEvict(value = "comments", key = "#postId"),
-//            //@CacheEvict(value = "post_pages", allEntries = true)
-//    })
+    // Очистка кэша при изменении данных
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#postId"),
+            @CacheEvict(value = "post_pages", allEntries = true),
+            @CacheEvict(value = "comments", key = "#postId")
+    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -200,11 +203,12 @@ public class PostServiceImpl implements PostService {
     }
 
 
-//    @Caching(evict = {
-//            //@CacheEvict(value = "posts", key = "#postId"),
-//            //@CacheEvict(value = "comments", key = "#postId"),
-//            //@CacheEvict(value = "post_pages", allEntries = true)
-//    })
+    // Очистка кэша при изменении данных
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#postId"),
+            @CacheEvict(value = "post_pages", allEntries = true),
+            @CacheEvict(value = "comments", key = "#postId")
+    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -220,23 +224,9 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    @Override
-    @Transactional
-    public void updateBlockedStatusForAccount(UUID uuid) {
-        postRepository.updateBlockedStatusForAccount(uuid);
-    }
-
-
-    @Override
-    public void updateDeletedStatusForAccount(UUID uuid) {
-        postRepository.updateDeletedStatusForAccount(uuid);
-    }
-
-
-
     @LogExecutionTime
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
-    protected List<UUID> getFriendsIds(UUID accountId) {
+    public List<UUID> getFriendsIds(UUID accountId) {
         try {
             //TODO:
             return null; //friendServiceClient.getFriendsIds(accountId);
@@ -248,7 +238,7 @@ public class PostServiceImpl implements PostService {
 
     @LogExecutionTime
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
-    protected List<UUID> getAuthorIds(@Size(max = 255, message = "Author name must not exceed 255 characters") String author) {
+    public List<UUID> getAuthorIds(@Size(max = 255, message = "Author name must not exceed 255 characters") String author) {
         try {
             AccountSearchDto accountSearchDto = new AccountSearchDto();
             accountSearchDto.setAuthor(author);
@@ -257,5 +247,17 @@ public class PostServiceImpl implements PostService {
         } catch (FeignException e) {
             throw new CustomFreignException(MessageFormat.format("Error fetching authorId by name: {0}", author));
         }
+    }
+
+    @Override
+    @Transactional
+    public void updateBlockedStatusForAccount(UUID uuid) {
+        postRepository.updateBlockedStatusForAccount(uuid);
+    }
+
+
+    @Override
+    public void updateDeletedStatusForAccount(UUID uuid) {
+        postRepository.updateDeletedStatusForAccount(uuid);
     }
 }

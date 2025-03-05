@@ -1,6 +1,9 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -39,7 +42,7 @@ public class CommentServiceImpl implements CommentService {
 
     @LogExecutionTime
     @Override
-    //@Cacheable(value = "comments", key = "#postId")
+    @Cacheable(value = "comments", key = "#postId") // Кэшируем комменты для поста
     @Transactional(readOnly = true)
     public PageCommentDto getByPostId(UUID postId, Pageable pageable) {
         Page<Comment> comments = commentRepository.findByPostIdAndCommentType(postId, CommentType.POST, pageable);
@@ -58,11 +61,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-    //    @Caching(evict = {
-//            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
-//            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
-//            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
-//    })
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#postId"), // Очистка кэша поста
+            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
+            @CacheEvict(value = "comments", key = "#postId") // Очистка кэша комментариев для поста
+    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -106,11 +109,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-    //    @Caching(evict = {
-//            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
-//            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
-//            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
-//    })
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#postId"),
+            @CacheEvict(value = "post_pages", allEntries = true),
+            @CacheEvict(value = "comments", key = "#postId")
+    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -143,11 +146,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
 
-    //    @Caching(evict = {
-//            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
-//            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
-//            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
-//    })
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#postId"),
+            @CacheEvict(value = "post_pages", allEntries = true),
+            @CacheEvict(value = "comments", key = "#postId")
+    })
     @LogExecutionTime
     @Override
     @Transactional
