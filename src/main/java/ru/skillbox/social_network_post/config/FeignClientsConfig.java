@@ -1,10 +1,13 @@
 package ru.skillbox.social_network_post.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Feign;
 import feign.Logger;
 import feign.RequestInterceptor;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
+import feign.jackson.JacksonDecoder;
+import feign.jackson.JacksonEncoder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +21,8 @@ public class FeignClientsConfig {
 
     @Value("${gateway.api.url}")
     private String gatewayApiUrl;
+
+    ObjectMapper objectMapper = new ObjectMapper();
 
     @Bean
     public RequestInterceptor requestInterceptor() {
@@ -39,8 +44,8 @@ public class FeignClientsConfig {
     @Bean
     public AuthServiceClient authServiceClient() {
         return Feign.builder()
-                .encoder(new Encoder.Default())
-                .decoder(new BooleanDecoder())
+                .encoder(new JacksonEncoder())
+                .decoder(new JacksonDecoder())
                 .logger(new feign.slf4j.Slf4jLogger(AuthServiceClient.class))
                 .logLevel(Logger.Level.FULL)
                 .target(AuthServiceClient.class, gatewayApiUrl + "/api/v1/auth");
@@ -73,12 +78,13 @@ public class FeignClientsConfig {
     // Бин для Jackson Encoder
     @Bean
     public Encoder jacksonEncoder() {
-        return new Encoder.Default();
+        return new JacksonEncoder(objectMapper);
     }
 
     // Бин для Jackson Decoder
     @Bean
     public Decoder jacksonDecoder() {
-        return new Decoder.Default();
+
+        return new JacksonDecoder(objectMapper);
     }
 }
