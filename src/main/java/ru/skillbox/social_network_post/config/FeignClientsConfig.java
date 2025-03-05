@@ -39,8 +39,8 @@ public class FeignClientsConfig {
     @Bean
     public AuthServiceClient authServiceClient() {
         return Feign.builder()
-                .encoder(jacksonEncoder())
-                .decoder(jacksonDecoder())
+                .encoder(new Encoder.Default())
+                .decoder(new BooleanDecoder())
                 .logger(new feign.slf4j.Slf4jLogger(AuthServiceClient.class))
                 .logLevel(Logger.Level.FULL)
                 .target(AuthServiceClient.class, gatewayApiUrl + "/api/v1/auth");
