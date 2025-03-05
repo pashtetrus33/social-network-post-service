@@ -15,6 +15,9 @@ import java.util.UUID;
 @Slf4j
 public class EntityCheckUtils {
 
+    private EntityCheckUtils() {
+    }
+
     //Utility method to check comment presence
     public static Comment checkCommentPresence(CommentRepository commentRepository, UUID commentId) {
         return commentRepository.findById(commentId)

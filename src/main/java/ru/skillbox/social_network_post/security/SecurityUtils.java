@@ -12,7 +12,7 @@ public class SecurityUtils {
     private SecurityUtils() {
     }
 
-    // Сохранение токена в ThreadLocal (можно использовать и для других целей)
+    // Сохранение токена в ThreadLocal
     public static void saveToken(String token) {
         tokenHolder.set(token);
     }
@@ -22,10 +22,15 @@ public class SecurityUtils {
         return tokenHolder.get();
     }
 
+    // Очистка ThreadLocal
+    public static void clearToken() {
+        tokenHolder.remove();
+    }
+
     public static UUID getAccountId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.getPrincipal() instanceof UUID) {
-            return (UUID) authentication.getPrincipal();
+        if (authentication != null && authentication.getPrincipal() instanceof UUID accountId) {
+            return accountId;
         }
         throw new IllegalStateException("No authenticated user or invalid principal type");
     }

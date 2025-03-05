@@ -64,6 +64,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         String token = authHeader.substring(7);
 
         //boolean isTokenValid = authServiceClient.validateToken(token);
+
         boolean isTokenValid = true;
         if (!isTokenValid) {
             unauthorizedResponse(response, "{\"error\": \"Invalid or expired token\"}");

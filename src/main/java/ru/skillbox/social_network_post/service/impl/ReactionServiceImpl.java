@@ -1,6 +1,8 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
@@ -32,11 +34,12 @@ public class ReactionServiceImpl implements ReactionService {
     private final KafkaService kafkaService;
 
 
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
-//            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
-//            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
-//    })
+    // Очистка кэша при изменении данных
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#postId"),
+            @CacheEvict(value = "post_pages", allEntries = true),
+            @CacheEvict(value = "comments", key = "#postId")
+    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -79,11 +82,12 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
 
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
-//            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
-//            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
-//    })
+    // Очистка кэша при изменении данных
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#postId"),
+            @CacheEvict(value = "post_pages", allEntries = true),
+            @CacheEvict(value = "comments", key = "#postId")
+    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -113,11 +117,13 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
 
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
-//            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
-//            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
-//    })
+
+    // Очистка кэша при изменении данных
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#postId"),
+            @CacheEvict(value = "post_pages", allEntries = true),
+            @CacheEvict(value = "comments", key = "#postId")
+    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -163,11 +169,12 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
 
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", allEntries = true), // Очистка всех постов из кэша
-//            @CacheEvict(value = "post_pages", allEntries = true), // Очистка всех страниц постов
-//            @CacheEvict(value = "comments", allEntries = true) // Очистка всех комментариев
-//    })
+    // Очистка кэша при изменении данных
+    @Caching(evict = {
+            @CacheEvict(value = "posts", key = "#postId"),
+            @CacheEvict(value = "post_pages", allEntries = true),
+            @CacheEvict(value = "comments", key = "#postId")
+    })
     @LogExecutionTime
     @Override
     @Transactional

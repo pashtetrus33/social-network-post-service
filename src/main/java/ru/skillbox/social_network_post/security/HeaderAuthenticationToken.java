@@ -5,6 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 public class HeaderAuthenticationToken extends AbstractAuthenticationToken {
@@ -40,5 +41,20 @@ public class HeaderAuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public List<GrantedAuthority> getAuthorities() {
         return authorities;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        HeaderAuthenticationToken that = (HeaderAuthenticationToken) o;
+        return Objects.equals(authorities, that.authorities) && Objects.equals(userId, that.userId) && Objects.equals(userName, that.userName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), authorities, userId, userName);
+
     }
 }

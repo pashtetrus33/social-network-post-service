@@ -13,6 +13,9 @@ import java.util.List;
 
 public class PostSpecification {
 
+    private PostSpecification() {
+    }
+
     public static Specification<Post> withFilters(PostSearchDto searchDto) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
