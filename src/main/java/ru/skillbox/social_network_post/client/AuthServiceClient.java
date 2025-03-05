@@ -5,6 +5,6 @@ import feign.RequestLine;
 
 public interface AuthServiceClient {
 
-    @RequestLine("GET /validateToken?token={token}")
+    @RequestLine("GET /validate?token={token}")
     Boolean validateToken(@Param("token") String token);
 }
