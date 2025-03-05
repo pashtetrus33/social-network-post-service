@@ -43,7 +43,6 @@ public class FeignClientsConfig {
                 .decoder(jacksonDecoder())
                 .logger(new feign.slf4j.Slf4jLogger(AuthServiceClient.class))
                 .logLevel(Logger.Level.FULL)
-                .requestInterceptor(requestInterceptor())
                 .target(AuthServiceClient.class, gatewayApiUrl + "/api/v1/auth");
     }
 
