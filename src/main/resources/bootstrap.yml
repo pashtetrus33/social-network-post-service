@@ -3,14 +3,18 @@ spring:
     name: post-service
 
   profiles:
-    active: prod
-   #active: local
+   #active: prod
+   active: local
 
   cloud:
     config:
       discovery:
-        enabled: true
-        service-id: config-service
+        #for-test
+        #enabled: false
+         enabled: true
+         service-id: config-service
+        #for-test
+      #uri: http://91.197.98.213:8888
       fail-fast: true
 
 eureka:
@@ -19,7 +23,8 @@ eureka:
       #Prod
       defaultZone: ${EUREKA_URI:http://discovery-service:8761/eureka}
       #Local
-      #defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
+       #defaultZone: ${EUREKA_URI:http://91.197.98.213:8761/eureka}
+       #defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
     enabled: true
   instance:
     preferIpAddress: true  # Регистрировать IP-адрес контейнера в Eureka

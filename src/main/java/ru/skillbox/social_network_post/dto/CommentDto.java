@@ -1,6 +1,7 @@
 package ru.skillbox.social_network_post.dto;
 
 import jakarta.validation.constraints.*;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
@@ -9,6 +10,7 @@ import ru.skillbox.social_network_post.entity.CommentType;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Builder
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
