@@ -25,6 +25,11 @@ gateway:
     url: ${GATEWAY_URL:http://91.197.98.213:8080}
 
 
+custom:
+  logging:
+    enabled: ${LOG_ENABLED:true}  # Читаем из ENV-переменной (по умолчанию true)
+    level: ${LOG_LEVEL:INFO}      # Читаем уровень логов из ENV (по умолчанию INFO)
+
 logging:
   level:
     root: INFO
