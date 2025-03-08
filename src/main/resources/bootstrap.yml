@@ -3,18 +3,14 @@ spring:
     name: post-service
 
   profiles:
-   #active: prod
-   active: local
+   active: prod
+  #active: local
 
   cloud:
     config:
       discovery:
-        #for-test
-        #enabled: false
          enabled: true
          service-id: config-service
-        #for-test
-      #uri: http://91.197.98.213:8888
       fail-fast: true
 
 eureka:
