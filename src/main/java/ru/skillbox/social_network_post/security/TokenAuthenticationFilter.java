@@ -68,6 +68,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             log.info("Username: {}", userName);
             log.info("UserId: {}", userId);
         } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
             unauthorizedResponse(response, e.getMessage());
             return;
         }
