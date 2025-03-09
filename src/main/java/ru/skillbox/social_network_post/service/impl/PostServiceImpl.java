@@ -60,7 +60,7 @@ public class PostServiceImpl implements PostService {
         this.commentRepository = commentRepository;
     }
 
-    @Cacheable(value = "posts", key = "#postId")
+    //@Cacheable(value = "posts", key = "#postId")
     @LogExecutionTime
     @Override
     @Transactional(readOnly = true)
@@ -74,7 +74,7 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    @Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
+    //@Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
     @LogExecutionTime
     @Override
     public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
@@ -134,11 +134,11 @@ public class PostServiceImpl implements PostService {
 
 
     // Очистка кэша при изменении данных
-    @Caching(evict = {
-            @CacheEvict(value = "posts", key = "#postId"),
-            @CacheEvict(value = "post_pages", allEntries = true),
-            @CacheEvict(value = "comments", key = "#postId")
-    })
+//    @Caching(evict = {
+//            @CacheEvict(value = "posts", key = "#postId"),
+//            @CacheEvict(value = "post_pages", allEntries = true),
+//            @CacheEvict(value = "comments", key = "#postId")
+//    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -171,11 +171,11 @@ public class PostServiceImpl implements PostService {
 
 
     // Очистка кэша при изменении данных
-    @Caching(evict = {
-            @CacheEvict(value = "posts", key = "#postId"),
-            @CacheEvict(value = "post_pages", allEntries = true),
-            @CacheEvict(value = "comments", key = "#postId")
-    })
+//    @Caching(evict = {
+//            @CacheEvict(value = "posts", key = "#postId"),
+//            @CacheEvict(value = "post_pages", allEntries = true),
+//            @CacheEvict(value = "comments", key = "#postId")
+//    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -202,11 +202,11 @@ public class PostServiceImpl implements PostService {
 
 
     // Очистка кэша при изменении данных
-    @Caching(evict = {
-            @CacheEvict(value = "posts", key = "#postId"),
-            @CacheEvict(value = "post_pages", allEntries = true),
-            @CacheEvict(value = "comments", key = "#postId")
-    })
+//    @Caching(evict = {
+//            @CacheEvict(value = "posts", key = "#postId"),
+//            @CacheEvict(value = "post_pages", allEntries = true),
+//            @CacheEvict(value = "comments", key = "#postId")
+//    })
     @LogExecutionTime
     @Override
     @Transactional

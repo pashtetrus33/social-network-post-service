@@ -35,11 +35,11 @@ public class ReactionServiceImpl implements ReactionService {
 
 
     // Очистка кэша при изменении данных
-    @Caching(evict = {
-            @CacheEvict(value = "posts", key = "#postId"),
-            @CacheEvict(value = "post_pages", allEntries = true),
-            @CacheEvict(value = "comments", key = "#postId")
-    })
+//    @Caching(evict = {
+//            @CacheEvict(value = "posts", key = "#postId"),
+//            @CacheEvict(value = "post_pages", allEntries = true),
+//            @CacheEvict(value = "comments", key = "#postId")
+//    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -83,11 +83,11 @@ public class ReactionServiceImpl implements ReactionService {
 
 
     // Очистка кэша при изменении данных
-    @Caching(evict = {
-            @CacheEvict(value = "posts", key = "#postId"),
-            @CacheEvict(value = "post_pages", allEntries = true),
-            @CacheEvict(value = "comments", key = "#postId")
-    })
+//    @Caching(evict = {
+//            @CacheEvict(value = "posts", key = "#postId"),
+//            @CacheEvict(value = "post_pages", allEntries = true),
+//            @CacheEvict(value = "comments", key = "#postId")
+//    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -119,11 +119,11 @@ public class ReactionServiceImpl implements ReactionService {
 
 
     // Очистка кэша при изменении данных
-    @Caching(evict = {
-            @CacheEvict(value = "posts", key = "#postId"),
-            @CacheEvict(value = "post_pages", allEntries = true),
-            @CacheEvict(value = "comments", key = "#postId")
-    })
+//    @Caching(evict = {
+//            @CacheEvict(value = "posts", key = "#postId"),
+//            @CacheEvict(value = "post_pages", allEntries = true),
+//            @CacheEvict(value = "comments", key = "#postId")
+//    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -170,11 +170,11 @@ public class ReactionServiceImpl implements ReactionService {
 
 
     // Очистка кэша при изменении данных
-    @Caching(evict = {
-            @CacheEvict(value = "posts", key = "#postId"),
-            @CacheEvict(value = "post_pages", allEntries = true),
-            @CacheEvict(value = "comments", key = "#postId")
-    })
+//    @Caching(evict = {
+//            @CacheEvict(value = "posts", key = "#postId"),
+//            @CacheEvict(value = "post_pages", allEntries = true),
+//            @CacheEvict(value = "comments", key = "#postId")
+//    })
     @LogExecutionTime
     @Override
     @Transactional
