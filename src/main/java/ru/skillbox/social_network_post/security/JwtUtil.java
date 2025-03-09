@@ -27,7 +27,7 @@ public class JwtUtil {
         JSONObject json = extractPayload(token);
 
         // Получаем строку userId
-        String userIdStr = json.optString("userId", "");
+        String userIdStr = json.optString("accountId", "");
 
         // Проверяем, если userId пустой, выбрасываем исключение
         if (userIdStr.isEmpty()) {
