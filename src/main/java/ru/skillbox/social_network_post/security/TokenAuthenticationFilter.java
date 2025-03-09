@@ -65,6 +65,8 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         try {
             userName = jwtUtil.extractUsername(token);
             userId = jwtUtil.extractUserId(token);
+            log.info("Username: {}", userName);
+            log.info("UserId: {}", userId);
         } catch (IllegalArgumentException e) {
             unauthorizedResponse(response, e.getMessage());
             return;
@@ -83,7 +85,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         Authentication authentication = new HeaderAuthenticationToken(userId, userName, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
-
+        log.info("Successfully authenticated user: {}", userName);
         filterChain.doFilter(request, response);
     }
 
