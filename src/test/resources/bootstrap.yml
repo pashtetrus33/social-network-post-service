@@ -5,6 +5,23 @@ spring:
   profiles:
     active: local
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test_db  # URL вашей базы данных, Testcontainers обеспечит этот URL
+    username: test_user
+    password: test_password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # Для обновления схемы базы данных на каждом запуске
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+
   cloud:
     config:
       discovery:
@@ -23,13 +40,3 @@ eureka:
 gateway:
   api:
     url: ${GATEWAY_URL:http://91.197.98.213:8080}
-
-
-custom:
-  logging:
-    enabled: ${LOG_ENABLED:true}  # Читаем из ENV-переменной (по умолчанию true)
-    level: ${LOG_LEVEL:INFO}      # Читаем уровень логов из ENV (по умолчанию INFO)
-
-logging:
-  level:
-    root: INFO

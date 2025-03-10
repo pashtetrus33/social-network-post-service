@@ -3,9 +3,7 @@ package ru.skillbox.social_network_post.service.impl;
 import feign.FeignException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,6 +36,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 
 
+@Slf4j
 @Service
 public class PostServiceImpl implements PostService {
 
@@ -46,8 +45,8 @@ public class PostServiceImpl implements PostService {
     private final KafkaService kafkaService;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
-    private List<UUID> authorIds = new ArrayList<>();
-    private List<UUID> friendsIds = new ArrayList<>();
+
+
     private UUID accountId;
 
     public PostServiceImpl(AccountServiceClient accountServiceClient,
@@ -78,6 +77,8 @@ public class PostServiceImpl implements PostService {
     @LogExecutionTime
     @Override
     public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
+        List<UUID> authorIds = new ArrayList<>();
+        List<UUID> friendsIds = new ArrayList<>();
 
         // Проверка автора и получение его ID
         if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
@@ -99,19 +100,11 @@ public class PostServiceImpl implements PostService {
         // Проверка флага с друзьями и получение их ID
         if (Boolean.TRUE.equals(searchDto.getWithFriends())) {
             accountId = SecurityUtils.getAccountId();
-            try {
 
-                // Получаем список друзей из сервиса друзей
-                //friendsIds = getFriendsIds(accountId);
+            friendsIds = getFriendsIds(accountId);
+            log.info("Friends ids from friends service: {}", friendsIds.toString());
 
-                //TODO: Убрать тестовую заглушку
-                friendsIds.add(UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eba"));
-
-                searchDto.setAccountIds(friendsIds);
-
-            } catch (Exception e) {
-                throw new CustomFreignException(MessageFormat.format("Error fetching friends for accountId: {0}", accountId));
-            }
+            searchDto.setAccountIds(friendsIds);
         }
 
         if (searchDto.getDateTo() == null) {
@@ -226,8 +219,9 @@ public class PostServiceImpl implements PostService {
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     public List<UUID> getFriendsIds(UUID accountId) {
         try {
-            return Collections.emptyList(); //friendServiceClient.getFriendsIds(accountId);
+            return friendServiceClient.getFriendsIds(accountId);
         } catch (FeignException e) {
+            log.error("Error fetching friends ids by accountId: {}", accountId);
             throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", accountId));
         }
     }
@@ -239,7 +233,8 @@ public class PostServiceImpl implements PostService {
         try {
             AccountSearchDto accountSearchDto = new AccountSearchDto();
             accountSearchDto.setAuthor(author);
-            return Collections.emptyList(); //accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
+            return Collections.emptyList();
+            //accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
         } catch (FeignException e) {
             throw new CustomFreignException(MessageFormat.format("Error fetching authorId by name: {0}", author));
         }
