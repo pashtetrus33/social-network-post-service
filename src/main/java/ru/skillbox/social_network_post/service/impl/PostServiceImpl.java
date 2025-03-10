@@ -101,7 +101,7 @@ public class PostServiceImpl implements PostService {
         if (Boolean.TRUE.equals(searchDto.getWithFriends())) {
             accountId = SecurityUtils.getAccountId();
 
-            friendsIds = getFriendsIds(accountId);
+            friendsIds = getFriendsIds();
             log.info("Friends ids from friends service: {}", friendsIds.toString());
 
             searchDto.setAccountIds(friendsIds);
@@ -217,7 +217,7 @@ public class PostServiceImpl implements PostService {
 
     @LogExecutionTime
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
-    public List<UUID> getFriendsIds(UUID accountId) {
+    public List<UUID> getFriendsIds() {
         try {
             return friendServiceClient.getFriendsIds();
         } catch (FeignException e) {
