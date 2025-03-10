@@ -6,7 +6,7 @@ spring:
     active: local
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/test_db  # URL вашей базы данных, Testcontainers обеспечит этот URL
+    url: jdbc:postgresql://${TESTCONTAINERS_POSTGRES_HOST}:${TESTCONTAINERS_POSTGRES_PORT}/test_db
     username: test_user
     password: test_password
     driver-class-name: org.postgresql.Driver
@@ -20,7 +20,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
 
   cloud:
     config:
