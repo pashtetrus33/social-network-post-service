@@ -75,6 +75,8 @@ class PostControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postDto)))
                 .andExpect(status().isCreated());
+
+        verify(postService, times(1)).create(postDto);
     }
 
 
@@ -87,16 +89,18 @@ class PostControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(postService).update(eq(postId), any(PostDto.class));
+
+        verify(postService, times(1)).update(postId, postDto);
     }
 
 
     @Test
     void deleteById_shouldReturnNoContent() throws Exception {
         mockMvc.perform(delete("/api/v1/post/{id}", postId)
-                .with(csrf()) ) // Добавляем CSRF-токен
+                        .with(csrf())) // Добавляем CSRF-токен
                 .andExpect(status().isNoContent());
 
-        verify(postService).delete(postId);
+        verify(postService, times(1)).delete(postId);
     }
 
 
@@ -138,7 +142,7 @@ class PostControllerTest {
         UUID postId = UUID.randomUUID();
 
         mockMvc.perform(delete("/api/v1/post/" + postId + "/like")
-                .with(csrf()) ) // Добавляем CSRF-токен
+                        .with(csrf())) // Добавляем CSRF-токен
                 .andExpect(status().isNoContent());
 
         verify(reactionService, times(1)).removeLikeFromPost(postId);
