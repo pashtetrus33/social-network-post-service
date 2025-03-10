@@ -219,7 +219,7 @@ public class PostServiceImpl implements PostService {
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     public List<UUID> getFriendsIds(UUID accountId) {
         try {
-            return friendServiceClient.getFriendsIds(accountId);
+            return friendServiceClient.getFriendsIds();
         } catch (FeignException e) {
             log.error("Error fetching friends ids by accountId: {}", accountId);
             throw new CustomFreignException(MessageFormat.format("Error fetching friends by accountId: {0}", accountId));

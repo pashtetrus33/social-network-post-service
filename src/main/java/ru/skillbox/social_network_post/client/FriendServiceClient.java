@@ -8,6 +8,6 @@ import java.util.UUID;
 
 public interface FriendServiceClient {
 
-    @RequestLine("GET /{friendId}")
-    List<UUID> getFriendsIds(@Param("friendId") UUID friendId);
+    @RequestLine("GET /friendId")
+    List<UUID> getFriendsIds();
 }
