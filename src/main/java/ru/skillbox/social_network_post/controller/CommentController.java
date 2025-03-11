@@ -9,7 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.aspect.LogMethodCall;
-import ru.skillbox.social_network_post.dto.SearchDto;
+import ru.skillbox.social_network_post.dto.CommentSearchDto;
+import ru.skillbox.social_network_post.dto.PostSearchDto;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.dto.CommentDto;
@@ -31,10 +32,10 @@ public class CommentController {
     @GetMapping
     public PageCommentDto getByPostId(
             @PathVariable UUID id,
-            @Valid @ModelAttribute SearchDto searchDto,
+            @Valid @ModelAttribute CommentSearchDto commentSearchDto,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
 
-        return commentService.getByPostId(id, searchDto, pageable);
+        return commentService.getByPostId(id, commentSearchDto, pageable);
     }
 
 

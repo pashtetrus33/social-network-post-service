@@ -76,12 +76,12 @@ public class PostServiceImpl implements PostService {
     //@Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
     @LogExecutionTime
     @Override
-    public PagePostDto getAll(@Valid SearchDto searchDto, Pageable pageable) {
+    public PagePostDto getAll(@Valid PostSearchDto postSearchDto, Pageable pageable) {
         List<UUID> authorIds = new ArrayList<>();
         List<UUID> friendsIds = new ArrayList<>();
 
         // Проверка автора и получение его ID
-        if (searchDto.getAuthor() != null && !searchDto.getAuthor().isBlank()) {
+        if (postSearchDto.getAuthor() != null && !postSearchDto.getAuthor().isBlank()) {
             try {
 
                 // Получаем список идентификаторов по имени автора из сервиса аккаунтов
@@ -90,33 +90,33 @@ public class PostServiceImpl implements PostService {
                 //TODO: Убрать тестовую заглушку
                 authorIds = new ArrayList<>(Collections.singleton(UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eb0")));
 
-                searchDto.setAccountIds(authorIds);
+                postSearchDto.setAccountIds(authorIds);
 
             } catch (FeignException e) {
-                throw new CustomFreignException(MessageFormat.format("Error fetching accounts by name: {0}", searchDto.getAuthor()));
+                throw new CustomFreignException(MessageFormat.format("Error fetching accounts by name: {0}", postSearchDto.getAuthor()));
             }
         }
 
         // Проверка флага с друзьями и получение их ID
-        if (Boolean.TRUE.equals(searchDto.getWithFriends())) {
+        if (Boolean.TRUE.equals(postSearchDto.getWithFriends())) {
             accountId = SecurityUtils.getAccountId();
 
             friendsIds = getFriendsIds();
             log.info("Friends ids from friends service: {}", friendsIds.toString());
 
-            searchDto.setAccountIds(friendsIds);
+            postSearchDto.setAccountIds(friendsIds);
         }
 
-        if (searchDto.getDateTo() == null) {
-            searchDto.setDateTo(String.valueOf(Instant.now().toEpochMilli()));
+        if (postSearchDto.getDateTo() == null) {
+            postSearchDto.setDateTo(String.valueOf(Instant.now().toEpochMilli()));
         } else {
-            searchDto.setDateTo(String.valueOf(Instant.parse(searchDto.getDateTo()).toEpochMilli()));
+            postSearchDto.setDateTo(String.valueOf(Instant.parse(postSearchDto.getDateTo()).toEpochMilli()));
         }
-        if (searchDto.getDateFrom() != null) {
-            searchDto.setDateFrom(String.valueOf(Instant.parse(searchDto.getDateFrom()).toEpochMilli()));
+        if (postSearchDto.getDateFrom() != null) {
+            postSearchDto.setDateFrom(String.valueOf(Instant.parse(postSearchDto.getDateFrom()).toEpochMilli()));
         }
         // Формируем спецификацию для поиска
-        Specification<Post> spec = PostSpecification.withFilters(searchDto);
+        Specification<Post> spec = PostSpecification.withFilters(postSearchDto);
 
         // Запрашиваем посты из репозитория
         Page<Post> posts = postRepository.findAll(spec, pageable);

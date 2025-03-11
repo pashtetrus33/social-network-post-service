@@ -1,13 +1,17 @@
 package ru.skillbox.social_network_post.dto;
 
 
-import lombok.Data;
+import lombok.*;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
 import java.util.List;
 
 
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class AccountSearchDto {
 
     private List<UUID> ids;

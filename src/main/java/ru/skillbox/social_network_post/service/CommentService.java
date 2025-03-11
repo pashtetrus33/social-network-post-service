@@ -2,15 +2,16 @@ package ru.skillbox.social_network_post.service;
 
 import org.springframework.data.domain.Pageable;
 import ru.skillbox.social_network_post.dto.CommentDto;
+import ru.skillbox.social_network_post.dto.CommentSearchDto;
 import ru.skillbox.social_network_post.dto.PageCommentDto;
-import ru.skillbox.social_network_post.dto.SearchDto;
+import ru.skillbox.social_network_post.dto.PostSearchDto;
 
 import java.util.UUID;
 
 
 public interface CommentService {
 
-    PageCommentDto getByPostId(UUID postId, SearchDto searchDto, Pageable pageable);
+    PageCommentDto getByPostId(UUID postId, CommentSearchDto commentSearchDto, Pageable pageable);
 
     void create(UUID postId, CommentDto commentDto);
 

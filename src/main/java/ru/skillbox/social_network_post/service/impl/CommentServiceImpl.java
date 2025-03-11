@@ -1,16 +1,13 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
-import ru.skillbox.social_network_post.dto.SearchDto;
+import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.entity.Comment;
 import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
@@ -19,13 +16,9 @@ import ru.skillbox.social_network_post.mapper.CommentMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.repository.specifiaction.CommentSpecification;
-import ru.skillbox.social_network_post.repository.specifiaction.PostSpecification;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.KafkaService;
-import ru.skillbox.social_network_post.dto.CommentDto;
-import ru.skillbox.social_network_post.dto.KafkaDto;
-import ru.skillbox.social_network_post.dto.PageCommentDto;
 import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
@@ -48,16 +41,16 @@ public class CommentServiceImpl implements CommentService {
     @Override
     //@Cacheable(value = "comments", key = "#postId") // Кэшируем комменты для поста
     @Transactional(readOnly = true)
-    public PageCommentDto getByPostId(UUID postId, SearchDto searchDto, Pageable pageable) {
+    public PageCommentDto getByPostId(UUID postId, CommentSearchDto commentSearchDto, Pageable pageable) {
 
-
-        //Page<Comment> comments = commentRepository.findByPostIdAndCommentType(postId, CommentType.POST, pageable);
+        commentSearchDto.setPostId(postId);
+        commentSearchDto.setCommentType(CommentType.POST);
 
         // Формируем спецификацию для поиска
-        Specification<Comment> spec = CommentSpecification.withFilters(searchDto);
+        Specification<Comment> spec = CommentSpecification.withFilters(commentSearchDto);
 
-        // Запрашиваем посты из репозитория
-        Page<Comment> comments = commentRepository.findByPostIdAndCommentType(postId, CommentType.POST, spec, pageable);
+        // Запрашиваем комменты из репозитория
+        Page<Comment> comments = commentRepository.findAll(spec, pageable);
 
         return CommentMapperFactory.toPageCommentDto(comments);
     }

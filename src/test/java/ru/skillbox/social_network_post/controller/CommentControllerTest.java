@@ -13,8 +13,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.skillbox.social_network_post.dto.CommentDto;
+import ru.skillbox.social_network_post.dto.CommentSearchDto;
 import ru.skillbox.social_network_post.dto.PageCommentDto;
-import ru.skillbox.social_network_post.dto.SearchDto;
+import ru.skillbox.social_network_post.dto.PostSearchDto;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.ReactionService;
 
@@ -70,7 +71,7 @@ class CommentControllerTest {
                 .empty(false)
                 .build();
 
-        when(commentService.getByPostId(any(UUID.class),any(SearchDto.class), eq(pageable))).thenReturn(pageCommentDto);
+        when(commentService.getByPostId(any(UUID.class), any(CommentSearchDto.class), eq(pageable))).thenReturn(pageCommentDto);
 
         mockMvc.perform(get("/api/v1/post/{id}/comment", postId)
                         .param("page", "0")
