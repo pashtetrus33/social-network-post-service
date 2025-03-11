@@ -11,7 +11,7 @@ import java.util.UUID;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PostSearchDto {
+public class SearchDto {
 
     private List<UUID> ids;
 

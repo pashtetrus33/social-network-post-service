@@ -76,7 +76,7 @@ public class PostServiceImpl implements PostService {
     //@Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
     @LogExecutionTime
     @Override
-    public PagePostDto getAll(@Valid PostSearchDto searchDto, Pageable pageable) {
+    public PagePostDto getAll(@Valid SearchDto searchDto, Pageable pageable) {
         List<UUID> authorIds = new ArrayList<>();
         List<UUID> friendsIds = new ArrayList<>();
 

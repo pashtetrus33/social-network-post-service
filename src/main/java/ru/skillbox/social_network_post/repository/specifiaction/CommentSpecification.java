@@ -1,22 +1,23 @@
 package ru.skillbox.social_network_post.repository.specifiaction;
 
 import jakarta.persistence.criteria.Join;
-import org.springframework.data.jpa.domain.Specification;
-import ru.skillbox.social_network_post.entity.Post;
-import ru.skillbox.social_network_post.dto.SearchDto;
 import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.jpa.domain.Specification;
+import ru.skillbox.social_network_post.dto.SearchDto;
+import ru.skillbox.social_network_post.entity.Comment;
+import ru.skillbox.social_network_post.entity.Post;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostSpecification {
+public class CommentSpecification {
 
-    private PostSpecification() {
+    private CommentSpecification() {
     }
 
-    public static Specification<Post> withFilters(SearchDto searchDto) {
+    public static Specification<Comment> withFilters(SearchDto searchDto) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
