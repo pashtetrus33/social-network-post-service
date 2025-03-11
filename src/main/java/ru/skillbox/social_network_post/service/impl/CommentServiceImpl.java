@@ -60,6 +60,10 @@ public class CommentServiceImpl implements CommentService {
         // Запрашиваем комменты из репозитория
         Page<Comment> comments = commentRepository.findAll(spec, pageable);
 
+        for (Comment comment : comments) {
+            log.info("!!Service getByPostId comment: {}", comment);
+        }
+
         return CommentMapperFactory.toPageCommentDto(comments);
     }
 
