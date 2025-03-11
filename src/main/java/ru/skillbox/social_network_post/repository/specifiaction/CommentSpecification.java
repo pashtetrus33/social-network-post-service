@@ -63,7 +63,7 @@ public class CommentSpecification {
 
             // Фильтрация по посту
             if (commentSearchDto.getPostId() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("post"), commentSearchDto.getPostId()));
+                predicates.add(criteriaBuilder.equal(root.get("post").get("postId"), commentSearchDto.getPostId()));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
