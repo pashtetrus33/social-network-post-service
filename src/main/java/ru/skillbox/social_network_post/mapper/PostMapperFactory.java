@@ -104,7 +104,6 @@ public final class PostMapperFactory {
         post.setReactionsCount(postDto.getLikeAmount());
         post.setMyReaction(postDto.getMyLike());
         post.setImagePath(postDto.getImagePath());
-        post.setPublishDate(postDto.getPublishDate());
     }
 
     public static List<PostDto> toPostDtoList(List<Post> posts) {

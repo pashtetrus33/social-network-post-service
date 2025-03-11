@@ -176,7 +176,6 @@ public class PostServiceImpl implements PostService {
 
         UUID postId = postDto.getId();
 
-
         EntityCheckUtils.checkPostPresence(postRepository, postId);
 
         EntityCheckUtils.checkPostDto(postDto);
@@ -188,15 +187,6 @@ public class PostServiceImpl implements PostService {
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with ID " + postId + " not found"));
-
-
-        // Устанавливаем publishDate, если он передан, иначе текущее время
-        if (postDto.getPublishDate() != null) {
-            post.setPublishDate(postDto.getPublishDate());
-        } else {
-            post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
-
-        }
 
         if (postDto.getTimeChanged() == null) {
             post.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
