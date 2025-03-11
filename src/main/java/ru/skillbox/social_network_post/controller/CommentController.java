@@ -33,7 +33,7 @@ public class CommentController {
     @GetMapping
     public PageCommentDto getByPostId(
             @PathVariable UUID id,
-            @Valid @RequestBody CommentSearchDto commentSearchDto,
+            @Valid @ModelAttribute CommentSearchDto commentSearchDto,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
 
             log.info("Get comment by post id {}", id);
