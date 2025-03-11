@@ -172,7 +172,9 @@ public class PostServiceImpl implements PostService {
     @LogExecutionTime
     @Override
     @Transactional
-    public void update(UUID postId, PostDto postDto) {
+    public void update(PostDto postDto) {
+
+        UUID postId = postDto.getId();
 
         EntityCheckUtils.checkPostPresence(postRepository, postId);
 
