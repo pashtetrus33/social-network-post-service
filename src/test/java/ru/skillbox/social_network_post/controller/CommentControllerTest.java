@@ -71,9 +71,16 @@ class CommentControllerTest {
                 .empty(false)
                 .build();
 
+        CommentSearchDto commentSearchDto = new CommentSearchDto();
+        commentSearchDto.setIsDeleted(false);
+
+
         when(commentService.getByPostId(any(UUID.class), any(CommentSearchDto.class), eq(pageable))).thenReturn(pageCommentDto);
 
         mockMvc.perform(get("/api/v1/post/{id}/comment", postId)
+                        .with(csrf())  // Добавляем CSRF-токен
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(commentSearchDto))
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
