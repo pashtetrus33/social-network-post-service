@@ -53,7 +53,7 @@ public class PostController {
     @LogExecutionTime
     @GetMapping
     public PagePostDto getAll(
-            @Valid @ModelAttribute PostSearchDto searchDto,
+            @Valid @ModelAttribute SearchDto searchDto,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
 
         return postService.getAll(searchDto, pageable);
