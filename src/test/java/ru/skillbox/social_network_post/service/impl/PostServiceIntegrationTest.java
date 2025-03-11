@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -18,10 +19,11 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+
 @Testcontainers
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-public class PostServiceIntegrationTest {
+class PostServiceIntegrationTest {
 
     // Создаем статический контейнер и подавляем предупреждение,
     // поскольку мы управляем его жизненным циклом вручную (статический блок ниже)

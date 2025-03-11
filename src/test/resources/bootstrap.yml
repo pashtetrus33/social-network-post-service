@@ -28,14 +28,6 @@ spring:
       uri: http://91.197.98.213:8888
       fail-fast: true
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: ${EUREKA_URI:http://91.197.98.213:8761/eureka}
-    enabled: false
-  instance:
-    preferIpAddress: true  # Регистрировать IP-адрес контейнера в Eureka
-
 gateway:
   api:
     url: ${GATEWAY_URL:http://91.197.98.213:8080}
