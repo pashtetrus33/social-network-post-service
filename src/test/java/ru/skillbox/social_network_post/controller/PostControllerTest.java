@@ -82,7 +82,7 @@ class PostControllerTest {
 
     @Test
     void update_shouldReturnNoContent() throws Exception {
-        mockMvc.perform(put("/api/v1/post/{id}", postId)
+        mockMvc.perform(put("/api/v1/post")
                         .with(csrf())  // Добавляем CSRF-токен
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(postDto)))
