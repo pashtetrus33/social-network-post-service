@@ -189,7 +189,7 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new EntityNotFoundException("Post with ID " + postId + " not found"));
 
         if (postDto.getTimeChanged() == null) {
-            post.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
+            postDto.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
         }
 
         PostMapperFactory.updatePostFromDto(postDto, post);
