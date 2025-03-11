@@ -88,9 +88,7 @@ class PostControllerTest {
                         .content(objectMapper.writeValueAsString(postDto)))
                 .andExpect(status().isNoContent());
 
-        verify(postService).update(eq(postId), any(PostDto.class));
-
-        verify(postService, times(1)).update(postId, postDto);
+        verify(postService, times(1)).update(postDto);
     }
 
 

@@ -33,10 +33,10 @@ public class PostController {
 
     @LogMethodCall
     @LogExecutionTime
-    @PutMapping("/{id}")
+    @PutMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void update(@PathVariable UUID id, @Valid @RequestBody PostDto postDto) {
-        postService.update(id, postDto);
+    public void update(@Valid @RequestBody PostDto postDto) {
+        postService.update(postDto);
     }
 
 
