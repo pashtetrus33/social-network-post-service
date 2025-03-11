@@ -86,24 +86,15 @@ public final class PostMapperFactory {
             return;
         }
 
-        post.setTime(postDto.getTime());
         post.setTimeChanged(postDto.getTimeChanged());
-        post.setAuthorId(postDto.getAuthorId());
         post.setTitle(postDto.getTitle());
         post.setPostText(postDto.getPostText());
-        post.setIsBlocked(postDto.getIsBlocked());
-        post.setIsDeleted(postDto.getIsDeleted());
-        post.setCommentsCount(postDto.getCommentsCount());
 
         if (postDto.getTags() != null) {
             post.setTags(new ArrayList<>(postDto.getTags()));
         } else {
             post.setTags(null);
         }
-
-        post.setReactionsCount(postDto.getLikeAmount());
-        post.setMyReaction(postDto.getMyLike());
-        post.setImagePath(postDto.getImagePath());
     }
 
     public static List<PostDto> toPostDtoList(List<Post> posts) {
