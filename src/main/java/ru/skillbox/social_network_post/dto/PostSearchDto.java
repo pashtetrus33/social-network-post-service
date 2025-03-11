@@ -1,17 +1,19 @@
 package ru.skillbox.social_network_post.dto;
 
 import jakarta.validation.constraints.Size;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import lombok.Setter;
 
 import java.util.List;
 import java.util.UUID;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SearchDto {
+public class PostSearchDto {
 
     private List<UUID> ids;
 

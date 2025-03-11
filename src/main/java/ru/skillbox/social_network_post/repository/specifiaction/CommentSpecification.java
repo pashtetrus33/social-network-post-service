@@ -1,14 +1,10 @@
 package ru.skillbox.social_network_post.repository.specifiaction;
 
-import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
-import ru.skillbox.social_network_post.dto.SearchDto;
+import ru.skillbox.social_network_post.dto.CommentSearchDto;
 import ru.skillbox.social_network_post.entity.Comment;
-import ru.skillbox.social_network_post.entity.Post;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,73 +13,57 @@ public class CommentSpecification {
     private CommentSpecification() {
     }
 
-    public static Specification<Comment> withFilters(SearchDto searchDto) {
+    public static Specification<Comment> withFilters(CommentSearchDto commentSearchDto) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Фильтрация по ID постов
-            if (searchDto.getIds() != null && !searchDto.getIds().isEmpty()) {
-                predicates.add(root.get("id").in(searchDto.getIds()));
+            // Фильтрация по количеству лайков
+            if (commentSearchDto.getLikeAmount() != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("likeAmount"),
+                        commentSearchDto.getLikeAmount()));
             }
 
-            // Фильтрация по ID аккаунтов авторов
-            if (searchDto.getAccountIds() != null && !searchDto.getAccountIds().isEmpty()) {
-                predicates.add(root.get("authorId").in(searchDto.getAccountIds()));
+            // Фильтрация по количеству комментариев
+            if (commentSearchDto.getCommentsCount() != null) {
+                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("commentsCount"),
+                        commentSearchDto.getCommentsCount()));
             }
 
-            // Фильтрация по заблокированным постам
-            if (searchDto.getBlockedIds() != null && !searchDto.getBlockedIds().isEmpty()) {
-                predicates.add(root.get("id").in(searchDto.getBlockedIds()));
+            // Фильтрация по статусу блокировки
+            if (commentSearchDto.getIsBlocked() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("isBlocked"), commentSearchDto.getIsBlocked()));
             }
 
-            // Фильтрация по признаку блокировки поста
-            if (searchDto.getIsBlocked() != null && !searchDto.getIsBlocked()) {
-                predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.isFalse(root.get("isBlocked")),
-                        criteriaBuilder.isNull(root.get("isBlocked"))
-                ));
+            // Фильтрация по статусу удаления
+            if (commentSearchDto.getIsDeleted() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("isDeleted"), commentSearchDto.getIsDeleted()));
             }
 
-
-            // Фильтрация по статусу удаления поста
-            if (searchDto.getIsDeleted() != null && !searchDto.getIsDeleted()) {
-                predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.isFalse(root.get("isDeleted")),
-                        criteriaBuilder.isNull(root.get("isDeleted"))
-                ));
+            // Фильтрация по тексту комментария
+            if (commentSearchDto.getCommentText() != null && !commentSearchDto.getCommentText().isBlank()) {
+                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("commentText")), "%%" +
+                        commentSearchDto.getCommentText().toLowerCase() + "%%"));
             }
 
-            // Фильтрация по названию поста
-            if (searchDto.getTitle() != null && !searchDto.getTitle().isBlank()) {
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + searchDto.getTitle().toLowerCase() + "%"));
+            // Фильтрация по пути изображения
+            if (commentSearchDto.getImagePath() != null && !commentSearchDto.getImagePath().isBlank()) {
+                predicates.add(criteriaBuilder.like(root.get("imagePath"), "%%" +
+                        commentSearchDto.getImagePath() + "%%"));
             }
 
-            // Фильтрация по тексту поста
-            if (searchDto.getPostText() != null && !searchDto.getPostText().isBlank()) {
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("postText")), "%" + searchDto.getPostText().toLowerCase() + "%"));
+            // Фильтрация по типу комментария
+            if (commentSearchDto.getCommentType() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("commentType"), commentSearchDto.getCommentType()));
             }
 
-            // Фильтрация по тегам
-            if (searchDto.getTags() != null && !searchDto.getTags().isEmpty()) {
-                Join<Post, String> tagsJoin = root.join("tags");
-                predicates.add(tagsJoin.in(searchDto.getTags()));
+            // Фильтрация по родительскому комментарию
+            if (commentSearchDto.getParentCommentId() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("parentComment"), commentSearchDto.getParentCommentId()));
             }
 
-            // Фильтрация по дате публикации (с)
-            if (searchDto.getDateFrom() != null) {
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                        root.get("publishDate"),
-                        Instant.ofEpochMilli(Long.parseLong(searchDto.getDateFrom()))
-                                .atZone(ZoneOffset.UTC).toLocalDateTime()
-                ));
-            }
-            // Фильтрация по дате публикации (по)
-            if (searchDto.getDateTo() != null) {
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                        root.get("publishDate"),
-                        Instant.ofEpochMilli(Long.parseLong(searchDto.getDateTo()))
-                                .atZone(ZoneOffset.UTC).toLocalDateTime()
-                ));
+            // Фильтрация по посту
+            if (commentSearchDto.getPostId() != null) {
+                predicates.add(criteriaBuilder.equal(root.get("post"), commentSearchDto.getPostId()));
             }
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));

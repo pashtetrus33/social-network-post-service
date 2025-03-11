@@ -11,7 +11,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.skillbox.social_network_post.dto.PagePostDto;
 import ru.skillbox.social_network_post.dto.PostDto;
-import ru.skillbox.social_network_post.dto.SearchDto;
+import ru.skillbox.social_network_post.dto.PostSearchDto;
 import ru.skillbox.social_network_post.dto.ReactionDto;
 import ru.skillbox.social_network_post.service.PostService;
 import ru.skillbox.social_network_post.service.ReactionService;
@@ -104,13 +104,13 @@ class PostControllerTest {
 
     @Test
     void getAll_shouldReturnPagePostDto() throws Exception {
-        when(postService.getAll(any(SearchDto.class), any()))
+        when(postService.getAll(any(PostSearchDto.class), any()))
                 .thenReturn(new PagePostDto());
 
         mockMvc.perform(get("/api/v1/post"))
                 .andExpect(status().isOk());
 
-        verify(postService, times(1)).getAll(any(SearchDto.class), any());
+        verify(postService, times(1)).getAll(any(PostSearchDto.class), any());
     }
 
 
