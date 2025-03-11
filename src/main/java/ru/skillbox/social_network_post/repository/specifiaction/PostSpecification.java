@@ -36,13 +36,20 @@ public class PostSpecification {
             }
 
             // Фильтрация по признаку блокировки поста
-            if (searchDto.getIsBlocked() != null && searchDto.getIsBlocked()) {
-                predicates.add(criteriaBuilder.isTrue(root.get("isBlocked")));
+            if (searchDto.getIsBlocked() != null && !searchDto.getIsBlocked()) {
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.isFalse(root.get("isBlocked")),
+                        criteriaBuilder.isNull(root.get("isBlocked"))
+                ));
             }
 
+
             // Фильтрация по статусу удаления поста
-            if (searchDto.getIsDeleted() != null && searchDto.getIsDeleted()) {
-                predicates.add(criteriaBuilder.isTrue(root.get("isDeleted")));
+            if (searchDto.getIsDeleted() != null && !searchDto.getIsDeleted()) {
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.isFalse(root.get("isDeleted")),
+                        criteriaBuilder.isNull(root.get("isDeleted"))
+                ));
             }
 
             // Фильтрация по названию поста
