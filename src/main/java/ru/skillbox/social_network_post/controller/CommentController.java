@@ -2,6 +2,7 @@ package ru.skillbox.social_network_post.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
@@ -10,7 +11,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.aspect.LogMethodCall;
 import ru.skillbox.social_network_post.dto.CommentSearchDto;
-import ru.skillbox.social_network_post.dto.PostSearchDto;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.dto.CommentDto;
@@ -18,6 +18,7 @@ import ru.skillbox.social_network_post.dto.PageCommentDto;
 
 import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/post/{id}/comment")
 @RequiredArgsConstructor
@@ -32,8 +33,11 @@ public class CommentController {
     @GetMapping
     public PageCommentDto getByPostId(
             @PathVariable UUID id,
-            @Valid @ModelAttribute CommentSearchDto commentSearchDto,
+            @Valid @RequestBody CommentSearchDto commentSearchDto,
             @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+
+            log.info("Get comment by post id {}", id);
+            log.info("Get comment by post with commentsearchdto {}", commentSearchDto);
 
         return commentService.getByPostId(id, commentSearchDto, pageable);
     }

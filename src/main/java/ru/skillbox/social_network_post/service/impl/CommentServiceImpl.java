@@ -1,6 +1,7 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
@@ -43,11 +45,17 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public PageCommentDto getByPostId(UUID postId, CommentSearchDto commentSearchDto, Pageable pageable) {
 
+        log.info("Service getByPostId: {}", postId);
+
         commentSearchDto.setPostId(postId);
         commentSearchDto.setCommentType(CommentType.POST);
 
+        log.info("Service getByPostId commentsearchdto: {}", commentSearchDto);
+
         // Формируем спецификацию для поиска
         Specification<Comment> spec = CommentSpecification.withFilters(commentSearchDto);
+
+        log.info("Service getByPostId spec: {}", spec);
 
         // Запрашиваем комменты из репозитория
         Page<Comment> comments = commentRepository.findAll(spec, pageable);

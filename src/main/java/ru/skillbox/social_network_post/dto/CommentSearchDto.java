@@ -1,9 +1,6 @@
 package ru.skillbox.social_network_post.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import ru.skillbox.social_network_post.entity.CommentType;
 
 import java.util.UUID;
@@ -12,6 +9,7 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class CommentSearchDto {
     private UUID postId;
     private UUID parentCommentId;
