@@ -8,12 +8,9 @@ import ru.skillbox.social_network_post.entity.Comment;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommentSpecification {
+public interface CommentSpecification {
 
-    private CommentSpecification() {
-    }
-
-    public static Specification<Comment> withFilters(CommentSearchDto commentSearchDto) {
+    static Specification<Comment> withFilters(CommentSearchDto commentSearchDto) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 

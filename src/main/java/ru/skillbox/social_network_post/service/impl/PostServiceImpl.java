@@ -83,13 +83,10 @@ public class PostServiceImpl implements PostService {
 
         // Проверка автора и получение его ID
         if (postSearchDto.getAuthor() != null && !postSearchDto.getAuthor().isBlank()) {
-            try {
                 // Получаем список идентификаторов по имени автора из сервиса аккаунтов
                 authorIds = getAuthorIds(postSearchDto.getAuthor());
+                log.info("AuthorsIds from accounts service: {}", authorIds);
 
-            } catch (FeignException e) {
-                throw new CustomFreignException(MessageFormat.format("Error fetching accounts by name: {0}", postSearchDto.getAuthor()));
-            }
         }
 
         // Проверка флага с друзьями и получение их ID
@@ -107,6 +104,9 @@ public class PostServiceImpl implements PostService {
             postSearchDto.setAccountIds(authorIds);
             postSearchDto.getAccountIds().addAll(friendsIds);
         }
+
+        log.info("Total accountIds for search: {}", postSearchDto.getAccountIds().size());
+        postSearchDto.getAccountIds().forEach(e -> log.info("Account: {}", accountId));
 
         if (postSearchDto.getDateTo() == null) {
             postSearchDto.setDateTo(String.valueOf(Instant.now().toEpochMilli()));

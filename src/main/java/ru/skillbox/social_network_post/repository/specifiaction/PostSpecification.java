@@ -11,12 +11,9 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PostSpecification {
+public interface PostSpecification {
 
-    private PostSpecification() {
-    }
-
-    public static Specification<Post> withFilters(PostSearchDto postSearchDto) {
+    static Specification<Post> withFilters(PostSearchDto postSearchDto) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -26,7 +23,7 @@ public class PostSpecification {
             }
 
             // Фильтрация по ID аккаунтов авторов
-            if (postSearchDto.getAccountIds() != null && !postSearchDto.getAccountIds().isEmpty()) {
+            if (postSearchDto.getAccountIds() != null) {
                 predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
             }
 
