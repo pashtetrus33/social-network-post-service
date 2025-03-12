@@ -77,8 +77,9 @@ public class PostServiceImpl implements PostService {
     @LogExecutionTime
     @Override
     public PagePostDto getAll(@Valid PostSearchDto postSearchDto, Pageable pageable) {
-        List<UUID> authorIds = List.of();
-        List<UUID> friendsIds = List.of();
+
+        List<UUID> authorIds = new ArrayList<>();
+        List<UUID> friendsIds = new ArrayList<>();
 
         // Проверка автора и получение его ID
         if (postSearchDto.getAuthor() != null && !postSearchDto.getAuthor().isBlank()) {
