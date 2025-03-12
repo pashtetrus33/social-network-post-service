@@ -77,8 +77,8 @@ public class PostServiceImpl implements PostService {
     @LogExecutionTime
     @Override
     public PagePostDto getAll(@Valid PostSearchDto postSearchDto, Pageable pageable) {
-        List<UUID> authorIds;
-        List<UUID> friendsIds;
+        List<UUID> authorIds = List.of();
+        List<UUID> friendsIds = List.of();
 
         // Проверка автора и получение его ID
         if (postSearchDto.getAuthor() != null && !postSearchDto.getAuthor().isBlank()) {
@@ -87,12 +87,11 @@ public class PostServiceImpl implements PostService {
                 // Получаем список идентификаторов по имени автора из сервиса аккаунтов
                 authorIds = getAuthorIds(postSearchDto.getAuthor());
 
-                postSearchDto.getAccountIds().addAll(authorIds);
-
             } catch (FeignException e) {
                 throw new CustomFreignException(MessageFormat.format("Error fetching accounts by name: {0}", postSearchDto.getAuthor()));
             }
         }
+
 
         // Проверка флага с друзьями и получение их ID
         if (Boolean.TRUE.equals(postSearchDto.getWithFriends())) {
@@ -101,6 +100,14 @@ public class PostServiceImpl implements PostService {
             friendsIds = getFriendsIds();
             log.info("Friends ids from friends service: {}", friendsIds.toString());
 
+            postSearchDto.getAccountIds().addAll(friendsIds);
+        }
+
+        if (postSearchDto.getAccountIds() != null && !postSearchDto.getAccountIds().isEmpty()) {
+            postSearchDto.getAccountIds().addAll(authorIds);
+            postSearchDto.getAccountIds().addAll(friendsIds);
+        } else {
+            postSearchDto.setAccountIds(authorIds);
             postSearchDto.getAccountIds().addAll(friendsIds);
         }
 
