@@ -85,12 +85,9 @@ public class PostServiceImpl implements PostService {
             try {
 
                 // Получаем список идентификаторов по имени автора из сервиса аккаунтов
-                //authorIds = getAuthorIds(searchDto.getAuthor());
+                authorIds = getAuthorIds(postSearchDto.getAuthor());
 
-                //TODO: Убрать тестовую заглушку
-                authorIds = new ArrayList<>(Collections.singleton(UUID.fromString("6f6d7a8f-1243-42cf-b4dd-287f3ef60eb0")));
-
-                postSearchDto.setAccountIds(authorIds);
+                postSearchDto.getAccountIds().addAll(authorIds);
 
             } catch (FeignException e) {
                 throw new CustomFreignException(MessageFormat.format("Error fetching accounts by name: {0}", postSearchDto.getAuthor()));
@@ -104,7 +101,7 @@ public class PostServiceImpl implements PostService {
             friendsIds = getFriendsIds();
             log.info("Friends ids from friends service: {}", friendsIds.toString());
 
-            postSearchDto.setAccountIds(friendsIds);
+            postSearchDto.getAccountIds().addAll(friendsIds);
         }
 
         if (postSearchDto.getDateTo() == null) {
@@ -235,8 +232,7 @@ public class PostServiceImpl implements PostService {
         try {
             AccountSearchDto accountSearchDto = new AccountSearchDto();
             accountSearchDto.setAuthor(author);
-            return Collections.emptyList();
-            //accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
+            return accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
         } catch (FeignException e) {
             throw new CustomFreignException(MessageFormat.format("Error fetching authorId by name: {0}", author));
         }
