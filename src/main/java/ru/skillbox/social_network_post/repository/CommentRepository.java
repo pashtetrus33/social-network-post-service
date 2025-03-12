@@ -23,6 +23,10 @@ public interface CommentRepository extends JpaRepository<Comment, UUID>, JpaSpec
     void markAllAsDeletedByPostId(@Param("postId") UUID postId);
 
     @Modifying
+    @Query("UPDATE Comment c SET c.isDeleted = true WHERE c.post.id = :postId AND c.id = :commentId")
+    void markCommentAsDeletedByPostIdAndCommentId(UUID postId, UUID commentId);
+
+    @Modifying
     @Query("UPDATE Comment c SET c.likeAmount = c.likeAmount + 1, c.myLike = true WHERE c.id = :commentId")
     void incrementLikeAmountAndSetMyLike(@Param("commentId") UUID commentId);
 

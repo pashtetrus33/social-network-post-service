@@ -58,4 +58,8 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
     @Modifying
     @Query("UPDATE Post p SET p.isDeleted = true WHERE p.authorId = :uuid")
     void updateDeletedStatusForAccount(UUID uuid);
+
+    @Modifying
+    @Query("UPDATE Post p SET p.commentsCount = p.commentsCount -1 WHERE p.id = :postId")
+    void decrementCommentCount(UUID postId);
 }

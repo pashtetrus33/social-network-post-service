@@ -83,7 +83,6 @@ public class PostServiceImpl implements PostService {
         // Проверка автора и получение его ID
         if (postSearchDto.getAuthor() != null && !postSearchDto.getAuthor().isBlank()) {
             try {
-
                 // Получаем список идентификаторов по имени автора из сервиса аккаунтов
                 authorIds = getAuthorIds(postSearchDto.getAuthor());
 
@@ -92,15 +91,12 @@ public class PostServiceImpl implements PostService {
             }
         }
 
-
         // Проверка флага с друзьями и получение их ID
         if (Boolean.TRUE.equals(postSearchDto.getWithFriends())) {
             accountId = SecurityUtils.getAccountId();
 
             friendsIds = getFriendsIds();
             log.info("Friends ids from friends service: {}", friendsIds.toString());
-
-            postSearchDto.getAccountIds().addAll(friendsIds);
         }
 
         if (postSearchDto.getAccountIds() != null && !postSearchDto.getAccountIds().isEmpty()) {

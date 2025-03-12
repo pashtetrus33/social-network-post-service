@@ -175,8 +175,9 @@ public class CommentServiceImpl implements CommentService {
     public void delete(UUID postId, UUID commentId) {
 
         EntityCheckUtils.checkCommentAndPostPresence(commentRepository, postRepository, postId, commentId);
-
         // Помечаем комментарии как удаленные
-        commentRepository.markAllAsDeletedByPostId(postId);
+        commentRepository.markCommentAsDeletedByPostIdAndCommentId(postId, commentId);
+
+        postRepository.decrementCommentCount(postId);
     }
 }
