@@ -7,16 +7,19 @@ import ru.skillbox.social_network_post.dto.PostSearchDto;
 import jakarta.persistence.criteria.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.skillbox.social_network_post.security.SecurityUtils;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 
 public interface PostSpecification {
 
     Logger log = LoggerFactory.getLogger(PostSpecification.class);
+    UUID currentAccountId = SecurityUtils.getAccountId();
 
 
     static Specification<Post> withFilters(PostSearchDto postSearchDto) {
@@ -30,11 +33,24 @@ public interface PostSpecification {
 
             // Фильтрация по ID аккаунтов авторов
             if (postSearchDto.getAccountIds() != null && !postSearchDto.getAccountIds().isEmpty()) {
-                log.warn("account IDs provided for filtering: {}", postSearchDto.getAccountIds());
-                predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
+
+                List<UUID> filteredAccountIds = new ArrayList<>(postSearchDto.getAccountIds());
+
+                // Если текущий accountId не передан явно, исключаем его
+                if (!postSearchDto.getAccountIds().contains(currentAccountId)) {
+                    log.warn("Account IDs provided for filtering without author of Post: {}", postSearchDto.getAccountIds());
+                    predicates.add(root.get("authorId").in(filteredAccountIds));
+                } else {
+                    log.warn("Account IDs provided for filtering and contains author of Post: {}", postSearchDto.getAccountIds());
+                    predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
+                }
+
             } else {
-                log.warn("No account IDs provided for filtering. Skipping authorId filter.");
+                // Если список accountIds пуст, исключаем свои посты
+                log.warn("No account IDs provided for filtering. Filter only own posts.");
+                predicates.add(criteriaBuilder.notEqual(root.get("authorId"), currentAccountId));
             }
+
 
             // Фильтрация по заблокированным постам
             if (postSearchDto.getBlockedIds() != null && !postSearchDto.getBlockedIds().isEmpty()) {
