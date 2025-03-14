@@ -1,5 +1,6 @@
 package ru.skillbox.social_network_post.service.impl;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -82,6 +84,18 @@ class PostServiceIntegrationTest {
     @MockBean
     private KafkaService kafkaService;
 
+    @BeforeEach
+    void setUp() {
+        // Создаем тестовую аутентификацию
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        UUID testAccountId = UUID.randomUUID();
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(testAccountId, null);
+        securityContext.setAuthentication(authentication);
+
+        SecurityContextHolder.setContext(securityContext);
+    }
+
     @Test
     public void testGetById() {
         // Arrange: Подготавливаем данные в базе
@@ -108,7 +122,7 @@ class PostServiceIntegrationTest {
     public void testGetAll() {
         // Arrange: создаем тестовый пост
         Post post = new Post();
-        post.setTitle("Test Post");
+        post.setTitle("New Test Post");
         post.setPostText("Test Content");
         post.setAuthorId(UUID.randomUUID());
         post.setPublishDate(LocalDateTime.now());
@@ -145,7 +159,7 @@ class PostServiceIntegrationTest {
         // Assert
         Page<Post> posts = postRepository.findAll(PageRequest.of(0, 10));
         assertFalse(posts.isEmpty(), "Post should be saved in the database");
-        assertEquals("New Test Post", posts.getContent().get(0).getTitle(), "Title should match");
+        assertEquals("New Test Post", posts.getContent().get(1).getTitle(), "Title should match");
 
         Mockito.verify(kafkaService, Mockito.times(1)).newPostEvent(any(KafkaDto.class));
     }

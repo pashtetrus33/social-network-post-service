@@ -1,6 +1,5 @@
 package ru.skillbox.social_network_post.client;
 
-import feign.Param;
 import feign.RequestLine;
 
 import java.util.List;
