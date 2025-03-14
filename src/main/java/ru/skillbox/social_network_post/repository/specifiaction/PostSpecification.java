@@ -18,7 +18,7 @@ import java.util.UUID;
 
 public interface PostSpecification {
 
-    Logger log = LoggerFactory.getLogger(PostSpecification .class);
+    Logger log = LoggerFactory.getLogger(PostSpecification.class);
 
     static Specification<Post> withFilters(PostSearchDto postSearchDto) {
         return (root, query, criteriaBuilder) -> {
@@ -33,19 +33,15 @@ public interface PostSpecification {
 
             // Фильтрация по ID аккаунтов авторов
             if (postSearchDto.getAccountIds() != null && !postSearchDto.getAccountIds().isEmpty()) {
-                log.warn("account IDs provided for filtering: {}", postSearchDto.getAccountIds());
+                log.warn("Account IDs provided for filtering: {}", postSearchDto.getAccountIds());
 
-                // Если текущий accountId не передан явно, то исключаем его
-                List<UUID> filteredAccountIds = new ArrayList<>(postSearchDto.getAccountIds());
-                if (!filteredAccountIds.contains(currentAccountId)) {
-                    predicates.add(root.get("authorId").in(filteredAccountIds));
-                }
-                // Если передан, то просто фильтруем по списку без изменений
-                else {
+                // Если текущий accountId не передан явно, исключаем его
+                if (!postSearchDto.getAccountIds().contains(currentAccountId)) {
                     predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
                 }
             } else {
-                log.warn("No account IDs provided for filtering. Skipping authorId filter.");
+                // Если список accountIds пуст, исключаем свои посты
+                predicates.add(criteriaBuilder.notEqual(root.get("authorId"), currentAccountId));
             }
 
             // Фильтрация по заблокированным постам
