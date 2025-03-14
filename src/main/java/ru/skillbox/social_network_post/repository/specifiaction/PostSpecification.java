@@ -7,22 +7,24 @@ import ru.skillbox.social_network_post.dto.PostSearchDto;
 import jakarta.persistence.criteria.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.skillbox.social_network_post.security.SecurityUtils;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.UUID;
 
 
 public interface PostSpecification {
 
     Logger log = LoggerFactory.getLogger(PostSpecification .class);
 
-
     static Specification<Post> withFilters(PostSearchDto postSearchDto) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
+
+            UUID currentAccountId = SecurityUtils.getAccountId();
 
             // Фильтрация по ID постов
             if (postSearchDto.getIds() != null && !postSearchDto.getIds().isEmpty()) {
@@ -32,7 +34,16 @@ public interface PostSpecification {
             // Фильтрация по ID аккаунтов авторов
             if (postSearchDto.getAccountIds() != null && !postSearchDto.getAccountIds().isEmpty()) {
                 log.warn("account IDs provided for filtering: {}", postSearchDto.getAccountIds());
-                predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
+
+                // Если текущий accountId не передан явно, то исключаем его
+                List<UUID> filteredAccountIds = new ArrayList<>(postSearchDto.getAccountIds());
+                if (!filteredAccountIds.contains(currentAccountId)) {
+                    predicates.add(root.get("authorId").in(filteredAccountIds));
+                }
+                // Если передан, то просто фильтруем по списку без изменений
+                else {
+                    predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
+                }
             } else {
                 log.warn("No account IDs provided for filtering. Skipping authorId filter.");
             }
@@ -49,7 +60,6 @@ public interface PostSpecification {
                         criteriaBuilder.isNull(root.get("isBlocked"))
                 ));
             }
-
 
             // Фильтрация по статусу удаления поста
             if (postSearchDto.getIsDeleted() != null && !postSearchDto.getIsDeleted()) {
@@ -83,6 +93,7 @@ public interface PostSpecification {
                                 .atZone(ZoneOffset.UTC).toLocalDateTime()
                 ));
             }
+
             // Фильтрация по дате публикации (по)
             if (postSearchDto.getDateTo() != null) {
                 predicates.add(criteriaBuilder.lessThanOrEqualTo(
