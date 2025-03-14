@@ -33,6 +33,7 @@ import java.text.MessageFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 
@@ -83,9 +84,9 @@ public class PostServiceImpl implements PostService {
 
         // Проверка автора и получение его ID
         if (postSearchDto.getAuthor() != null && !postSearchDto.getAuthor().isBlank()) {
-                // Получаем список идентификаторов по имени автора из сервиса аккаунтов
-                authorIds = getAuthorIds(postSearchDto.getAuthor());
-                log.info("AuthorsIds from accounts service: {}", authorIds);
+            // Получаем список идентификаторов по имени автора из сервиса аккаунтов
+            authorIds = getAuthorIds(postSearchDto.getAuthor());
+            log.info("AuthorsIds from accounts service: {}", authorIds);
 
         }
 
@@ -108,14 +109,31 @@ public class PostServiceImpl implements PostService {
         log.info("Total accountIds for search: {}", postSearchDto.getAccountIds().size());
         postSearchDto.getAccountIds().forEach(e -> log.info("Account: {}", accountId));
 
+
+        Instant now = Instant.now();
+
         if (postSearchDto.getDateTo() == null) {
-            postSearchDto.setDateTo(String.valueOf(Instant.now().toEpochMilli()));
+            postSearchDto.setDateTo(String.valueOf(now.toEpochMilli()));
         } else {
-            postSearchDto.setDateTo(String.valueOf(Instant.parse(postSearchDto.getDateTo()).toEpochMilli()));
+            try {
+                postSearchDto.setDateTo(String.valueOf(Instant.parse(postSearchDto.getDateTo()).toEpochMilli()));
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Invalid date format for dateTo: " + postSearchDto.getDateTo(), e);
+            }
         }
+
         if (postSearchDto.getDateFrom() != null) {
-            postSearchDto.setDateFrom(String.valueOf(Instant.parse(postSearchDto.getDateFrom()).toEpochMilli()));
+            try {
+                postSearchDto.setDateFrom(String.valueOf(Instant.parse(postSearchDto.getDateFrom()).toEpochMilli()));
+            } catch (DateTimeParseException e) {
+                throw new IllegalArgumentException("Invalid date format for dateFrom: " + postSearchDto.getDateFrom(), e);
+            }
         }
+
+        if (postSearchDto.getAccountIds().contains(accountId)) {
+            postSearchDto.setDateTo(null);
+        }
+
         // Формируем спецификацию для поиска
         Specification<Post> spec = PostSpecification.withFilters(postSearchDto);
 
