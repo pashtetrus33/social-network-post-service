@@ -5,13 +5,20 @@ import org.springframework.data.jpa.domain.Specification;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.dto.PostSearchDto;
 import jakarta.persistence.criteria.Predicate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 public interface PostSpecification {
+
+    Logger log = LoggerFactory.getLogger(PostSpecification .class);
+
 
     static Specification<Post> withFilters(PostSearchDto postSearchDto) {
         return (root, query, criteriaBuilder) -> {
@@ -23,8 +30,11 @@ public interface PostSpecification {
             }
 
             // Фильтрация по ID аккаунтов авторов
-            if (postSearchDto.getAccountIds() != null) {
+            if (postSearchDto.getAccountIds() != null && !postSearchDto.getAccountIds().isEmpty()) {
+                log.warn("account IDs provided for filtering: {}", postSearchDto.getAccountIds());
                 predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
+            } else {
+                log.warn("No account IDs provided for filtering. Skipping authorId filter.");
             }
 
             // Фильтрация по заблокированным постам
