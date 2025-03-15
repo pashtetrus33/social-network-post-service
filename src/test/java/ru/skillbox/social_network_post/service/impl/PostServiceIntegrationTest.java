@@ -33,7 +33,6 @@ import ru.skillbox.social_network_post.service.KafkaService;
 
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -96,8 +95,9 @@ class PostServiceIntegrationTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
+    @WithMockUser(username = "testUser")
     @Test
-    public void testGetById() {
+    void testGetById() {
         // Arrange: Подготавливаем данные в базе
         Post post = new Post();
         post.setId(null); // ID будет сгенерирован базой данных
@@ -119,7 +119,7 @@ class PostServiceIntegrationTest {
     }
 
     @Test
-    public void testGetAll() {
+    void testGetAll() {
         // Arrange: создаем тестовый пост
         Post post = new Post();
         post.setTitle("New Test Post");
@@ -144,7 +144,7 @@ class PostServiceIntegrationTest {
     }
 
     @Test
-    public void testCreate() {
+    void testCreate() {
         // Arrange
         PostDto postDto = new PostDto();
         postDto.setTitle("New Test Post");

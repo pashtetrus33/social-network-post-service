@@ -47,7 +47,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
 
-    private UUID accountId = SecurityUtils.getAccountId();
+    private UUID accountId;
 
     public PostServiceImpl(AccountServiceClient accountServiceClient,
                            FriendServiceClient friendServiceClient, @Lazy KafkaService kafkaService,
@@ -137,6 +137,8 @@ public class PostServiceImpl implements PostService {
             }
         }
 
+        accountId = SecurityUtils.getAccountId();
+
         if (postSearchDto.getAccountIds().contains(accountId)) {
             postSearchDto.setDateTo(null);
         }
@@ -165,8 +167,6 @@ public class PostServiceImpl implements PostService {
 
         EntityCheckUtils.checkPostDto(postDto);
 
-        accountId = SecurityUtils.getAccountId();
-
         Post post = PostMapperFactory.toPost(postDto);
 
         // Устанавливаем publishDate, если он передан, иначе текущее время
@@ -176,6 +176,8 @@ public class PostServiceImpl implements PostService {
             post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
 
         }
+
+        accountId = SecurityUtils.getAccountId();
 
         post.setAuthorId(accountId);
         post.setId(null);// Сбрасываем ID, чтобы Hibernate сгенерировал новый
@@ -252,6 +254,9 @@ public class PostServiceImpl implements PostService {
     @LogExecutionTime
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     public List<UUID> getFriendsIds() {
+
+        accountId = SecurityUtils.getAccountId();
+
         try {
             return friendServiceClient.getFriendsIds();
         } catch (FeignException e) {
