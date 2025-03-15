@@ -47,8 +47,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
 
-
-    private UUID accountId;
+    private UUID accountId = SecurityUtils.getAccountId();
 
     public PostServiceImpl(AccountServiceClient accountServiceClient,
                            FriendServiceClient friendServiceClient, @Lazy KafkaService kafkaService,
@@ -85,30 +84,38 @@ public class PostServiceImpl implements PostService {
         // Проверка автора и получение его ID
         if (postSearchDto.getAuthor() != null && !postSearchDto.getAuthor().isBlank()) {
             // Получаем список идентификаторов по имени автора из сервиса аккаунтов
-            authorIds = getAuthorIds(postSearchDto.getAuthor());
-            log.info("AuthorsIds from accounts service: {}", authorIds);
-
+            authorIds.addAll(getAuthorIds(postSearchDto.getAuthor()));
+            log.warn("AuthorsIds from accounts service: {}", authorIds);
         }
 
         // Проверка флага с друзьями и получение их ID
         if (Boolean.TRUE.equals(postSearchDto.getWithFriends())) {
-            accountId = SecurityUtils.getAccountId();
-
-            friendsIds = getFriendsIds();
-            log.info("Friends ids from friends service: {}", friendsIds.toString());
+            friendsIds.addAll(getFriendsIds());
+            log.warn("Friends ids from friends service: {}", friendsIds);
         }
 
-        if (postSearchDto.getAccountIds() != null && !postSearchDto.getAccountIds().isEmpty()) {
+        // Если флаги withFriends или author не заданы, оставляем accountIds как null
+        if (postSearchDto.getAccountIds() == null && (postSearchDto.getWithFriends() || postSearchDto.getAuthor() != null)) {
+            // Инициализация только если есть хотя бы один флаг
+            postSearchDto.setAccountIds(new ArrayList<>());
+        }
+
+        // Если флаги withFriends или author присутствуют, добавляем соответствующие ID
+        if (Boolean.TRUE.equals(postSearchDto.getWithFriends()) || postSearchDto.getAuthor() != null) {
+            if (postSearchDto.getAccountIds() == null) {
+                postSearchDto.setAccountIds(new ArrayList<>());
+            }
+
+            // Добавляем авторов и друзей в список
             postSearchDto.getAccountIds().addAll(authorIds);
             postSearchDto.getAccountIds().addAll(friendsIds);
-        } else {
-            postSearchDto.setAccountIds(authorIds);
-            postSearchDto.getAccountIds().addAll(friendsIds);
         }
 
-        log.info("Total accountIds for search: {}", postSearchDto.getAccountIds().size());
-        postSearchDto.getAccountIds().forEach(e -> log.info("Account: {}", accountId));
-
+        // Логирование для проверки
+        log.warn("Final accountIds: {}", postSearchDto.getAccountIds() != null ? postSearchDto.getAccountIds().size() : "null");
+        if (postSearchDto.getAccountIds() != null) {
+            postSearchDto.getAccountIds().forEach(e -> log.info("Account: {}", e));
+        }
 
         Instant now = Instant.now();
 
@@ -178,7 +185,13 @@ public class PostServiceImpl implements PostService {
         post.setCommentsCount(0);
 
         postRepository.save(post);
-        kafkaService.newPostEvent(new KafkaDto(accountId, post.getId()));
+
+        KafkaDto kafkaDto = KafkaDto.builder()
+                .accountId(accountId)
+                .dataId(post.getId())
+                .build();
+
+        kafkaService.newPostEvent(kafkaDto);
     }
 
 

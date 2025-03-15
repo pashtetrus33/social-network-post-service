@@ -31,24 +31,15 @@ public interface PostSpecification {
                 predicates.add(root.get("id").in(postSearchDto.getIds()));
             }
 
-            // Фильтрация по ID аккаунтов авторов
-            if (postSearchDto.getAccountIds() != null && !postSearchDto.getAccountIds().isEmpty()) {
 
-                List<UUID> filteredAccountIds = new ArrayList<>(postSearchDto.getAccountIds());
-
-                // Если текущий accountId не передан явно, исключаем его
-                if (!postSearchDto.getAccountIds().contains(currentAccountId)) {
-                    log.warn("Account IDs provided for filtering without author of Post: {}", postSearchDto.getAccountIds());
-                    predicates.add(root.get("authorId").in(filteredAccountIds));
-                } else {
-                    log.warn("Account IDs provided for filtering and contains author of Post: {}", postSearchDto.getAccountIds());
+            if (postSearchDto.getAccountIds() != null) {
+                    log.warn("Post specification.Account IDs provided for filtering: {}", postSearchDto.getAccountIds());
                     predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
-                }
 
             } else {
-                // Если список accountIds пуст, исключаем свои посты
-                log.warn("No account IDs provided for filtering. Filter only own posts.");
-                predicates.add(criteriaBuilder.notEqual(root.get("authorId"), currentAccountId));
+                // Если accountIds null, исключаем только свои посты
+                log.warn("Post specification.No account IDs provided for filtering. Filter only own posts.");
+                predicates.add(criteriaBuilder.notEqual(root.get("authorId"), currentAccountId)); // Фильтрация по текущему аккаунту
             }
 
 
