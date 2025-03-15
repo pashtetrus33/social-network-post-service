@@ -142,7 +142,7 @@ public class PostServiceImpl implements PostService {
 
         accountId = SecurityUtils.getAccountId();
 
-        if (postSearchDto.getAccountIds().contains(accountId)) {
+        if (postSearchDto.getAccountIds() != null && postSearchDto.getAccountIds().contains(accountId)) {
             postSearchDto.setDateTo(null);
         }
 
