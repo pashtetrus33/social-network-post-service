@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import ru.skillbox.social_network_post.dto.CommentDto;
 import ru.skillbox.social_network_post.dto.CommentSearchDto;
 import ru.skillbox.social_network_post.dto.PageCommentDto;
-import ru.skillbox.social_network_post.dto.PostSearchDto;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.ReactionService;
 
