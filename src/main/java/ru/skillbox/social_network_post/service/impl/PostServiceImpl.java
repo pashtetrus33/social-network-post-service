@@ -89,19 +89,22 @@ public class PostServiceImpl implements PostService {
         }
 
         // Проверка флага с друзьями и получение их ID
-        if (Boolean.TRUE.equals(postSearchDto.getWithFriends())) {
+        if (postSearchDto.getWithFriends() != null && Boolean.TRUE.equals(postSearchDto.getWithFriends())) {
             friendsIds.addAll(getFriendsIds());
             log.warn("Friends ids from friends service: {}", friendsIds);
         }
 
         // Если флаги withFriends или author не заданы, оставляем accountIds как null
-        if (postSearchDto.getAccountIds() == null && (postSearchDto.getWithFriends() || postSearchDto.getAuthor() != null)) {
+        if (postSearchDto.getAccountIds() == null &&
+                (postSearchDto.getWithFriends() != null && Boolean.TRUE.equals(postSearchDto.getWithFriends())
+                        || postSearchDto.getAuthor() != null)) {
             // Инициализация только если есть хотя бы один флаг
             postSearchDto.setAccountIds(new ArrayList<>());
         }
 
         // Если флаги withFriends или author присутствуют, добавляем соответствующие ID
-        if (Boolean.TRUE.equals(postSearchDto.getWithFriends()) || postSearchDto.getAuthor() != null) {
+        if ((postSearchDto.getWithFriends() != null && Boolean.TRUE.equals(postSearchDto.getWithFriends())) ||
+                postSearchDto.getAuthor() != null) {
             if (postSearchDto.getAccountIds() == null) {
                 postSearchDto.setAccountIds(new ArrayList<>());
             }
