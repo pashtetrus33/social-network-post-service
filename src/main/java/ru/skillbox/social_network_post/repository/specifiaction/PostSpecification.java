@@ -33,12 +33,13 @@ public interface PostSpecification {
 
 
             if (postSearchDto.getAccountIds() != null) {
-                    log.warn("Post specification.Account IDs provided for filtering: {}", postSearchDto.getAccountIds());
-                    predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
+                log.warn("Post specification.Account IDs provided for filtering: {}", postSearchDto.getAccountIds());
+                predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
 
             } else {
                 // Если accountIds null, исключаем только свои посты
-                log.warn("Post specification.No account IDs provided for filtering. Filter only own posts.");
+                log.warn("Post specification.No account IDs provided for filtering. Filter only own posts: {}"
+                        , currentAccountId);
                 predicates.add(criteriaBuilder.notEqual(root.get("authorId"), currentAccountId)); // Фильтрация по текущему аккаунту
             }
 
