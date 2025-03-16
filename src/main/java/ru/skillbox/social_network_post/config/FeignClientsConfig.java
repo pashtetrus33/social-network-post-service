@@ -8,6 +8,7 @@ import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.jackson.JacksonDecoder;
 import feign.jackson.JacksonEncoder;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +17,7 @@ import ru.skillbox.social_network_post.client.AuthServiceClient;
 import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 
+@Slf4j
 @Configuration
 public class FeignClientsConfig {
 
@@ -31,6 +33,8 @@ public class FeignClientsConfig {
             requestTemplate.header("Accept", "application/json");
             String token = SecurityUtils.getToken();
             requestTemplate.header("Authorization", "Bearer " + token);
+            log.warn("Request intercepted with headers: {}", requestTemplate.headers());
+            log.warn("Request intercepted with token: {}", token);
         };
     }
 
