@@ -59,13 +59,18 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse notValid(MethodArgumentNotValidException ex) {
         BindingResult bindingResult = ex.getBindingResult();
-        List<String> errorMessages = bindingResult.getAllErrors()
+
+        List<String> errorMessages = (bindingResult != null)
+                ? bindingResult.getAllErrors()
                 .stream()
                 .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .toList();
+                .toList()
+                : List.of("Validation error");
+
         String errorMessage = String.join("; ", errorMessages);
         return new ErrorResponse(errorMessage, HttpStatus.BAD_REQUEST.name());
     }
+
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)

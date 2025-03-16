@@ -1,10 +1,12 @@
 package ru.skillbox.social_network_post.security;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.UUID;
 
+@Slf4j
 public class SecurityUtils {
 
     private static final ThreadLocal<String> tokenHolder = new ThreadLocal<>();
@@ -30,6 +32,7 @@ public class SecurityUtils {
     public static UUID getAccountId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UUID accountId) {
+            log.warn("Get account method. Account is: {}", accountId);
             return accountId;
         }
         throw new IllegalStateException("No authenticated user or invalid principal type");
