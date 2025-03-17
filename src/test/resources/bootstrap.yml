@@ -26,8 +26,7 @@ spring:
       discovery:
         enabled: false
       uri: http://91.197.98.213:8888
-      fail-fast: true
-
+      fail-fast: false
 gateway:
   api:
     url: ${GATEWAY_URL:http://91.197.98.213:8080}

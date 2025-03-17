@@ -289,6 +289,7 @@ public class PostServiceImpl implements PostService {
 
 
     @Override
+    @Transactional
     public void updateDeletedStatusForAccount(UUID uuid) {
         postRepository.updateDeletedStatusForAccount(uuid);
     }

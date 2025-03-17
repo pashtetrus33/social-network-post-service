@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WithMockUser(username = "USER")
 @WebMvcTest(CommentController.class)
-class CommentControllerTest {
+public class CommentControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

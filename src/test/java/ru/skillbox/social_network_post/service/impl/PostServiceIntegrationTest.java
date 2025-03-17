@@ -1,7 +1,7 @@
 package ru.skillbox.social_network_post.service.impl;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +23,8 @@ import org.testcontainers.containers.Network;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
+import ru.skillbox.social_network_post.client.AccountServiceClient;
+import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.dto.KafkaDto;
 import ru.skillbox.social_network_post.dto.PagePostDto;
 import ru.skillbox.social_network_post.dto.PostDto;
@@ -40,11 +42,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @WithMockUser(username = "USER")
 @Testcontainers
 @SpringBootTest
 @ExtendWith(SpringExtension.class)
-class PostServiceIntegrationTest {
+public class PostServiceIntegrationTest {
 
     private static final Network network = Network.newNetwork();
 
@@ -74,6 +77,12 @@ class PostServiceIntegrationTest {
         registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
     }
 
+    //@MockBean
+    //private AccountServiceClient accountServiceClient;
+
+    //@MockBean
+    //private FriendServiceClient friendServiceClient;
+
     @Autowired
     private PostServiceImpl postService;
 
@@ -95,8 +104,10 @@ class PostServiceIntegrationTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
+
     @WithMockUser(username = "testUser")
     @Test
+    @Order(1)
     void testGetById() {
         // Arrange: Подготавливаем данные в базе
         Post post = new Post();
@@ -118,7 +129,9 @@ class PostServiceIntegrationTest {
         assertEquals("Test Content", postDto.getPostText(), "Post text should match");
     }
 
+
     @Test
+    @Order(2)
     void testGetAll() {
         // Arrange: создаем тестовый пост
         Post post = new Post();
@@ -144,6 +157,7 @@ class PostServiceIntegrationTest {
     }
 
     @Test
+    @Order(3)
     void testCreate() {
         // Arrange
         PostDto postDto = new PostDto();
@@ -162,5 +176,115 @@ class PostServiceIntegrationTest {
         assertEquals("New Test Post", posts.getContent().get(1).getTitle(), "Title should match");
 
         Mockito.verify(kafkaService, Mockito.times(1)).newPostEvent(any(KafkaDto.class));
+    }
+
+
+    @Test
+    void testUpdate() {
+        // Arrange: создаем пост в базе
+        Post post = new Post();
+        post.setTitle("Original Title");
+        post.setPostText("Original Content");
+        post.setAuthorId(UUID.randomUUID());
+        post.setPublishDate(LocalDateTime.now());
+
+        Post savedPost = postRepository.save(post);
+
+        // Обновляем DTO
+        PostDto updatedDto = new PostDto();
+        updatedDto.setId(savedPost.getId());
+        updatedDto.setTitle("Updated Title");
+        updatedDto.setPostText("Updated Content");
+        updatedDto.setTimeChanged(LocalDateTime.now());
+
+        // Act
+        postService.update(updatedDto);
+
+        // Assert
+        Post updatedPost = postRepository.findById(savedPost.getId()).orElse(null);
+        assertNotNull(updatedPost, "Updated post should exist");
+        assertEquals("Updated Title", updatedPost.getTitle(), "Title should be updated");
+        assertEquals("Updated Content", updatedPost.getPostText(), "Content should be updated");
+    }
+
+    @Test
+    void testDelete() {
+        // Arrange: создаем пост в базе
+        Post post = new Post();
+        post.setTitle("Delete Me");
+        post.setPostText("To be deleted");
+        post.setAuthorId(UUID.randomUUID());
+        post.setPublishDate(LocalDateTime.now());
+
+        Post savedPost = postRepository.save(post);
+
+        // Act
+        postService.delete(savedPost.getId());
+
+        // Assert
+        Post deletedPost = postRepository.findById(savedPost.getId()).orElse(null);
+        assertNotNull(deletedPost, "Deleted post should exist in DB");
+        assertTrue(deletedPost.getIsDeleted(), "Post's deleted flag should be true");
+    }
+
+    @Test
+    void testUpdateBlockedStatusForAccount() {
+        // Arrange: создаем посты для аккаунта
+        UUID accountId = UUID.randomUUID();
+
+        Post post1 = new Post();
+        post1.setTitle("Blocked 1");
+        post1.setPostText("Block test 1");
+        post1.setAuthorId(accountId);
+        post1.setPublishDate(LocalDateTime.now());
+        postRepository.save(post1);
+
+        Post post2 = new Post();
+        post2.setTitle("Blocked 2");
+        post2.setPostText("Block test 2");
+        post2.setAuthorId(accountId);
+        post2.setPublishDate(LocalDateTime.now());
+        postRepository.save(post2);
+
+        // Act
+        postService.updateBlockedStatusForAccount(accountId);
+
+        // Assert
+        postRepository.findAll().forEach(post -> {
+            if (post.getAuthorId().equals(accountId)) {
+                assertTrue(post.getIsBlocked(), "Post should be blocked");
+            }
+        });
+    }
+
+
+    @Test
+    void testUpdateDeletedStatusForAccount() {
+        // Arrange: создаем посты для аккаунта
+        UUID accountId = UUID.randomUUID();
+
+        Post post1 = new Post();
+        post1.setTitle("Delete Status 1");
+        post1.setPostText("Delete status test 1");
+        post1.setAuthorId(accountId);
+        post1.setPublishDate(LocalDateTime.now());
+        postRepository.save(post1);
+
+        Post post2 = new Post();
+        post2.setTitle("Delete Status 2");
+        post2.setPostText("Delete status test 2");
+        post2.setAuthorId(accountId);
+        post2.setPublishDate(LocalDateTime.now());
+        postRepository.save(post2);
+
+        // Act
+        postService.updateDeletedStatusForAccount(accountId);
+
+        // Assert
+        postRepository.findAll().forEach(post -> {
+            if (post.getAuthorId().equals(accountId)) {
+                assertTrue(post.getIsDeleted(), "Post should be marked as deleted");
+            }
+        });
     }
 }
