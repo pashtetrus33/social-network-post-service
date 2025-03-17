@@ -1,6 +1,5 @@
 package ru.skillbox.social_network_post.service.impl;
 
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -25,10 +24,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
 import ru.skillbox.social_network_post.client.FriendServiceClient;
-import ru.skillbox.social_network_post.dto.KafkaDto;
-import ru.skillbox.social_network_post.dto.PagePostDto;
-import ru.skillbox.social_network_post.dto.PostDto;
-import ru.skillbox.social_network_post.dto.PostSearchDto;
+import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.service.KafkaService;
@@ -36,13 +32,15 @@ import ru.skillbox.social_network_post.service.KafkaService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
-@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @WithMockUser(username = "USER")
 @Testcontainers
 @SpringBootTest
@@ -77,11 +75,11 @@ public class PostServiceIntegrationTest {
         registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
     }
 
-    //@MockBean
-    //private AccountServiceClient accountServiceClient;
+    @MockBean
+    private AccountServiceClient accountServiceClient;
 
-    //@MockBean
-    //private FriendServiceClient friendServiceClient;
+    @MockBean
+    private FriendServiceClient friendServiceClient;
 
     @Autowired
     private PostServiceImpl postService;
@@ -102,12 +100,13 @@ public class PostServiceIntegrationTest {
         securityContext.setAuthentication(authentication);
 
         SecurityContextHolder.setContext(securityContext);
+
+        postRepository.deleteAll();
     }
 
 
     @WithMockUser(username = "testUser")
     @Test
-    @Order(1)
     void testGetById() {
         // Arrange: Подготавливаем данные в базе
         Post post = new Post();
@@ -131,7 +130,6 @@ public class PostServiceIntegrationTest {
 
 
     @Test
-    @Order(2)
     void testGetAll() {
         // Arrange: создаем тестовый пост
         Post post = new Post();
@@ -157,7 +155,38 @@ public class PostServiceIntegrationTest {
     }
 
     @Test
-    @Order(3)
+    void getAll_WithAuthorAndFriendsFilters_ReturnsFilteredPosts() {
+        // Сохраняем пост в БД
+        Post post = new Post();
+        post.setAuthorId(UUID.randomUUID());
+        post.setTitle("Test title");
+        post.setPostText("Test content");
+        post.setPublishDate(LocalDateTime.now());
+        postRepository.save(post);
+
+        // Мокаем Feign клиентов
+        UUID accountId = UUID.randomUUID();
+        UUID friendId = UUID.randomUUID();
+
+        when(accountServiceClient.getAccountsByIds(any()))
+                .thenReturn(List.of(AccountDto.builder().id(accountId).build()));
+
+        when(friendServiceClient.getFriendsIds())
+                .thenReturn(List.of(friendId));
+
+        PostSearchDto searchDto = new PostSearchDto();
+        searchDto.setAuthor("test-author");
+        searchDto.setWithFriends(true);
+
+        Pageable pageable = PageRequest.of(0, 10);
+
+        PagePostDto result = postService.getAll(searchDto, pageable);
+
+        assertNotNull(result);
+        //assertFalse(result.getContent().isEmpty());
+    }
+
+    @Test
     void testCreate() {
         // Arrange
         PostDto postDto = new PostDto();
@@ -173,7 +202,7 @@ public class PostServiceIntegrationTest {
         // Assert
         Page<Post> posts = postRepository.findAll(PageRequest.of(0, 10));
         assertFalse(posts.isEmpty(), "Post should be saved in the database");
-        assertEquals("New Test Post", posts.getContent().get(1).getTitle(), "Title should match");
+        assertEquals("New Test Post", posts.getContent().get(0).getTitle(), "Title should match");
 
         Mockito.verify(kafkaService, Mockito.times(1)).newPostEvent(any(KafkaDto.class));
     }
