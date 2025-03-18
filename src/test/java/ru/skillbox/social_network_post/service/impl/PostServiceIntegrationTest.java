@@ -1,116 +1,33 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.testcontainers.containers.KafkaContainer;
-import org.testcontainers.containers.Network;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.utility.DockerImageName;
-import ru.skillbox.social_network_post.client.AccountServiceClient;
-import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.entity.Post;
-import ru.skillbox.social_network_post.repository.PostRepository;
-import ru.skillbox.social_network_post.service.KafkaService;
-
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-@WithMockUser(username = "USER")
-@Testcontainers
-@SpringBootTest
-@ExtendWith(SpringExtension.class)
-public class PostServiceIntegrationTest {
-
-    private static final Network network = Network.newNetwork();
-
-    @SuppressWarnings("resource")
-    private static final PostgreSQLContainer<?> postgresContainer =
-            new PostgreSQLContainer<>("postgres:16.2-alpine")
-                    .withDatabaseName("test_db")
-                    .withUsername("test_user")
-                    .withPassword("test_password")
-                    .withNetwork(network);
-
-
-    private static final KafkaContainer kafkaContainer = new KafkaContainer(
-            DockerImageName.parse("confluentinc/cp-kafka:7.3.0"))
-            .withNetwork(network);
-
-    static {
-        postgresContainer.start();
-        kafkaContainer.start();
-    }
-
-    @DynamicPropertySource
-    static void registerProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
-        registry.add("spring.datasource.username", postgresContainer::getUsername);
-        registry.add("spring.datasource.password", postgresContainer::getPassword);
-        registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
-    }
-
-    @MockBean
-    private AccountServiceClient accountServiceClient;
-
-    @MockBean
-    private FriendServiceClient friendServiceClient;
-
-    @Autowired
-    private PostServiceImpl postService;
-
-    @Autowired
-    private PostRepository postRepository;
-
-    @MockBean
-    private KafkaService kafkaService;
+public class PostServiceIntegrationTest extends AbstractServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Создаем тестовую аутентификацию
-        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
-        UUID testAccountId = UUID.randomUUID();
-
-        Authentication authentication = new UsernamePasswordAuthenticationToken(testAccountId, null);
-        securityContext.setAuthentication(authentication);
-
-        SecurityContextHolder.setContext(securityContext);
-
-        postRepository.deleteAll();
+        super.setUp(); // Вызов метода из абстрактного класса для инициализации аутентификации и очистки данных.
     }
 
-
-    @WithMockUser(username = "testUser")
     @Test
     void testGetById() {
         // Arrange: Подготавливаем данные в базе
         Post post = new Post();
-        post.setId(null); // ID будет сгенерирован базой данных
         post.setTitle("Test Post");
         post.setPostText("Test Content");
         post.setAuthorId(UUID.randomUUID());
@@ -128,7 +45,6 @@ public class PostServiceIntegrationTest {
         assertEquals("Test Content", postDto.getPostText(), "Post text should match");
     }
 
-
     @Test
     void testGetAll() {
         // Arrange: создаем тестовый пост
@@ -143,7 +59,6 @@ public class PostServiceIntegrationTest {
         searchDto.setAuthor(null);
         searchDto.setWithFriends(false);
         searchDto.setDateTo(null);
-        searchDto.setAccountIds(Collections.emptyList());
         Pageable pageable = PageRequest.of(0, 10);
 
         // Act
@@ -151,7 +66,7 @@ public class PostServiceIntegrationTest {
 
         // Assert
         assertNotNull(result, "PagePostDto should not be null");
-        //assertFalse(result.getContent().isEmpty(), "Result should contain at least one post");
+        assertFalse(result.getContent().isEmpty(), "Result should contain at least one post");
     }
 
     @Test
@@ -183,7 +98,7 @@ public class PostServiceIntegrationTest {
         PagePostDto result = postService.getAll(searchDto, pageable);
 
         assertNotNull(result);
-        //assertFalse(result.getContent().isEmpty());
+        assertTrue(result.getContent().isEmpty(), "Result should not contain posts");
     }
 
     @Test
@@ -206,7 +121,6 @@ public class PostServiceIntegrationTest {
 
         Mockito.verify(kafkaService, Mockito.times(1)).newPostEvent(any(PostNotificationDto.class));
     }
-
 
     @Test
     void testUpdate() {
@@ -285,7 +199,6 @@ public class PostServiceIntegrationTest {
             }
         });
     }
-
 
     @Test
     void testUpdateDeletedStatusForAccount() {
