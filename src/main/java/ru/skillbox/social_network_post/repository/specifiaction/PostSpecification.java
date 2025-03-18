@@ -7,7 +7,6 @@ import ru.skillbox.social_network_post.dto.PostSearchDto;
 import jakarta.persistence.criteria.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.skillbox.social_network_post.security.SecurityUtils;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -19,10 +18,8 @@ import java.util.UUID;
 public interface PostSpecification {
 
     Logger log = LoggerFactory.getLogger(PostSpecification.class);
-    UUID currentAccountId = SecurityUtils.getAccountId();
 
-
-    static Specification<Post> withFilters(PostSearchDto postSearchDto) {
+    static Specification<Post> withFilters(PostSearchDto postSearchDto, UUID currentAccountId) {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 

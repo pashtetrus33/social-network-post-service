@@ -141,13 +141,14 @@ public class PostServiceImpl implements PostService {
         }
 
         accountId = SecurityUtils.getAccountId();
+        log.warn("PostService get all method. AccountId: {}", accountId);
 
         if (postSearchDto.getAccountIds() != null && postSearchDto.getAccountIds().contains(accountId)) {
             postSearchDto.setDateTo(null);
         }
 
         // Формируем спецификацию для поиска
-        Specification<Post> spec = PostSpecification.withFilters(postSearchDto);
+        Specification<Post> spec = PostSpecification.withFilters(postSearchDto, accountId);
 
         // Запрашиваем посты из репозитория
         Page<Post> posts = postRepository.findAll(spec, pageable);
