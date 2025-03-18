@@ -9,6 +9,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.dto.AccountEventDto;
+import ru.skillbox.social_network_post.dto.CommentNotificationDto;
 import ru.skillbox.social_network_post.dto.PostNotificationDto;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.dto.KafkaDto;
@@ -49,9 +50,9 @@ public class KafkaServiceImpl implements KafkaService {
 
 
     @Override
-    public void newCommentEvent(KafkaDto kafkaDto) {
-        kafkaTemplate.send(newCommentTopic, kafkaDto);
-        log.info("Sent new comment -> '{}'", kafkaDto);
+    public void newCommentEvent(CommentNotificationDto commentNotificationDto) {
+        kafkaTemplate.send(newCommentTopic, commentNotificationDto);
+        log.info("Sent new comment -> '{}'", commentNotificationDto);
     }
 
 

@@ -2,6 +2,7 @@ package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -121,9 +122,19 @@ public class CommentServiceImpl implements CommentService {
             post.setTime(LocalDateTime.now(ZoneOffset.UTC));
         }
 
-        commentRepository.save(comment);
+        Comment savedComment = commentRepository.save(comment);
 
-        kafkaService.newCommentEvent(new KafkaDto(accountId, comment.getId()));
+        CommentNotificationDto commentNotificationDto = CommentNotificationDto.builder()
+                .authorId(accountId)
+                .commentId(savedComment.getId())
+                .parentId(parentId)
+                .postId(postId)
+                .shortCommentText(StringUtils.abbreviate(comment.getCommentText(), 100))
+                .publishDate(comment.getTime())
+                .build();
+
+
+        kafkaService.newCommentEvent(commentNotificationDto);
     }
 
 
