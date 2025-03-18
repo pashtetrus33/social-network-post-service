@@ -9,12 +9,12 @@ import ru.skillbox.social_network_post.dto.AccountSearchDto;
 import java.util.List;
 import java.util.UUID;
 
-public interface AccountServiceClient {
+public interface  AccountServiceClient {
 
     @RequestLine("GET /accountIds?ids={ids}")
     List<AccountDto> getAccountsByIds(@Param("ids") List<UUID> ids);
 
-    @RequestLine("POST /search")
+    @RequestLine("GET /search")
     @Body("%7B\"query\": \"{query}\"%7D")
     List<AccountDto> searchAccount(@Param("query") AccountSearchDto accountSearchDto);
 }

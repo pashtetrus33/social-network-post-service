@@ -13,13 +13,11 @@ import java.util.UUID;
 @Builder
 public class PostNotificationDto {
 
-    private UUID postId;  // ID поста
+    private UUID authorId;
 
-    private String title;  // Заголовок поста
+    private UUID postId;
 
-    private Boolean isBlocked;  // Флаг блокировки
+    private String title;
 
-    private Boolean isDeleted;  // Флаг удаления
-
-    private LocalDateTime publishDate;  // Дата публикации поста
+    private LocalDateTime publishDate;
 }
