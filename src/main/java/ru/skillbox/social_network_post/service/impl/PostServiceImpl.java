@@ -192,12 +192,15 @@ public class PostServiceImpl implements PostService {
 
         postRepository.save(post);
 
-        KafkaDto kafkaDto = KafkaDto.builder()
-                .accountId(accountId)
-                .dataId(post.getId())
+        PostNotificationDto postNotificationDto = PostNotificationDto.builder()
+                .postId(post.getId())
+                .title(post.getTitle())
+                .isBlocked(post.getIsBlocked())
+                .isDeleted(post.getIsDeleted())
+                .publishDate(post.getPublishDate())
                 .build();
 
-        kafkaService.newPostEvent(kafkaDto);
+        kafkaService.newPostEvent(postNotificationDto);
     }
 
 

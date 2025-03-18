@@ -194,7 +194,7 @@ public class PostServiceIntegrationTest {
         postDto.setPostText("This is a new test post");
         postDto.setPublishDate(LocalDateTime.now());
 
-        doNothing().when(kafkaService).newPostEvent(any(KafkaDto.class));
+        doNothing().when(kafkaService).newPostEvent(any(PostNotificationDto.class));
 
         // Act
         postService.create(postDto);
@@ -204,7 +204,7 @@ public class PostServiceIntegrationTest {
         assertFalse(posts.isEmpty(), "Post should be saved in the database");
         assertEquals("New Test Post", posts.getContent().get(0).getTitle(), "Title should match");
 
-        Mockito.verify(kafkaService, Mockito.times(1)).newPostEvent(any(KafkaDto.class));
+        Mockito.verify(kafkaService, Mockito.times(1)).newPostEvent(any(PostNotificationDto.class));
     }
 
 
