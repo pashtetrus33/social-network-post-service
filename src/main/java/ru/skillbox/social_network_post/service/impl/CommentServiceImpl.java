@@ -119,7 +119,7 @@ public class CommentServiceImpl implements CommentService {
         post.setCommentsCount(post.getCommentsCount() + 1);
 
         if (commentDto.getTime() == null) {
-            post.setTime(LocalDateTime.now(ZoneOffset.UTC));
+            comment.setTime(LocalDateTime.now(ZoneOffset.UTC));
         }
 
         Comment savedComment = commentRepository.save(comment);
@@ -129,7 +129,7 @@ public class CommentServiceImpl implements CommentService {
                 .commentId(savedComment.getId())
                 .parentId(parentId)
                 .postId(postId)
-                .shortCommentText(StringUtils.abbreviate(comment.getCommentText(), 100))
+                .shortCommentText(StringUtils.abbreviate(comment.getCommentText(), 80))
                 .publishDate(comment.getTime())
                 .build();
 
