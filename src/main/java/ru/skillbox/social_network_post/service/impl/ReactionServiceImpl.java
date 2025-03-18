@@ -1,12 +1,10 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
-import ru.skillbox.social_network_post.dto.KafkaDto;
+import ru.skillbox.social_network_post.dto.ReactionNotificationDto;
 import ru.skillbox.social_network_post.dto.ReactionDto;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.entity.Reaction;
@@ -72,7 +70,17 @@ public class ReactionServiceImpl implements ReactionService {
 
         Long count = reactionRepository.countByCommentIdAndReactionType(postId, reactionDto.getReactionType());
 
-        kafkaService.newLikeEvent(new KafkaDto(accountId, reaction.getId()));
+        ReactionNotificationDto reactionNotificationDto = ReactionNotificationDto.builder()
+                .authorId(accountId)
+                .reactionId(reaction.getId())
+                .postId(postId)
+                .commentId(reaction.getCommentId())
+                .type(reaction.getReactionType())
+                .reactionType(reaction.getReactionType())
+                .publishDate(reaction.getCreatedAt())
+                .build();
+
+        kafkaService.newLikeEvent(reactionNotificationDto);
 
         return ReactionDto.builder()
                 .type(reactionDto.getReactionType())
@@ -115,7 +123,6 @@ public class ReactionServiceImpl implements ReactionService {
 
         reactionRepository.deleteByPostIdAndAuthorId(postId, accountId);
     }
-
 
 
     // Очистка кэша при изменении данных
@@ -165,7 +172,17 @@ public class ReactionServiceImpl implements ReactionService {
             commentRepository.incrementLikeAmount(commentId);
         }
 
-        kafkaService.newLikeEvent(new KafkaDto(accountId, reaction.getId()));
+        ReactionNotificationDto reactionNotificationDto = ReactionNotificationDto.builder()
+                .authorId(accountId)
+                .reactionId(reaction.getId())
+                .postId(postId)
+                .commentId(reaction.getCommentId())
+                .type(reaction.getReactionType())
+                .reactionType(reaction.getReactionType())
+                .publishDate(reaction.getCreatedAt())
+                .build();
+
+        kafkaService.newLikeEvent(reactionNotificationDto);
     }
 
 

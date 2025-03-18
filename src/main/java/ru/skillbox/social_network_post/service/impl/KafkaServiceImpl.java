@@ -12,7 +12,7 @@ import ru.skillbox.social_network_post.dto.AccountEventDto;
 import ru.skillbox.social_network_post.dto.CommentNotificationDto;
 import ru.skillbox.social_network_post.dto.PostNotificationDto;
 import ru.skillbox.social_network_post.service.KafkaService;
-import ru.skillbox.social_network_post.dto.KafkaDto;
+import ru.skillbox.social_network_post.dto.ReactionNotificationDto;
 import ru.skillbox.social_network_post.service.PostService;
 
 @Service
@@ -57,9 +57,9 @@ public class KafkaServiceImpl implements KafkaService {
 
 
     @Override
-    public void newLikeEvent(KafkaDto kafkaDto) {
-        kafkaTemplate.send(newLikeTopic, kafkaDto);
-        log.info("Sent new like -> '{}'", kafkaDto);
+    public void newLikeEvent(ReactionNotificationDto reactionNotificationDto) {
+        kafkaTemplate.send(newLikeTopic, reactionNotificationDto);
+        log.info("Sent new like -> '{}'", reactionNotificationDto);
     }
 
 
