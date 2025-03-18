@@ -193,10 +193,9 @@ public class PostServiceImpl implements PostService {
         postRepository.save(post);
 
         PostNotificationDto postNotificationDto = PostNotificationDto.builder()
+                .authorId(post.getAuthorId())
                 .postId(post.getId())
                 .title(post.getTitle())
-                .isBlocked(post.getIsBlocked())
-                .isDeleted(post.getIsDeleted())
                 .publishDate(post.getPublishDate())
                 .build();
 
