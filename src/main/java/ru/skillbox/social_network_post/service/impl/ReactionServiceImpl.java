@@ -57,6 +57,7 @@ public class ReactionServiceImpl implements ReactionService {
         Reaction reaction = LikeMapperFactory.toLike(reactionDto);
         reaction.setPost(post);
         reaction.setAuthorId(accountId);
+
         reactionRepository.save(reaction);
 
         // Проверяем, является ли текущий пользователь автором поста
@@ -75,7 +76,6 @@ public class ReactionServiceImpl implements ReactionService {
                 .reactionId(reaction.getId())
                 .postId(postId)
                 .commentId(reaction.getCommentId())
-                .type(reaction.getReactionType())
                 .reactionType(reaction.getReactionType())
                 .publishDate(reaction.getCreatedAt())
                 .build();
@@ -160,7 +160,8 @@ public class ReactionServiceImpl implements ReactionService {
         reaction.setAuthorId(accountId);
         reaction.setType("No_type");
         reaction.setReactionType("No_reaction");
-        reactionRepository.save(reaction);
+
+        reaction = reactionRepository.save(reaction);
 
 
         // Проверяем, является ли текущий пользователь автором коме комментария
@@ -172,12 +173,12 @@ public class ReactionServiceImpl implements ReactionService {
             commentRepository.incrementLikeAmount(commentId);
         }
 
+
         ReactionNotificationDto reactionNotificationDto = ReactionNotificationDto.builder()
                 .authorId(accountId)
                 .reactionId(reaction.getId())
                 .postId(postId)
                 .commentId(reaction.getCommentId())
-                .type(reaction.getReactionType())
                 .reactionType(reaction.getReactionType())
                 .publishDate(reaction.getCreatedAt())
                 .build();

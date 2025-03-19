@@ -27,8 +27,6 @@ public class ReactionNotificationDto {
 
     private UUID postId;
 
-    private String type;
-
     private String reactionType;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
