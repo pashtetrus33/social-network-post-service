@@ -1,21 +1,21 @@
 package ru.skillbox.social_network_post.service.impl;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.entity.Comment;
+import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
-import ru.skillbox.social_network_post.exception.IdMismatchException;
+import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
 
 public class CommentServiceImplTest extends AbstractServiceTest {
@@ -25,78 +25,185 @@ public class CommentServiceImplTest extends AbstractServiceTest {
         super.setUp(); // Вызов метода из абстрактного класса для инициализации аутентификации и очистки данных.
     }
 
-//    @Test
-//    void testCreateComment() {
-//        UUID postId = UUID.randomUUID();
-//        CommentDto commentDto = new CommentDto();
-//        commentDto.setCommentText("Test Comment");
-//        commentDto.setTime(LocalDateTime.now());
-//
-//        // Arrange
-//        Post post = Post.builder()
-//                .title("New Test Post")
-//                .postText("This is a new test post")
-//                .publishDate(LocalDateTime.now())
-//                .build();
-//
-//        when(postRepository.findById(any(UUID.class))).thenReturn(Optional.of(new Post()));
-//
-//        // Мокируем commentRepository.save
-//        when(commentRepository.save(any(Comment.class))).thenReturn(new Comment());
-//
-//        // Мокируем вызов Kafka
-//        doNothing().when(kafkaService).newCommentEvent(any());
-//
-//        commentService.create(postId, commentDto);
-//
-//        // Проверяем, что комментарий был сохранен
-//        verify(commentRepository, times(1)).save(any(Comment.class));
-//        assertEquals(1, post.getCommentsCount());  // Количество комментариев в посте должно увеличиться
-//
-//        // Проверяем, что Kafka сервис был вызван
-//        verify(kafkaService, times(1)).newCommentEvent(any());
-//    }
-//
-//    @Test
-//    void testGetByPostId() {
-//        UUID postId = UUID.randomUUID();
-//        CommentSearchDto commentSearchDto = new CommentSearchDto();
-//        Pageable pageable = PageRequest.of(0, 10);
-//
-//        Comment comment = new Comment();
-//        comment.setCommentText("Test Comment");
-//        comment.setId(UUID.randomUUID());
-//        comment.setPost(new Post());
-//        comment.setTime(LocalDateTime.now());
-//
-//        Page<Comment> commentsPage = mock(Page.class);
-//        when(commentRepository.findAll((Example<Comment>) any(), eq(pageable))).thenReturn(commentsPage);
-//
-//        PageCommentDto pageCommentDto = commentService.getByPostId(postId, commentSearchDto, pageable);
-//
-//        assertNotNull(pageCommentDto);
-//        verify(commentRepository, times(1)).findAll((Example<Comment>) any(), eq(pageable));
-//    }
-//
-//    @Test
-//    void testGetSubcomments() {
-//        UUID postId = UUID.randomUUID();
-//        UUID commentId = UUID.randomUUID();
-//        Pageable pageable = PageRequest.of(0, 10);
-//
-//        Comment comment = new Comment();
-//        comment.setCommentText("Test Subcomment");
-//        comment.setId(UUID.randomUUID());
-//        comment.setPost(new Post());
-//
-//        Page<Comment> subcommentsPage = mock(Page.class);
-//        when(commentRepository.findByParentCommentIdAndPostId(eq(commentId), eq(postId), eq(pageable))).thenReturn(subcommentsPage);
-//
-//        PageCommentDto pageCommentDto = commentService.getSubcomments(postId, commentId, pageable);
-//
-//        assertNotNull(pageCommentDto);
-//        verify(commentRepository, times(1)).findByParentCommentIdAndPostId(eq(commentId), eq(postId), eq(pageable));
-//    }
+    @Override
+    protected void clearRepositoryData() {
+        // Очистка данных перед каждым тестом
+        commentRepository.deleteAll();
+    }
+
+
+    @Test
+    void testCreateComment() {
+        CommentDto commentDto = new CommentDto();
+        commentDto.setCommentText("Test Comment");
+        commentDto.setTime(LocalDateTime.now());
+
+        // Arrange: создаём пост
+        Post post = Post.builder()
+                .title("New Test Post")
+                .postText("This is a new test post")
+                .publishDate(LocalDateTime.now())
+                .commentsCount(0)  // Изначально 0 комментариев
+                .build();
+        post = postRepository.save(post);
+
+        // Мокируем вызов Kafka
+        doNothing().when(kafkaService).newCommentEvent(any());
+
+        // Act: создаём комментарий
+        commentService.create(post.getId(), commentDto);
+
+        // Assert 1: Проверяем, что комментарий сохранён в репозитории
+        Comment createdComment = commentRepository.findAll().get(0);
+        Assertions.assertNotNull(createdComment, "Комментарий должен сохраниться в БД");
+
+        Assertions.assertEquals(commentDto.getCommentText(), createdComment.getCommentText(), "Текст комментария должен совпадать");
+        Assertions.assertEquals(post.getId(), createdComment.getPost().getId(), "Комментарий должен быть связан с правильным постом");
+
+        // Assert 2: Проверяем, что у поста увеличился счётчик комментариев
+        Post updatedPost = postRepository.findById(post.getId()).orElseThrow();
+        Assertions.assertEquals(1, updatedPost.getCommentsCount(), "Количество комментариев должно быть 1");
+
+        // Assert 3: Проверяем вызов Kafka
+        verify(kafkaService, times(1)).newCommentEvent(any());
+    }
+
+
+    @Test
+    void testGetByPostId() {
+        // Создаем пост
+        Post post = Post.builder()
+                .title("Test Post")
+                .postText("Some text")
+                .publishDate(LocalDateTime.now())
+                .build();
+        post = postRepository.save(post);
+
+        // Сохраняем несколько комментариев к посту
+        for (int i = 1; i <= 3; i++) {
+            Comment comment = Comment.builder()
+                    .id(UUID.randomUUID())
+                    .post(post)
+                    .commentText("Comment " + i)
+                    .commentType(CommentType.POST)
+                    .isBlocked(false)
+                    .myLike(false)
+                    .isDeleted(false)
+                    .time(LocalDateTime.now())
+                    .build();
+            commentRepository.save(comment);
+        }
+
+        // Подготавливаем параметры поиска и пагинации
+        CommentSearchDto searchDto = new CommentSearchDto();
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("time").descending());
+
+        // Вызов сервиса
+        PageCommentDto pageCommentDto = commentService.getByPostId(post.getId(), searchDto, pageable);
+
+        // Проверки
+        Assertions.assertNotNull(pageCommentDto);
+        Assertions.assertEquals(Long.valueOf(3), pageCommentDto.getTotalElements());
+        Assertions.assertEquals(Integer.valueOf(1), pageCommentDto.getTotalPages());
+        Assertions.assertEquals(3L, pageCommentDto.getContent().size());
+
+        // Доп. проверки содержимого
+        for (CommentDto dto : pageCommentDto.getContent()) {
+            Assertions.assertEquals(post.getId(), dto.getPostId());
+            Assertions.assertNotNull(dto.getCommentText());
+        }
+    }
+
+
+        @Test
+        void testGetSubcomments() {
+            // Arrange: Создаем пост
+            Post post = Post.builder()
+                    .title("Test Post")
+                    .postText("Post text")
+                    .publishDate(LocalDateTime.now())
+                    .build();
+            post = postRepository.save(post);
+
+            // Создаем родительский комментарий
+            Comment parentComment = Comment.builder()
+                    .commentText("Parent Comment")
+                    .post(post)
+                    .commentType(CommentType.POST)
+                    .isBlocked(false)
+                    .isDeleted(false)
+                    .myLike(false)
+                    .build();
+            commentRepository.save(parentComment);
+
+            parentComment = commentRepository.findAll().get(0);
+
+            // Создаем подкомментарий
+            Comment subComment = Comment.builder()
+                    .commentText("Subcomment")
+                    .post(post)
+                    .parentComment(parentComment)
+                    .commentType(CommentType.POST)
+                    .isBlocked(false)
+                    .isDeleted(false)
+                    .myLike(false)
+                    .build();
+            commentRepository.save(subComment);
+
+            // Act: вызываем метод
+            Pageable pageable = PageRequest.of(0, 10);
+            PageCommentDto result = commentService.getSubcomments(post.getId(), parentComment.getId(), pageable);
+
+            // Assert
+            Assertions.assertNotNull(result);
+            Assertions.assertEquals(Long.valueOf(1), result.getTotalElements()); // Должен быть 1 подкомментарий
+            Assertions.assertEquals(subComment.getCommentText(), result.getContent().get(0).getCommentText());
+        }
+
+    @Test
+    void testGetSubcomments_CommentNotFound() {
+        // Arrange: Создаем пост
+        Post post = Post.builder()
+                .title("Test Post")
+                .postText("Post text")
+                .publishDate(LocalDateTime.now())
+                .build();
+        post = postRepository.save(post);
+
+        // Act & Assert: Проверяем выброс исключения, если комментарий не найден
+        Post finalPost = post;
+        assertThrows(EntityNotFoundException.class, () -> {
+            commentService.getSubcomments(finalPost.getId(), UUID.randomUUID(), PageRequest.of(0, 10));
+        });
+    }
+
+    @Test
+    void testGetSubcomments_PostNotFound() {
+        // Arrange: Создаем комментарий
+        Post post = Post.builder()
+                .title("Test Post")
+                .postText("Post text")
+                .publishDate(LocalDateTime.now())
+                .build();
+        post = postRepository.save(post);
+
+        Comment parentComment = Comment.builder()
+                .id(UUID.randomUUID())
+                .commentText("Parent Comment")
+                .post(post)  // Привязываем к существующему посту
+                .commentType(CommentType.POST)
+                .isBlocked(false)
+                .isDeleted(false)
+                .myLike(false)
+                .build();
+        commentRepository.save(parentComment);
+
+        // Act & Assert: Проверяем выброс исключения, если пост не найден
+        assertThrows(EntityNotFoundException.class, () -> {
+            commentService.getSubcomments(UUID.randomUUID(), parentComment.getId(), PageRequest.of(0, 10));
+        });
+    }
+
 //
 //    @Test
 //    void testUpdateComment() {

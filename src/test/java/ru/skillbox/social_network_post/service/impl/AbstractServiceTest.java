@@ -58,6 +58,7 @@ public abstract class AbstractServiceTest {
         registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
     }
 
+
     @MockBean
     protected AccountServiceClient accountServiceClient;
 
@@ -71,13 +72,14 @@ public abstract class AbstractServiceTest {
     protected PostServiceImpl postService;
 
     @Autowired
-    protected CommentService commentService;
-
-    @Autowired
     protected PostRepository postRepository;
 
     @Autowired
+    protected CommentServiceImpl commentService;
+
+    @Autowired
     protected CommentRepository commentRepository;
+
 
     @BeforeEach
     void setUp() {
@@ -97,7 +99,8 @@ public abstract class AbstractServiceTest {
         SecurityContextHolder.setContext(securityContext);
     }
 
-    private void clearRepositoryData() {
+
+    protected void clearRepositoryData() {
         // Очистка данных перед каждым тестом
         postRepository.deleteAll();
         commentRepository.deleteAll();

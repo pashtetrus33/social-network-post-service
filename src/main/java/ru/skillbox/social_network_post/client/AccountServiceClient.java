@@ -14,7 +14,6 @@ public interface  AccountServiceClient {
     @RequestLine("GET /accountIds?ids={ids}")
     List<AccountDto> getAccountsByIds(@Param("ids") List<UUID> ids);
 
-    @RequestLine("GET /search")
-    @Body("%7B\"query\": \"{query}\"%7D")
-    List<AccountDto> searchAccount(@Param("query") AccountSearchDto accountSearchDto);
+    @RequestLine("GET /search?author={author}")
+    List<AccountDto> searchAccount(@Param("author") String author);
 }

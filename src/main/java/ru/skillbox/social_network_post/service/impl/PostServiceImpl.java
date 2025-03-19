@@ -276,9 +276,7 @@ public class PostServiceImpl implements PostService {
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
     public List<UUID> getAuthorIds(@Size(max = 255, message = "Author name must not exceed 255 characters") String author) {
         try {
-            AccountSearchDto accountSearchDto = new AccountSearchDto();
-            accountSearchDto.setAuthor(author);
-            return accountServiceClient.searchAccount(accountSearchDto).stream().map(AccountDto::getId).toList();
+            return accountServiceClient.searchAccount(author).stream().map(AccountDto::getId).toList();
         } catch (FeignException e) {
             throw new CustomFreignException(MessageFormat.format("Error fetching authorId by name: {0}", author));
         }
