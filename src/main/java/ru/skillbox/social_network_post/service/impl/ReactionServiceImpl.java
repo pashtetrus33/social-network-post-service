@@ -162,6 +162,7 @@ public class ReactionServiceImpl implements ReactionService {
         reaction.setReactionType("No_reaction");
 
         reactionRepository.save(reaction);
+        reaction = reactionRepository.findById(reaction.getId()).orElseThrow();
 
 
         // Проверяем, является ли текущий пользователь автором коме комментария
