@@ -5,7 +5,7 @@ import ru.skillbox.social_network_post.entity.Reaction;
 
 import java.util.UUID;
 
-public interface ReactionRepository extends JpaRepository<Reaction, Long> {
+public interface ReactionRepository extends JpaRepository<Reaction, UUID> {
 
 
     boolean existsByPostIdAndAuthorIdAndCommentIdIsNull(UUID postId, UUID userId);
