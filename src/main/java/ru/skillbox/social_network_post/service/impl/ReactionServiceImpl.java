@@ -19,6 +19,8 @@ import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 @Service
@@ -161,8 +163,12 @@ public class ReactionServiceImpl implements ReactionService {
         reaction.setType("No_type");
         reaction.setReactionType("No_reaction");
 
+        if (reaction.getCreatedAt() == null) {
+            reaction.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC));
+        }
+
         reactionRepository.save(reaction);
-        reaction = reactionRepository.findById(reaction.getId()).orElseThrow();
+
 
 
         // Проверяем, является ли текущий пользователь автором коме комментария
