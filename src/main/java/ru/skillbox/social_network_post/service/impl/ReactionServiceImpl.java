@@ -161,7 +161,7 @@ public class ReactionServiceImpl implements ReactionService {
         reaction.setType("No_type");
         reaction.setReactionType("No_reaction");
 
-        reaction = reactionRepository.save(reaction);
+        reactionRepository.save(reaction);
 
 
         // Проверяем, является ли текущий пользователь автором коме комментария
