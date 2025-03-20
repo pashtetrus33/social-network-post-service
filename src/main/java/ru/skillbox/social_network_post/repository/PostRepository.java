@@ -30,9 +30,9 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
     @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount + 1, p.myReaction = true WHERE p.id = :postId")
     void incrementReactionsCountAndSetMyReaction(@Param("postId") UUID postId);
 
+    @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount + 1 WHERE p.id = :postId")
     @Modifying
     @Transactional
-    @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount + 1 WHERE p.id = :postId")
     void incrementReactionsCount(@Param("postId") UUID postId);
 
     @Modifying

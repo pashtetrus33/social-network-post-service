@@ -71,7 +71,7 @@ public class ReactionServiceImpl implements ReactionService {
             postRepository.incrementReactionsCount(postId);
         }
 
-        Long count = reactionRepository.countByCommentIdAndReactionType(postId, reactionDto.getReactionType());
+        Long count = reactionRepository.countByPostIdAndReactionType(postId, reactionDto.getReactionType());
 
         ReactionNotificationDto reactionNotificationDto = ReactionNotificationDto.builder()
                 .authorId(accountId)
@@ -168,7 +168,6 @@ public class ReactionServiceImpl implements ReactionService {
         }
 
         reactionRepository.save(reaction);
-
 
 
         // Проверяем, является ли текущий пользователь автором коме комментария

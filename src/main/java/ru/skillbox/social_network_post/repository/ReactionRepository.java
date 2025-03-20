@@ -16,5 +16,5 @@ public interface ReactionRepository extends JpaRepository<Reaction, UUID> {
 
     void deleteByCommentIdAndAuthorId(UUID commentId, UUID userId);
 
-    long countByCommentIdAndReactionType(UUID commentId, String reactionType);
+    long countByPostIdAndReactionType(UUID commentId, String reactionType);
 }

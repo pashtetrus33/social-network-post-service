@@ -11,6 +11,7 @@ import ru.skillbox.social_network_post.entity.Comment;
 import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
+import ru.skillbox.social_network_post.exception.IdMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -115,50 +116,50 @@ public class CommentServiceImplTest extends AbstractServiceTest {
     }
 
 
-        @Test
-        void testGetSubcomments() {
-            // Arrange: Создаем пост
-            Post post = Post.builder()
-                    .title("Test Post")
-                    .postText("Post text")
-                    .publishDate(LocalDateTime.now())
-                    .build();
-            post = postRepository.save(post);
+    @Test
+    void testGetSubcomments() {
+        // Arrange: Создаем пост
+        Post post = Post.builder()
+                .title("Test Post")
+                .postText("Post text")
+                .publishDate(LocalDateTime.now())
+                .build();
+        post = postRepository.save(post);
 
-            // Создаем родительский комментарий
-            Comment parentComment = Comment.builder()
-                    .commentText("Parent Comment")
-                    .post(post)
-                    .commentType(CommentType.POST)
-                    .isBlocked(false)
-                    .isDeleted(false)
-                    .myLike(false)
-                    .build();
-            commentRepository.save(parentComment);
+        // Создаем родительский комментарий
+        Comment parentComment = Comment.builder()
+                .commentText("Parent Comment")
+                .post(post)
+                .commentType(CommentType.POST)
+                .isBlocked(false)
+                .isDeleted(false)
+                .myLike(false)
+                .build();
+        commentRepository.save(parentComment);
 
-            parentComment = commentRepository.findAll().get(0);
+        parentComment = commentRepository.findAll().get(0);
 
-            // Создаем подкомментарий
-            Comment subComment = Comment.builder()
-                    .commentText("Subcomment")
-                    .post(post)
-                    .parentComment(parentComment)
-                    .commentType(CommentType.POST)
-                    .isBlocked(false)
-                    .isDeleted(false)
-                    .myLike(false)
-                    .build();
-            commentRepository.save(subComment);
+        // Создаем подкомментарий
+        Comment subComment = Comment.builder()
+                .commentText("Subcomment")
+                .post(post)
+                .parentComment(parentComment)
+                .commentType(CommentType.POST)
+                .isBlocked(false)
+                .isDeleted(false)
+                .myLike(false)
+                .build();
+        commentRepository.save(subComment);
 
-            // Act: вызываем метод
-            Pageable pageable = PageRequest.of(0, 10);
-            PageCommentDto result = commentService.getSubcomments(post.getId(), parentComment.getId(), pageable);
+        // Act: вызываем метод
+        Pageable pageable = PageRequest.of(0, 10);
+        PageCommentDto result = commentService.getSubcomments(post.getId(), parentComment.getId(), pageable);
 
-            // Assert
-            Assertions.assertNotNull(result);
-            Assertions.assertEquals(Long.valueOf(1), result.getTotalElements()); // Должен быть 1 подкомментарий
-            Assertions.assertEquals(subComment.getCommentText(), result.getContent().get(0).getCommentText());
-        }
+        // Assert
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals(Long.valueOf(1), result.getTotalElements()); // Должен быть 1 подкомментарий
+        Assertions.assertEquals(subComment.getCommentText(), result.getContent().get(0).getCommentText());
+    }
 
     @Test
     void testGetSubcomments_CommentNotFound() {
@@ -204,54 +205,102 @@ public class CommentServiceImplTest extends AbstractServiceTest {
         });
     }
 
-//
-//    @Test
-//    void testUpdateComment() {
-//        UUID postId = UUID.randomUUID();
-//        UUID commentId = UUID.randomUUID();
-//        CommentDto commentDto = new CommentDto();
-//        commentDto.setId(commentId);
-//        commentDto.setCommentText("Updated Comment");
-//
-//        Comment existingComment = new Comment();
-//        existingComment.setId(commentId);
-//        existingComment.setPost(new Post());
-//        existingComment.setCommentText("Old Comment");
-//
-//        when(commentRepository.findById(commentId)).thenReturn(java.util.Optional.of(existingComment));
-//        when(postRepository.findById(postId)).thenReturn(java.util.Optional.of(new Post()));
-//
-//        commentService.update(postId, commentId, commentDto);
-//
-//        // Проверяем, что комментарий был обновлен
-//        verify(commentRepository, times(1)).save(existingComment);
-//        assertEquals("Updated Comment", existingComment.getCommentText());
-//    }
-//
-//    @Test
-//    void testUpdateCommentIdMismatch() {
-//        UUID postId = UUID.randomUUID();
-//        UUID commentId = UUID.randomUUID();
-//        CommentDto commentDto = new CommentDto();
-//        commentDto.setId(UUID.randomUUID());  // Другой ID для комментария
-//
-//        assertThrows(IdMismatchException.class, () -> {
-//            commentService.update(postId, commentId, commentDto);
-//        });
-//    }
-//
-//    @Test
-//    void testDeleteComment() {
-//        UUID postId = UUID.randomUUID();
-//        UUID commentId = UUID.randomUUID();
-//
-//        when(postRepository.findById(postId)).thenReturn(java.util.Optional.of(new Post()));
-//        when(commentRepository.findById(commentId)).thenReturn(java.util.Optional.of(new Comment()));
-//
-//        commentService.delete(postId, commentId);
-//
-//        // Проверяем, что комментарий был помечен как удаленный
-//        verify(commentRepository, times(1)).markCommentAsDeletedByPostIdAndCommentId(postId, commentId);
-//        verify(postRepository, times(1)).decrementCommentCount(postId);
-//    }
+
+    @Test
+    void testUpdateComment() {
+        CommentDto commentDto = new CommentDto();
+        commentDto.setCommentText("Test Comment");
+        commentDto.setTime(LocalDateTime.now());
+        commentDto.setCommentType(CommentType.POST);
+        commentDto.setIsBlocked(false);
+        commentDto.setIsDeleted(false);
+        commentDto.setMyLike(false);
+
+        // Arrange: создаём пост
+        Post post = Post.builder()
+                .title("New Test Post")
+                .postText("This is a new test post")
+                .publishDate(LocalDateTime.now())
+                .commentsCount(0)  // Изначально 0 комментариев
+                .build();
+        post = postRepository.save(post);
+
+        // Мокируем вызов Kafka
+        doNothing().when(kafkaService).newCommentEvent(any());
+
+        // Act: создаём комментарий
+        commentService.create(post.getId(), commentDto);
+
+        // Assert 1: Проверяем, что комментарий сохранён в репозитории
+        Comment createdComment = commentRepository.findAll().get(0);
+        Assertions.assertNotNull(createdComment, "Комментарий должен сохраниться в БД");
+
+        // Act: обновляем комментарий
+        CommentDto updatedCommentDto = new CommentDto();
+        updatedCommentDto.setId(createdComment.getId());
+        updatedCommentDto.setCommentText("Updated Comment");
+        updatedCommentDto.setCommentType(CommentType.POST);
+        updatedCommentDto.setIsBlocked(false);
+        updatedCommentDto.setIsDeleted(false);
+        updatedCommentDto.setMyLike(false);
+
+        commentService.update(post.getId(), createdComment.getId(), updatedCommentDto);
+
+        // Assert: проверяем, что комментарий обновился
+        Comment updatedComment = commentRepository.findById(createdComment.getId()).orElseThrow();
+        Assertions.assertEquals(updatedComment.getCommentText(), "Updated Comment",
+                "Текст комментария должен быть обновлён");
+    }
+
+
+    @Test
+    void testUpdateCommentIdMismatch() {
+        UUID postId = UUID.randomUUID();
+        UUID commentId = UUID.randomUUID();
+        CommentDto commentDto = new CommentDto();
+        commentDto.setId(UUID.randomUUID());  // Другой ID для комментария
+
+        assertThrows(IdMismatchException.class, () -> {
+            commentService.update(postId, commentId, commentDto);
+        });
+    }
+
+    @Test
+    void testDeleteComment() {
+        CommentDto commentDto = new CommentDto();
+        commentDto.setCommentText("Test Comment");
+        commentDto.setTime(LocalDateTime.now());
+
+        // Arrange: создаём пост
+        Post post = Post.builder()
+                .title("New Test Post")
+                .postText("This is a new test post")
+                .publishDate(LocalDateTime.now())
+                .commentsCount(0)  // Изначально 0 комментариев
+                .build();
+        post = postRepository.save(post);
+
+        // Мокируем вызов Kafka
+        doNothing().when(kafkaService).newCommentEvent(any());
+
+        // Act: создаём комментарий
+        commentService.create(post.getId(), commentDto);
+
+        // Assert 1: Проверяем, что комментарий сохранён в репозитории
+        Comment createdComment = commentRepository.findAll().get(0);
+        Assertions.assertNotNull(createdComment, "Комментарий должен сохраниться в БД");
+
+        Assertions.assertFalse(createdComment.getIsDeleted(), "Комментарий не должен быть удалён сразу после создания");
+
+        // Act: удаляем комментарий
+        commentService.delete(post.getId(), createdComment.getId());
+
+        // Assert 2: Проверяем, что комментарий помечен как удалённый
+        Comment deletedComment = commentRepository.findById(createdComment.getId()).orElseThrow();
+        Assertions.assertTrue(deletedComment.getIsDeleted(), "Комментарий должен быть помечен как удалённый");
+
+        // Assert 3: Проверяем, что счётчик комментариев уменьшился
+        Post updatedPost = postRepository.findById(post.getId()).orElseThrow();
+        Assertions.assertEquals(0, updatedPost.getCommentsCount(), "Счётчик комментариев должен уменьшиться");
+    }
 }

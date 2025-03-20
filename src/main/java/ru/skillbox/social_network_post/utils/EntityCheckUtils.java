@@ -1,11 +1,14 @@
 package ru.skillbox.social_network_post.utils;
 
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import ru.skillbox.social_network_post.dto.PostDto;
 import ru.skillbox.social_network_post.dto.ReactionDto;
 import ru.skillbox.social_network_post.entity.Comment;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
+import ru.skillbox.social_network_post.exception.IdMismatchException;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
 
@@ -28,17 +31,28 @@ public class EntityCheckUtils {
     }
 
     // Utility method to check if both comment and post are present
-    public static void checkCommentAndPostPresence(CommentRepository commentRepository, PostRepository postRepository, UUID postId, UUID commentId) {
-        if (!commentRepository.existsById(commentId)) {
-            log.warn("Comment with ID {} not found", commentId);
-            throw new EntityNotFoundException("Comment with ID " + commentId + " not found");
+    public static Pair<Post, Comment> checkCommentAndPostPresence(
+            CommentRepository commentRepository,
+            PostRepository postRepository,
+            UUID postId,
+            UUID commentId) {
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        MessageFormat.format("Post with id {0} not found", postId)));
+
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        MessageFormat.format("Comment with id {0} not found", commentId)));
+
+        if (!comment.getPost().getId().equals(postId)) {
+            throw new IdMismatchException(
+                    MessageFormat.format("Comment with id {0} does not belong to post with id {1}", commentId, postId));
         }
 
-        if (!postRepository.existsById(postId)) {
-            log.warn("Post with ID {} not found", postId);
-            throw new EntityNotFoundException("Post with ID " + postId + " not found");
-        }
+        return Pair.of(post, comment);
     }
+
 
     // Utility method to check post presence and return the post if found
     public static Post checkPostPresence(PostRepository postRepository, UUID postId) {

@@ -2,13 +2,11 @@ package ru.skillbox.social_network_post.service.impl;
 
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.entity.Post;
-import ru.skillbox.social_network_post.repository.PostRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;

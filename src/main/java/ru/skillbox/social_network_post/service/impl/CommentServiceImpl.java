@@ -1,8 +1,10 @@
 package ru.skillbox.social_network_post.service.impl;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -153,27 +155,31 @@ public class CommentServiceImpl implements CommentService {
                     MessageFormat.format("Id in body {0} and in path request {1} are different", commentDto.getId(), commentId));
         }
 
-        EntityCheckUtils.checkCommentAndPostPresence(commentRepository, postRepository, postId, commentId);
+        if (commentDto.getPostId() == null) {
+            commentDto.setPostId(postId);
+        }
 
-        Comment comment = EntityCheckUtils.checkCommentPresence(commentRepository, commentId);
+        // Получаем пост и комментарий одной операцией
+        Pair<Post, Comment> pair = EntityCheckUtils.checkCommentAndPostPresence(commentRepository, postRepository, postId, commentId);
+        Post post = pair.getLeft();
+        Comment comment = pair.getRight();
 
+        // Обновляем текст, время и другие поля
         CommentMapperFactory.updateCommentFromDto(commentDto, comment);
 
-        if (!Objects.equals(commentDto.getParentId(), comment.getParentComment().getId())) {
-            comment.setParentComment(EntityCheckUtils.checkCommentPresence(commentRepository, commentDto.getParentId()));
+        // Обновляем parentComment, если поменялся
+        updateParentComment(commentDto, comment);
+
+        // Проверка: менять пост нельзя!
+        if (!Objects.equals(commentDto.getPostId(), post.getId())) {
+            throw new ValidationException("Cannot change post for an existing comment");
         }
 
-        if (!Objects.equals(commentDto.getPostId(), comment.getPost().getId())) {
-            comment.setPost(EntityCheckUtils.checkPostPresence(postRepository, commentDto.getPostId()));
-        }
-
-        if (commentDto.getTimeChanged() == null) {
-            comment.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
-        }
+        // Всегда обновляем время
+        comment.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
 
         commentRepository.save(comment);
     }
-
 
     //    @Caching(evict = {
 //            @CacheEvict(value = "posts", key = "#postId"),
@@ -190,5 +196,18 @@ public class CommentServiceImpl implements CommentService {
         commentRepository.markCommentAsDeletedByPostIdAndCommentId(postId, commentId);
 
         postRepository.decrementCommentCount(postId);
+    }
+
+    private void updateParentComment(CommentDto commentDto, Comment comment) {
+        UUID newParentId = commentDto.getParentId();
+        UUID existingParentId = comment.getParentComment() != null ? comment.getParentComment().getId() : null;
+
+        if (!Objects.equals(newParentId, existingParentId)) {
+            if (newParentId != null) {
+                comment.setParentComment(EntityCheckUtils.checkCommentPresence(commentRepository, newParentId));
+            } else {
+                comment.setParentComment(null);
+            }
+        }
     }
 }
