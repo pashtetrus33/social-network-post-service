@@ -26,6 +26,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
     @MockBean
     protected KafkaService kafkaService;
 
+    @Override
     @BeforeEach
     void setUp() {
         super.setUp(); // Вызов метода из абстрактного класса для инициализации аутентификации и очистки данных.
@@ -177,8 +178,11 @@ class CommentServiceImplTest extends AbstractServiceTest {
         post = postRepository.save(post);
 
         // Act & Assert: Проверяем выброс исключения, если комментарий не найден
-        Post finalPost = post;
-        assertThrows(EntityNotFoundException.class, () -> commentService.getSubcomments(finalPost.getId(), UUID.randomUUID(), PageRequest.of(0, 10)));
+        UUID postId = post.getId();
+        Pageable pageable = PageRequest.of(0, 10);
+        UUID uuid = UUID.randomUUID();
+
+        assertThrows(EntityNotFoundException.class, () -> commentService.getSubcomments(postId, uuid, pageable));
     }
 
     @Test
@@ -202,8 +206,12 @@ class CommentServiceImplTest extends AbstractServiceTest {
                 .build();
         commentRepository.save(parentComment);
 
+        UUID postId = UUID.randomUUID();
+        UUID id = parentComment.getId();
+        PageRequest pageable = PageRequest.of(0, 10);
+
         // Act & Assert: Проверяем выброс исключения, если пост не найден
-        assertThrows(EntityNotFoundException.class, () -> commentService.getSubcomments(UUID.randomUUID(), parentComment.getId(), PageRequest.of(0, 10)));
+        assertThrows(EntityNotFoundException.class, () -> commentService.getSubcomments(postId, id, pageable));
     }
 
 
