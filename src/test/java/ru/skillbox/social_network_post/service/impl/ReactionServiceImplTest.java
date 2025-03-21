@@ -124,8 +124,9 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         assertEquals(0, postRepository.getReactionsCount(post.getId()));
 
         // Убеждаемся, что метод выбрасывает исключение
-        Post finalPost = post;
-        assertThrows(IllegalStateException.class, () -> reactionService.removeLikeFromPost(finalPost.getId()));
+
+        UUID postId = post.getId();
+        assertThrows(IllegalStateException.class, () -> reactionService.removeLikeFromPost(postId));
     }
 
     @Test
@@ -150,7 +151,6 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         assertEquals(SecurityUtils.getAccountId(), reaction.getAuthorId());
 
         comment = commentRepository.findById(comment.getId()).orElseThrow();
-        //assertEquals(1, comment.getLikeAmount());
         assertTrue(comment.getMyLike());
 
         verify(kafkaService, times(1)).newLikeEvent(any(ReactionNotificationDto.class));
@@ -215,8 +215,9 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         commentRepository.save(comment);
 
         // Act + Assert
-        Post finalPost = post;
-        assertThrows(IllegalStateException.class, () -> reactionService.removeLikeFromComment(finalPost.getId(), comment.getId()));
+        UUID postId= post.getId();
+        UUID commentId = comment.getId();
+        assertThrows(IllegalStateException.class, () -> reactionService.removeLikeFromComment(postId, commentId));
     }
 
     private static Post createTestPost(UUID authorId) {

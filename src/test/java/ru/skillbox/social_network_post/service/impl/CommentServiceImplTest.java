@@ -113,7 +113,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
         Assertions.assertEquals(Integer.valueOf(1), pageCommentDto.getTotalPages());
         Assertions.assertEquals(3L, pageCommentDto.getContent().size());
 
-        // Доп. проверки содержимого
+        // Доп. Проверки содержимого
         for (CommentDto dto : pageCommentDto.getContent()) {
             Assertions.assertEquals(post.getId(), dto.getPostId());
             Assertions.assertNotNull(dto.getCommentText());
@@ -178,9 +178,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
 
         // Act & Assert: Проверяем выброс исключения, если комментарий не найден
         Post finalPost = post;
-        assertThrows(EntityNotFoundException.class, () -> {
-            commentService.getSubcomments(finalPost.getId(), UUID.randomUUID(), PageRequest.of(0, 10));
-        });
+        assertThrows(EntityNotFoundException.class, () -> commentService.getSubcomments(finalPost.getId(), UUID.randomUUID(), PageRequest.of(0, 10)));
     }
 
     @Test
@@ -205,9 +203,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
         commentRepository.save(parentComment);
 
         // Act & Assert: Проверяем выброс исключения, если пост не найден
-        assertThrows(EntityNotFoundException.class, () -> {
-            commentService.getSubcomments(UUID.randomUUID(), parentComment.getId(), PageRequest.of(0, 10));
-        });
+        assertThrows(EntityNotFoundException.class, () -> commentService.getSubcomments(UUID.randomUUID(), parentComment.getId(), PageRequest.of(0, 10)));
     }
 
 
@@ -253,7 +249,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
 
         // Assert: проверяем, что комментарий обновился
         Comment updatedComment = commentRepository.findById(createdComment.getId()).orElseThrow();
-        Assertions.assertEquals(updatedComment.getCommentText(), "Updated Comment",
+        Assertions.assertEquals("Updated Comment", updatedComment.getCommentText(),
                 "Текст комментария должен быть обновлён");
     }
 
@@ -265,9 +261,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
         CommentDto commentDto = new CommentDto();
         commentDto.setId(UUID.randomUUID());  // Другой ID для комментария
 
-        assertThrows(IdMismatchException.class, () -> {
-            commentService.update(postId, commentId, commentDto);
-        });
+        assertThrows(IdMismatchException.class, () -> commentService.update(postId, commentId, commentDto));
     }
 
     @Test
