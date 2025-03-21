@@ -1,20 +1,17 @@
 package ru.skillbox.social_network_post.security;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public class HeaderAuthenticationToken extends AbstractAuthenticationToken {
 
-    private final List<GrantedAuthority> authorities;
+    private final List<SimpleGrantedAuthority> authorities;
     private final UUID userId;
     private final String userName;
 
-    public HeaderAuthenticationToken(UUID userId, String userName, List<GrantedAuthority> authorities) {
+    public HeaderAuthenticationToken(UUID userId, String userName, List<SimpleGrantedAuthority> authorities) {
         super(authorities != null ? authorities : new ArrayList<>());
         this.userId = userId;
         this.userName = userName;
@@ -36,11 +33,6 @@ public class HeaderAuthenticationToken extends AbstractAuthenticationToken {
     @Override
     public UUID getPrincipal() {
         return userId;
-    }
-
-    @Override
-    public List<GrantedAuthority> getAuthorities() {
-        return authorities;
     }
 
     @Override

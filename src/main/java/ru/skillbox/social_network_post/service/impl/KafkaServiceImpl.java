@@ -29,12 +29,6 @@ public class KafkaServiceImpl implements KafkaService {
     @Value("${spring.kafka.new-like-topic}")
     private String newLikeTopic;
 
-    @Value("${spring.kafka.blocked-account-topic}")
-    private String blockedAccountTopic;
-
-    @Value("${spring.kafka.deleted-account-topic}")
-    private String deletedAccountTopic;
-
     private final ObjectMapper objectMapper;
 
     private final KafkaTemplate<Long, Object> kafkaTemplate;

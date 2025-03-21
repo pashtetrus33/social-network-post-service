@@ -2,11 +2,7 @@ package ru.skillbox.social_network_post.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import ru.skillbox.social_network_post.entity.Post;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

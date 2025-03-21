@@ -1,10 +1,8 @@
 package ru.skillbox.social_network_post.client;
 
-import feign.Body;
 import feign.Param;
 import feign.RequestLine;
 import ru.skillbox.social_network_post.dto.AccountDto;
-import ru.skillbox.social_network_post.dto.AccountSearchDto;
 
 import java.util.List;
 import java.util.UUID;

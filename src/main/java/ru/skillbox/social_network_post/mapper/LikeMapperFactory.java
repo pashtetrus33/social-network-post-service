@@ -11,18 +11,6 @@ public final class LikeMapperFactory {
         throw new UnsupportedOperationException("Utility class");
     }
 
-    public static ReactionDto toReactionDto(Reaction reaction) {
-        if (reaction == null) {
-            return null;
-        }
-
-        return ReactionDto.builder()
-                .reactionType(reaction.getReactionType())
-                .type(reaction.getType())
-                .reactionType(reaction.getReactionType())
-                .build();
-    }
-
 
     public static Reaction toLike(ReactionDto reactionDto) {
         if (reactionDto == null) {

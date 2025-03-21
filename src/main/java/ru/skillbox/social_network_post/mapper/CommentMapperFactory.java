@@ -62,6 +62,12 @@ public final class CommentMapperFactory {
 
         Comment comment = new Comment();
         comment.setId(commentDto.getId());
+        createComment(commentDto, comment);
+
+        return comment;
+    }
+
+    private static void createComment(CommentDto commentDto, Comment comment) {
         comment.setCommentType(commentDto.getCommentType());
         comment.setTime(commentDto.getTime());
         comment.setTimeChanged(commentDto.getTimeChanged());
@@ -73,8 +79,6 @@ public final class CommentMapperFactory {
         comment.setMyLike(commentDto.getMyLike());
         comment.setCommentsCount(commentDto.getCommentsCount());
         comment.setImagePath(commentDto.getImagePath());
-
-        return comment;
     }
 
     public static void updateCommentFromDto(CommentDto commentDto, Comment comment) {
@@ -82,17 +86,7 @@ public final class CommentMapperFactory {
             return;
         }
 
-        comment.setCommentType(commentDto.getCommentType());
-        comment.setTime(commentDto.getTime());
-        comment.setTimeChanged(commentDto.getTimeChanged());
-        comment.setAuthorId(commentDto.getAuthorId());
-        comment.setCommentText(commentDto.getCommentText());
-        comment.setIsBlocked(commentDto.getIsBlocked());
-        comment.setIsDeleted(commentDto.getIsDeleted());
-        comment.setLikeAmount(commentDto.getLikeAmount());
-        comment.setMyLike(commentDto.getMyLike());
-        comment.setCommentsCount(commentDto.getCommentsCount());
-        comment.setImagePath(commentDto.getImagePath());
+        createComment(commentDto, comment);
     }
 
     public static List<CommentDto> toCommentDtoList(List<Comment> comments) {

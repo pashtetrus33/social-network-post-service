@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class ReactionServiceImplTest extends AbstractServiceTest {
+class ReactionServiceImplTest extends AbstractServiceTest {
 
     @MockBean
     protected KafkaService kafkaService;

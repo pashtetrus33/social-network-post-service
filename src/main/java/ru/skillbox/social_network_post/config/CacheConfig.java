@@ -5,6 +5,7 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -21,7 +22,7 @@ public class CacheConfig {
 
         ) {
             @Override
-            protected org.springframework.cache.concurrent.ConcurrentMapCache createConcurrentMapCache(String name) {
+            protected @NonNull org.springframework.cache.concurrent.ConcurrentMapCache createConcurrentMapCache(@NonNull String name) {
                 return new org.springframework.cache.concurrent.ConcurrentMapCache(
                         name,
                         new ConcurrentHashMap<>(500), // Ограничение в 500 записей

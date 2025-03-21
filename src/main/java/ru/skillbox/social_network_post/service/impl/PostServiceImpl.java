@@ -19,7 +19,6 @@ import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
-import ru.skillbox.social_network_post.exception.IdMismatchException;
 import ru.skillbox.social_network_post.mapper.PostMapperFactory;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
@@ -59,7 +58,7 @@ public class PostServiceImpl implements PostService {
         this.commentRepository = commentRepository;
     }
 
-    //@Cacheable(value = "posts", key = "#postId")
+
     @LogExecutionTime
     @Override
     @Transactional(readOnly = true)
@@ -72,98 +71,74 @@ public class PostServiceImpl implements PostService {
         return PostMapperFactory.toPostDto(post);
     }
 
-
-    //@Cacheable(value = "post_pages", key = "{#searchDto.author, #searchDto.withFriends, #searchDto.dateTo, #pageable.pageNumber, #pageable.pageSize}")
     @LogExecutionTime
     @Override
     public PagePostDto getAll(@Valid PostSearchDto postSearchDto, Pageable pageable) {
-
-        List<UUID> authorIds = new ArrayList<>();
-        List<UUID> friendsIds = new ArrayList<>();
-
-        // Проверка автора и получение его ID
-        if (postSearchDto.getAuthor() != null && !postSearchDto.getAuthor().isBlank()) {
-            // Получаем список идентификаторов по имени автора из сервиса аккаунтов
-            authorIds.addAll(getAuthorIds(postSearchDto.getAuthor()));
-            log.warn("AuthorsIds from accounts service: {}", authorIds);
-        }
-
-        // Проверка флага с друзьями и получение их ID
-        if (postSearchDto.getWithFriends() != null && Boolean.TRUE.equals(postSearchDto.getWithFriends())) {
-            friendsIds.addAll(getFriendsIds());
-            log.warn("Friends ids from friends service: {}", friendsIds);
-        }
-
-        // Если флаги withFriends или author не заданы, оставляем accountIds как null
-        if (postSearchDto.getAccountIds() == null &&
-                (postSearchDto.getWithFriends() != null && Boolean.TRUE.equals(postSearchDto.getWithFriends())
-                        || postSearchDto.getAuthor() != null)) {
-            // Инициализация только если есть хотя бы один флаг
-            postSearchDto.setAccountIds(new ArrayList<>());
-        }
-
-        // Если флаги withFriends или author присутствуют, добавляем соответствующие ID
-        if ((postSearchDto.getWithFriends() != null && Boolean.TRUE.equals(postSearchDto.getWithFriends())) ||
-                postSearchDto.getAuthor() != null) {
-            if (postSearchDto.getAccountIds() == null) {
-                postSearchDto.setAccountIds(new ArrayList<>());
-            }
-
-            // Добавляем авторов и друзей в список
-            postSearchDto.getAccountIds().addAll(authorIds);
-            postSearchDto.getAccountIds().addAll(friendsIds);
-        }
-
-        // Логирование для проверки
-        log.warn("Final accountIds: {}", postSearchDto.getAccountIds() != null ? postSearchDto.getAccountIds().size() : "null");
-        if (postSearchDto.getAccountIds() != null) {
-            postSearchDto.getAccountIds().forEach(e -> log.info("Account: {}", e));
-        }
-
-        Instant now = Instant.now();
-
-        if (postSearchDto.getDateTo() == null) {
-            postSearchDto.setDateTo(String.valueOf(now.toEpochMilli()));
-        } else {
-            try {
-                postSearchDto.setDateTo(String.valueOf(Instant.parse(postSearchDto.getDateTo()).toEpochMilli()));
-            } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("Invalid date format for dateTo: " + postSearchDto.getDateTo(), e);
-            }
-        }
-
-        if (postSearchDto.getDateFrom() != null) {
-            try {
-                postSearchDto.setDateFrom(String.valueOf(Instant.parse(postSearchDto.getDateFrom()).toEpochMilli()));
-            } catch (DateTimeParseException e) {
-                throw new IllegalArgumentException("Invalid date format for dateFrom: " + postSearchDto.getDateFrom(), e);
-            }
-        }
+        processAccountIds(postSearchDto);
+        processDateFilters(postSearchDto);
 
         accountId = SecurityUtils.getAccountId();
         log.warn("PostService get all method. AccountId: {}", accountId);
 
-        if (postSearchDto.getAccountIds() != null && postSearchDto.getAccountIds().contains(accountId)) {
+        if (Optional.ofNullable(postSearchDto.getAccountIds()).map(ids -> ids.contains(accountId)).orElse(false)) {
             postSearchDto.setDateTo(null);
         }
 
-        // Формируем спецификацию для поиска
         Specification<Post> spec = PostSpecification.withFilters(postSearchDto, accountId);
-
-        // Запрашиваем посты из репозитория
         Page<Post> posts = postRepository.findAll(spec, pageable);
-
-        // Преобразуем результат в DTO и возвращаем
         return PostMapperFactory.toPagePostDto(posts);
     }
 
+    private void processAccountIds(PostSearchDto postSearchDto) {
+        List<UUID> authorIds = Optional.ofNullable(postSearchDto.getAuthor())
+                .filter(author -> !author.isBlank())
+                .map(this::getAuthorIds)
+                .orElse(Collections.emptyList());
 
-    // Очистка кэша при изменении данных
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", key = "#postId"),
-//            @CacheEvict(value = "post_pages", allEntries = true),
-//            @CacheEvict(value = "comments", key = "#postId")
-//    })
+        List<UUID> friendsIds = Boolean.TRUE.equals(postSearchDto.getWithFriends())
+                ? getFriendsIds()
+                : Collections.emptyList();
+
+        log.warn("AuthorsIds from accounts service: {}", authorIds);
+        log.warn("Friends ids from friends service: {}", friendsIds);
+
+        if (postSearchDto.getAccountIds() == null && (!authorIds.isEmpty() || !friendsIds.isEmpty())) {
+            postSearchDto.setAccountIds(new ArrayList<>());
+        }
+
+        Optional.ofNullable(postSearchDto.getAccountIds()).ifPresent(accountIds -> {
+            accountIds.addAll(authorIds);
+            accountIds.addAll(friendsIds);
+        });
+
+        log.warn("Final accountIds: {}", postSearchDto.getAccountIds() != null ? postSearchDto.getAccountIds().size() : "null");
+        Optional.ofNullable(postSearchDto.getAccountIds()).ifPresent(ids -> ids.forEach(id -> log.info("Account: {}", id)));
+    }
+
+    private void processDateFilters(PostSearchDto postSearchDto) {
+        Instant now = Instant.now();
+
+        postSearchDto.setDateTo(parseOrDefault(postSearchDto.getDateTo(), now.toEpochMilli()));
+        postSearchDto.setDateFrom(parseOrNull(postSearchDto.getDateFrom()));
+    }
+
+    private String parseOrDefault(String date, long defaultValue) {
+        return date != null ? parseOrThrow(date) : String.valueOf(defaultValue);
+    }
+
+    private String parseOrNull(String date) {
+        return date != null ? parseOrThrow(date) : null;
+    }
+
+    private String parseOrThrow(String date) {
+        try {
+            return String.valueOf(Instant.parse(date).toEpochMilli());
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date format: " + date, e);
+        }
+    }
+
+
     @LogExecutionTime
     @Override
     @Transactional
@@ -200,12 +175,6 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    // Очистка кэша при изменении данных
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", key = "#postId"),
-//            @CacheEvict(value = "post_pages", allEntries = true),
-//            @CacheEvict(value = "comments", key = "#postId")
-//    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -228,12 +197,6 @@ public class PostServiceImpl implements PostService {
     }
 
 
-    // Очистка кэша при изменении данных
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", key = "#postId"),
-//            @CacheEvict(value = "post_pages", allEntries = true),
-//            @CacheEvict(value = "comments", key = "#postId")
-//    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -250,7 +213,7 @@ public class PostServiceImpl implements PostService {
 
 
     @LogExecutionTime
-    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
+    @Retryable(backoff = @Backoff(delay = 2000))
     public List<UUID> getFriendsIds() {
 
         accountId = SecurityUtils.getAccountId();
@@ -265,7 +228,7 @@ public class PostServiceImpl implements PostService {
 
 
     @LogExecutionTime
-    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 2000))
+    @Retryable(backoff = @Backoff(delay = 2000))
     public List<UUID> getAuthorIds(@Size(max = 255, message = "Author name must not exceed 255 characters") String author) {
         try {
             return accountServiceClient.searchAccount(author).stream().map(AccountDto::getId).toList();
@@ -273,6 +236,7 @@ public class PostServiceImpl implements PostService {
             throw new CustomFreignException(MessageFormat.format("Error fetching authorId by name: {0}", author));
         }
     }
+
 
     @Override
     @Transactional
