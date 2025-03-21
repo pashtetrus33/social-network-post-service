@@ -2,11 +2,15 @@ package ru.skillbox.social_network_post.service.impl;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.skillbox.social_network_post.dto.ReactionDto;
 import ru.skillbox.social_network_post.dto.ReactionNotificationDto;
+import ru.skillbox.social_network_post.entity.Comment;
+import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.entity.Reaction;
 import ru.skillbox.social_network_post.security.SecurityUtils;
+import ru.skillbox.social_network_post.service.KafkaService;
 
 import java.util.UUID;
 
@@ -15,6 +19,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 public class ReactionServiceImplTest extends AbstractServiceTest {
+
+    @MockBean
+    protected KafkaService kafkaService;
 
     @Override
     @BeforeEach
@@ -25,26 +32,15 @@ public class ReactionServiceImplTest extends AbstractServiceTest {
     @Test
     void testAddLikeToOwnPost() {
         // Arrange: Создаем тестовый пост
-
-        UUID accountId = SecurityUtils.getAccountId();
-
-        Post post = new Post();
-        post.setTitle("Test Post");
-        post.setPostText("Test Content");
-        post.setAuthorId(accountId);
-        post.setPublishDate(java.time.LocalDateTime.now());
+        Post post = createTestPost(SecurityUtils.getAccountId());
 
         post = postRepository.save(post);
 
         // Arrange: создаем валидный ReactionDto
-        ReactionDto reactionDto = ReactionDto.builder()
-                .type("POST")
-                .reactionType("LIKE")
-                .build();
+        ReactionDto reactionDto = createTestReactionDto();
 
         // Act
         ReactionDto result = reactionService.addLikeToPost(post.getId(), reactionDto);
-
 
         post = postRepository.findAll().get(0);
 
@@ -63,19 +59,12 @@ public class ReactionServiceImplTest extends AbstractServiceTest {
     void testAddLikeToNotOwnPost() {
 
         // Arrange: Создаем тестовый пост
-        Post post = new Post();
-        post.setTitle("Test Post");
-        post.setPostText("Test Content");
-        post.setAuthorId(UUID.randomUUID());
-        post.setPublishDate(java.time.LocalDateTime.now());
+        Post post = createTestPost(UUID.randomUUID());
 
         post = postRepository.save(post);
 
         // Arrange: создаем валидный ReactionDto
-        ReactionDto reactionDto = ReactionDto.builder()
-                .type("POST")
-                .reactionType("LIKE")
-                .build();
+        ReactionDto reactionDto = createTestReactionDto();
 
         // Act
         ReactionDto result = reactionService.addLikeToPost(post.getId(), reactionDto);
@@ -97,23 +86,14 @@ public class ReactionServiceImplTest extends AbstractServiceTest {
     void testDeleteLikeFromPost() {
 
         // Создаем тестовый пост
-        Post post = new Post();
-        post.setTitle("Test Post");
-        post.setPostText("Test Content");
-        post.setAuthorId(SecurityUtils.getAccountId());
-        post.setPublishDate(java.time.LocalDateTime.now());
+        Post post = createTestPost(UUID.randomUUID());
         post.setReactionsCount(1);
         post.setMyReaction(true);
 
         post = postRepository.save(post);
 
         // Создаем реакцию
-        Reaction reaction = Reaction.builder()
-                .authorId(SecurityUtils.getAccountId())
-                .post(post)
-                .type("POST")
-                .reactionType("LIKE")
-                .build();
+        Reaction reaction = createTestReaction(post, null, SecurityUtils.getAccountId());
 
         reactionRepository.save(reaction);
 
@@ -135,11 +115,7 @@ public class ReactionServiceImplTest extends AbstractServiceTest {
     void testRemoveLikeFromPost_WhenNoLikes_ThrowsException() {
 
         // Создаем тестовый пост без лайков
-        Post post = new Post();
-        post.setTitle("Test Post");
-        post.setPostText("Test Content");
-        post.setAuthorId(SecurityUtils.getAccountId());
-        post.setPublishDate(java.time.LocalDateTime.now());
+        Post post = createTestPost(UUID.randomUUID());
         post.setReactionsCount(0);
 
         post = postRepository.save(post);
@@ -150,5 +126,135 @@ public class ReactionServiceImplTest extends AbstractServiceTest {
         // Убеждаемся, что метод выбрасывает исключение
         Post finalPost = post;
         assertThrows(IllegalStateException.class, () -> reactionService.removeLikeFromPost(finalPost.getId()));
+    }
+
+    @Test
+    void testAddLikeToComment() {
+        // Arrange: Создаем тестовый пост
+        Post post = createTestPost(UUID.randomUUID());
+        post = postRepository.save(post);
+
+        // Создаем тестовый комментарий
+        Comment comment = commentRepository.save(createTestComment(post, SecurityUtils.getAccountId()));
+
+        // Act
+        reactionService.addLikeToComment(post.getId(), comment.getId());
+
+        // Assert
+        var reactions = reactionRepository.findAll();
+        assertEquals(1, reactions.size());
+
+        Reaction reaction = reactions.get(0);
+        assertEquals(post.getId(), reaction.getPost().getId());
+        assertEquals(comment.getId(), reaction.getCommentId());
+        assertEquals(SecurityUtils.getAccountId(), reaction.getAuthorId());
+
+        comment = commentRepository.findById(comment.getId()).orElseThrow();
+        //assertEquals(1, comment.getLikeAmount());
+        assertTrue(comment.getMyLike());
+
+        verify(kafkaService, times(1)).newLikeEvent(any(ReactionNotificationDto.class));
+    }
+
+    @Test
+    void testAddLikeToComment_WhenAlreadyExists_ThrowsException() {
+        // Arrange
+        Post post = createTestPost(UUID.randomUUID());
+        post = postRepository.save(post);
+
+        Comment comment = commentRepository.save(createTestComment(post, SecurityUtils.getAccountId()));
+
+        // Добавляем лайк
+
+        Reaction reaction = createTestReaction(post, comment.getId(), SecurityUtils.getAccountId());
+
+        reactionRepository.save(reaction);
+
+        // Act + Assert
+        UUID commentId = comment.getId();
+        UUID postId = post.getId();
+        assertThrows(IllegalStateException.class, () -> reactionService.addLikeToComment(postId, commentId));
+    }
+
+    @Test
+    void testRemoveLikeFromComment() {
+        // Arrange
+        Post post = createTestPost(UUID.randomUUID());
+        post = postRepository.save(post);
+
+        var comment = commentRepository.save(createTestComment(post, SecurityUtils.getAccountId()));
+        comment.setLikeAmount(1);
+        comment.setMyLike(true);
+        commentRepository.save(comment);
+
+        Reaction reaction = createTestReaction(post, comment.getId(), SecurityUtils.getAccountId());
+        reactionRepository.save(reaction);
+
+        assertEquals(1, commentRepository.getLikeAmount(comment.getId()));
+
+        // Act
+        reactionService.removeLikeFromComment(post.getId(), comment.getId());
+
+        // Assert
+        assertEquals(0, reactionRepository.count());
+        assertEquals(0, commentRepository.getLikeAmount(comment.getId()));
+
+        var updatedComment = commentRepository.findById(comment.getId()).orElseThrow();
+        assertFalse(updatedComment.getMyLike());
+    }
+
+
+    @Test
+    void testRemoveLikeFromComment_WhenNoLikes_ThrowsException() {
+        // Arrange
+        Post post = createTestPost(UUID.randomUUID());
+        post = postRepository.save(post);
+
+        Comment comment = commentRepository.save(createTestComment(post, SecurityUtils.getAccountId()));
+        comment.setLikeAmount(0);
+        commentRepository.save(comment);
+
+        // Act + Assert
+        Post finalPost = post;
+        assertThrows(IllegalStateException.class, () -> reactionService.removeLikeFromComment(finalPost.getId(), comment.getId()));
+    }
+
+    private static Post createTestPost(UUID authorId) {
+        Post post = new Post();
+        post.setTitle("Test Post");
+        post.setPostText("Test Content");
+        post.setAuthorId(authorId);
+        post.setPublishDate(java.time.LocalDateTime.now());
+        return post;
+    }
+
+    private static Comment createTestComment(Post post, UUID authorId) {
+        Comment comment = new Comment();
+        comment.setPost(post);
+        comment.setCommentType(CommentType.COMMENT);
+        comment.setIsBlocked(false);
+        comment.setIsDeleted(false);
+        comment.setMyLike(false);
+        comment.setAuthorId(authorId);
+        comment.setCommentText("Test Comment");
+        comment.setTime(java.time.LocalDateTime.now());
+        return comment;
+    }
+
+    private static Reaction createTestReaction(Post post, UUID commentId, UUID authorId) {
+        Reaction reaction = new Reaction();
+        reaction.setPost(post);
+        reaction.setCommentId(commentId);
+        reaction.setAuthorId(authorId);
+        reaction.setType("POST");
+        reaction.setReactionType("LIKE");
+        return reaction;
+    }
+
+    private static ReactionDto createTestReactionDto() {
+        return ReactionDto.builder()
+                .type("POST")
+                .reactionType("LIKE")
+                .build();
     }
 }

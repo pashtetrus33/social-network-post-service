@@ -3,6 +3,7 @@ package ru.skillbox.social_network_post.service.impl;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -12,6 +13,7 @@ import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.exception.IdMismatchException;
+import ru.skillbox.social_network_post.service.KafkaService;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,6 +22,9 @@ import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
 
 public class CommentServiceImplTest extends AbstractServiceTest {
+
+    @MockBean
+    protected KafkaService kafkaService;
 
     @BeforeEach
     void setUp() {

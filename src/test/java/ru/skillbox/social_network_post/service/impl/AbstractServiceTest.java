@@ -1,5 +1,8 @@
 package ru.skillbox.social_network_post.service.impl;
 
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.LongDeserializer;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +27,7 @@ import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.repository.ReactionRepository;
 import ru.skillbox.social_network_post.service.KafkaService;
 
+import java.util.Properties;
 import java.util.UUID;
 
 @SpringBootTest(classes = SocialNetworkPostApplication.class)
@@ -55,7 +59,21 @@ public abstract class AbstractServiceTest {
         registry.add("spring.datasource.url", postgresContainer::getJdbcUrl);
         registry.add("spring.datasource.username", postgresContainer::getUsername);
         registry.add("spring.datasource.password", postgresContainer::getPassword);
+        registry.add("spring.kafka.new-post-topic", () -> "post.new-post");
+        registry.add("spring.kafka.new-comment-topic", () -> "post.new-comment");
+        registry.add("spring.kafka.new-like-topic", () -> "post.new-like");
         registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
+    }
+
+    // Этот метод будет использоваться для настройки KafkaConsumer
+    Properties consumerProps() {
+        Properties properties = new Properties();
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "test-group");
+        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class.getName());
+        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest"); // Начало с самого первого сообщения
+        return properties;
     }
 
 
@@ -64,9 +82,6 @@ public abstract class AbstractServiceTest {
 
     @MockBean
     protected FriendServiceClient friendServiceClient;
-
-    @MockBean
-    protected KafkaService kafkaService;
 
     @Autowired
     protected PostServiceImpl postService;

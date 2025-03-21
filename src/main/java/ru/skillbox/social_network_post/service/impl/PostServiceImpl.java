@@ -171,15 +171,12 @@ public class PostServiceImpl implements PostService {
 
         EntityCheckUtils.checkPostDto(postDto);
 
-        Post post = PostMapperFactory.toPost(postDto);
-
         // Устанавливаем publishDate, если он передан, иначе текущее время
-        if (postDto.getPublishDate() != null) {
-            post.setPublishDate(postDto.getPublishDate());
-        } else {
-            post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
-
+        if (postDto.getPublishDate() == null) {
+            postDto.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
         }
+
+        Post post = PostMapperFactory.toPost(postDto);
 
         accountId = SecurityUtils.getAccountId();
 
@@ -219,11 +216,6 @@ public class PostServiceImpl implements PostService {
         EntityCheckUtils.checkPostPresence(postRepository, postId);
 
         EntityCheckUtils.checkPostDto(postDto);
-
-        if (!Objects.equals(postId, postDto.getId())) {
-            throw new IdMismatchException(
-                    MessageFormat.format("Id in body {0} and in path request {1} are different", postDto.getId(), postId));
-        }
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new EntityNotFoundException("Post with ID " + postId + " not found"));
