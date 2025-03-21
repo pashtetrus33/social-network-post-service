@@ -2,16 +2,12 @@ package ru.skillbox.social_network_post.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.serialization.LongDeserializer;
-import org.apache.kafka.common.serialization.StringDeserializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import ru.skillbox.social_network_post.dto.CommentNotificationDto;
 import ru.skillbox.social_network_post.dto.PostNotificationDto;
@@ -21,7 +17,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
-import java.util.Properties;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,9 +30,6 @@ class KafkaServiceImplTest extends AbstractServiceTest {
     private KafkaServiceImpl kafkaService;
 
     ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());// Для десериализации JSON
-
-    @Autowired
-    private KafkaTemplate<Long, Object> kafkaTemplate;
 
     @MockBean  // Используйте @MockBean для mock-объекта postService
     private PostServiceImpl postService;  // Теперь это мок-объект

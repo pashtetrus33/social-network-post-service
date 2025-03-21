@@ -117,7 +117,7 @@ class PostControllerTest {
 
     @Test
     void addLikeToPost_ShouldReturnCreated() throws Exception {
-        UUID postId = UUID.randomUUID();
+        postId = UUID.randomUUID();
         ReactionDto reactionDto = ReactionDto.builder()
                 .type("LIKE")
                 .reactionType("POSITIVE")
@@ -138,7 +138,7 @@ class PostControllerTest {
 
     @Test
     void removeLikeFromPost_ShouldReturnNoContent() throws Exception {
-        UUID postId = UUID.randomUUID();
+        postId = UUID.randomUUID();
 
         mockMvc.perform(delete("/api/v1/post/" + postId + "/like")
                         .with(csrf())) // Добавляем CSRF-токен
