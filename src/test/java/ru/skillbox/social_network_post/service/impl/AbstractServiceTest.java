@@ -22,7 +22,6 @@ import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
 import ru.skillbox.social_network_post.repository.ReactionRepository;
-import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.KafkaService;
 
 import java.util.UUID;
