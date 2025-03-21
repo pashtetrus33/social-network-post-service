@@ -34,12 +34,6 @@ public class ReactionServiceImpl implements ReactionService {
     private final KafkaService kafkaService;
 
 
-    // Очистка кэша при изменении данных
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", key = "#postId"),
-//            @CacheEvict(value = "post_pages", allEntries = true),
-//            @CacheEvict(value = "comments", key = "#postId")
-//    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -92,12 +86,6 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
 
-    // Очистка кэша при изменении данных
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", key = "#postId"),
-//            @CacheEvict(value = "post_pages", allEntries = true),
-//            @CacheEvict(value = "comments", key = "#postId")
-//    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -127,12 +115,6 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
 
-    // Очистка кэша при изменении данных
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", key = "#postId"),
-//            @CacheEvict(value = "post_pages", allEntries = true),
-//            @CacheEvict(value = "comments", key = "#postId")
-//    })
     @LogExecutionTime
     @Override
     @Transactional
@@ -192,13 +174,7 @@ public class ReactionServiceImpl implements ReactionService {
         kafkaService.newLikeEvent(reactionNotificationDto);
     }
 
-
-    // Очистка кэша при изменении данных
-//    @Caching(evict = {
-//            @CacheEvict(value = "posts", key = "#postId"),
-//            @CacheEvict(value = "post_pages", allEntries = true),
-//            @CacheEvict(value = "comments", key = "#postId")
-//    })
+    
     @LogExecutionTime
     @Override
     @Transactional

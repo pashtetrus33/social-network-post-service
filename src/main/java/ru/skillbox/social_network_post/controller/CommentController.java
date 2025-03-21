@@ -34,10 +34,10 @@ public class CommentController {
     public PageCommentDto getByPostId(
             @PathVariable UUID id,
             @Valid @ModelAttribute CommentSearchDto commentSearchDto,
-            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
 
             log.info("Get comment by post id {}", id);
-            log.info("Get comment by post with commentsearchdto {}", commentSearchDto);
+            log.info("Get comment by post with comment search dto {}", commentSearchDto);
 
         return commentService.getByPostId(id, commentSearchDto, pageable);
     }
@@ -94,7 +94,7 @@ public class CommentController {
     public PageCommentDto getSubcomments(
             @PathVariable UUID id,
             @PathVariable UUID commentId,
-            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
         return commentService.getSubcomments(id, commentId, pageable);
     }
 }

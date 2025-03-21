@@ -43,18 +43,6 @@ public class LogMethodCallAspect {
     }
 
     private void logAtLevel(String level, String message) {
-        switch (level.toUpperCase()) {
-            case "DEBUG":
-                log.debug(message);
-                break;
-            case "WARN":
-                log.warn(message);
-                break;
-            case "ERROR":
-                log.error(message);
-                break;
-            default:
-                log.info(message);
-        }
+        ExecutionTimeAspect.logLevel(level, message, log);
     }
 }

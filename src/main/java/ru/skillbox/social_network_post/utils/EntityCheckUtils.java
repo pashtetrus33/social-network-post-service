@@ -1,6 +1,5 @@
 package ru.skillbox.social_network_post.utils;
 
-import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import ru.skillbox.social_network_post.dto.PostDto;

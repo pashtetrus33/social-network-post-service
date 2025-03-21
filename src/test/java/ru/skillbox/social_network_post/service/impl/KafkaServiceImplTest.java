@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.*;
 
 @Testcontainers
-public class KafkaServiceImplTest extends AbstractServiceTest {
+class KafkaServiceImplTest extends AbstractServiceTest {
 
     @Autowired
     private KafkaServiceImpl kafkaService;

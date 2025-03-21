@@ -54,7 +54,7 @@ public class PostController {
     @GetMapping
     public PagePostDto getAll(
             @Valid @ModelAttribute PostSearchDto postSearchDto,
-            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable) {
 
         return postService.getAll(postSearchDto, pageable);
     }

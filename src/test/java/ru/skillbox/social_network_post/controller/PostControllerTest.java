@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WithMockUser(username = "USER")
 @WebMvcTest(PostController.class)
-public class PostControllerTest {
+class PostControllerTest {
 
     @Autowired
     private MockMvc mockMvc;

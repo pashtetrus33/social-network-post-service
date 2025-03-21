@@ -7,6 +7,8 @@ import ru.skillbox.social_network_post.entity.Comment;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 public interface CommentSpecification {
 
@@ -14,56 +16,41 @@ public interface CommentSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Фильтрация по количеству лайков
-            if (commentSearchDto.getLikeAmount() != null) {
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("likeAmount"),
-                        commentSearchDto.getLikeAmount()));
-            }
+            addPredicate(predicates, commentSearchDto.getLikeAmount(),
+                    amount -> criteriaBuilder.greaterThanOrEqualTo(root.get("likeAmount"), amount));
 
-            // Фильтрация по количеству комментариев
-            if (commentSearchDto.getCommentsCount() != null) {
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(root.get("commentsCount"),
-                        commentSearchDto.getCommentsCount()));
-            }
+            addPredicate(predicates, commentSearchDto.getCommentsCount(),
+                    count -> criteriaBuilder.greaterThanOrEqualTo(root.get("commentsCount"), count));
 
-            // Фильтрация по статусу блокировки
-            if (commentSearchDto.getIsBlocked() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("isBlocked"), commentSearchDto.getIsBlocked()));
-            }
+            addPredicate(predicates, commentSearchDto.getIsBlocked(),
+                    isBlocked -> criteriaBuilder.equal(root.get("isBlocked"), isBlocked));
 
-            // Фильтрация по статусу удаления
-            if (commentSearchDto.getIsDeleted() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("isDeleted"), commentSearchDto.getIsDeleted()));
-            }
+            addPredicate(predicates, commentSearchDto.getIsDeleted(),
+                    isDeleted -> criteriaBuilder.equal(root.get("isDeleted"), isDeleted));
 
-            // Фильтрация по тексту комментария
-            if (commentSearchDto.getCommentText() != null && !commentSearchDto.getCommentText().isBlank()) {
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("commentText")), "%%" +
-                        commentSearchDto.getCommentText().toLowerCase() + "%%"));
-            }
+            addPredicate(predicates, commentSearchDto.getCommentType(),
+                    type -> criteriaBuilder.equal(root.get("commentType"), type));
 
-            // Фильтрация по пути изображения
-            if (commentSearchDto.getImagePath() != null && !commentSearchDto.getImagePath().isBlank()) {
-                predicates.add(criteriaBuilder.like(root.get("imagePath"), "%%" +
-                        commentSearchDto.getImagePath() + "%%"));
-            }
+            addPredicate(predicates, commentSearchDto.getParentCommentId(),
+                    parentId -> criteriaBuilder.equal(root.get("parentComment"), parentId));
 
-            // Фильтрация по типу комментария
-            if (commentSearchDto.getCommentType() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("commentType"), commentSearchDto.getCommentType()));
-            }
+            addPredicate(predicates, commentSearchDto.getPostId(),
+                    postId -> criteriaBuilder.equal(root.get("post").get("id"), postId));
 
-            // Фильтрация по родительскому комментарию
-            if (commentSearchDto.getParentCommentId() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("parentComment"), commentSearchDto.getParentCommentId()));
-            }
+            Optional.ofNullable(commentSearchDto.getCommentText())
+                    .filter(text -> !text.isBlank())
+                    .ifPresent(text -> predicates.add(criteriaBuilder.like(
+                            criteriaBuilder.lower(root.get("commentText")), "%" + text.toLowerCase() + "%")));
 
-            // Фильтрация по посту
-            if (commentSearchDto.getPostId() != null) {
-                predicates.add(criteriaBuilder.equal(root.get("post").get("id"), commentSearchDto.getPostId()));
-            }
+            Optional.ofNullable(commentSearchDto.getImagePath())
+                    .filter(path -> !path.isBlank())
+                    .ifPresent(path -> predicates.add(criteriaBuilder.like(root.get("imagePath"), "%" + path + "%")));
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
+    }
+
+    private static <T> void addPredicate(List<Predicate> predicates, T value, Function<T, Predicate> predicateFunction) {
+        Optional.ofNullable(value).ifPresent(v -> predicates.add(predicateFunction.apply(v)));
     }
 }

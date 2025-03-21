@@ -21,7 +21,7 @@ import java.util.UUID;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
 
-public class CommentServiceImplTest extends AbstractServiceTest {
+class CommentServiceImplTest extends AbstractServiceTest {
 
     @MockBean
     protected KafkaService kafkaService;

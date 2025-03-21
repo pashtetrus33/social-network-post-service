@@ -6,7 +6,6 @@ import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PagedModel;
 
 import java.util.List;
 

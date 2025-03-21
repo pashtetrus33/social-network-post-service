@@ -5,6 +5,7 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -47,6 +48,10 @@ public class ExecutionTimeAspect {
     }
 
     private void logAtLevel(String level, String message) {
+        logLevel(level, message, log);
+    }
+
+    static void logLevel(String level, String message, Logger log) {
         switch (level.toUpperCase()) {
             case "DEBUG":
                 log.debug(message);

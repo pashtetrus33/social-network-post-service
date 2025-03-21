@@ -23,7 +23,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-public class PostServiceIntegrationTest extends AbstractServiceTest {
+class PostServiceIntegrationTest extends AbstractServiceTest {
 
     @MockBean
     protected KafkaService kafkaService;
