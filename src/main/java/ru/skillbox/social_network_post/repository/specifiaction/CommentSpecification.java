@@ -14,6 +14,7 @@ public interface CommentSpecification {
 
     static Specification<Comment> withFilters(CommentSearchDto commentSearchDto) {
         return (root, query, criteriaBuilder) -> {
+
             List<Predicate> predicates = new ArrayList<>();
 
             addPredicate(predicates, commentSearchDto.getLikeAmount(),

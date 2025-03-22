@@ -1,6 +1,8 @@
 package ru.skillbox.social_network_post.repository.specifiaction;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.dto.PostSearchDto;
@@ -23,79 +25,136 @@ public interface PostSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            // Фильтрация по ID постов
-            if (postSearchDto.getIds() != null && !postSearchDto.getIds().isEmpty()) {
-                predicates.add(root.get("id").in(postSearchDto.getIds()));
-            }
+            log.debug("Start building predicates for postSearchDto: {}", postSearchDto);
 
+            addPostIdsPredicate(postSearchDto.getIds(), root, predicates);
 
-            if (postSearchDto.getAccountIds() != null) {
-                log.warn("Post specification.Account IDs provided for filtering: {}", postSearchDto.getAccountIds());
-                predicates.add(root.get("authorId").in(postSearchDto.getAccountIds()));
+            addAccountIdsPredicate(postSearchDto.getAccountIds(), currentAccountId, root, criteriaBuilder, predicates);
 
-            } else {
-                // Если accountIds null, исключаем только свои посты
-                log.warn("Post specification.No account IDs provided for filtering. Filter only own posts: {}"
-                        , currentAccountId);
-                predicates.add(criteriaBuilder.notEqual(root.get("authorId"), currentAccountId)); // Фильтрация по текущему аккаунту
-            }
+            addBlockedIdsPredicate(postSearchDto.getBlockedIds(), root, predicates);
+            addBlockedStatusPredicate(postSearchDto.getIsBlocked(), root, criteriaBuilder, predicates);
 
+            addDeletedStatusPredicate(postSearchDto.getIsDeleted(), root, criteriaBuilder, predicates);
 
-            // Фильтрация по заблокированным постам
-            if (postSearchDto.getBlockedIds() != null && !postSearchDto.getBlockedIds().isEmpty()) {
-                predicates.add(root.get("id").in(postSearchDto.getBlockedIds()));
-            }
+            addTitlePredicate(postSearchDto.getTitle(), root, criteriaBuilder, predicates);
 
-            // Фильтрация по признаку блокировки поста
-            if (postSearchDto.getIsBlocked() != null && !postSearchDto.getIsBlocked()) {
-                predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.isFalse(root.get("isBlocked")),
-                        criteriaBuilder.isNull(root.get("isBlocked"))
-                ));
-            }
+            addPostTextPredicate(postSearchDto.getPostText(), root, criteriaBuilder, predicates);
 
+            addTagsPredicate(postSearchDto.getTags(), root, predicates);
+            addDateFromPredicate(postSearchDto.getDateFrom(), root, criteriaBuilder, predicates);
 
-            // Фильтрация по статусу удаления поста
-            if (postSearchDto.getIsDeleted() != null && !postSearchDto.getIsDeleted()) {
-                predicates.add(criteriaBuilder.or(
-                        criteriaBuilder.isFalse(root.get("isDeleted")),
-                        criteriaBuilder.isNull(root.get("isDeleted"))
-                ));
-            }
+            addDateToPredicate(postSearchDto.getDateTo(), root, criteriaBuilder, predicates);
 
-            // Фильтрация по названию поста
-            if (postSearchDto.getTitle() != null && !postSearchDto.getTitle().isBlank()) {
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + postSearchDto.getTitle().toLowerCase() + "%"));
-            }
-
-            // Фильтрация по тексту поста
-            if (postSearchDto.getPostText() != null && !postSearchDto.getPostText().isBlank()) {
-                predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("postText")), "%" + postSearchDto.getPostText().toLowerCase() + "%"));
-            }
-
-            // Фильтрация по тегам
-            if (postSearchDto.getTags() != null && !postSearchDto.getTags().isEmpty()) {
-                Join<Post, String> tagsJoin = root.join("tags");
-                predicates.add(tagsJoin.in(postSearchDto.getTags()));
-            }
-
-            if (postSearchDto.getDateFrom() != null) {
-                predicates.add(criteriaBuilder.greaterThanOrEqualTo(
-                        root.get("publishDate"),
-                        Instant.ofEpochMilli(Long.parseLong(postSearchDto.getDateFrom()))
-                                .atZone(ZoneOffset.UTC).toLocalDateTime()
-                ));
-            }
-            // Фильтрация по дате публикации (по)
-            if (postSearchDto.getDateTo() != null) {
-                predicates.add(criteriaBuilder.lessThanOrEqualTo(
-                        root.get("publishDate"),
-                        Instant.ofEpochMilli(Long.parseLong(postSearchDto.getDateTo()))
-                                .atZone(ZoneOffset.UTC).toLocalDateTime()
-                ));
-            }
+            log.debug("Final predicates built: {}", predicates);
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
     }
+
+    private static void addPostIdsPredicate(List<UUID> postIds, Root<Post> root, List<Predicate> predicates) {
+        if (postIds != null && !postIds.isEmpty()) {
+            log.debug("Adding predicate for post IDs: {}", postIds);
+            predicates.add(root.get("id").in(postIds));
+        } else {
+            log.debug("No post IDs to filter.");
+        }
+    }
+
+    private static void addAccountIdsPredicate(List<UUID> accountIds, UUID currentAccountId, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+        if (accountIds != null) {
+            log.debug("Adding predicate for account IDs: {}", accountIds);
+            predicates.add(root.get("authorId").in(accountIds));
+        } else {
+            log.debug("No account IDs provided. Filtering only own posts for account: {}", currentAccountId);
+            predicates.add(criteriaBuilder.notEqual(root.get("authorId"), currentAccountId));
+        }
+    }
+
+    private static void addBlockedIdsPredicate(List<UUID> blockedIds, Root<Post> root, List<Predicate> predicates) {
+        if (blockedIds != null && !blockedIds.isEmpty()) {
+            log.debug("Adding predicate for blocked post IDs: {}", blockedIds);
+            predicates.add(root.get("id").in(blockedIds));
+        } else {
+            log.debug("No blocked post IDs to filter.");
+        }
+    }
+
+    private static void addBlockedStatusPredicate(Boolean isBlocked, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+        if (isBlocked != null && !isBlocked) {
+            log.debug("Adding predicate for posts that are not blocked.");
+            predicates.add(criteriaBuilder.or(
+                    criteriaBuilder.isFalse(root.get("isBlocked")),
+                    criteriaBuilder.isNull(root.get("isBlocked"))
+            ));
+        } else {
+            log.debug("No blocked status to filter.");
+        }
+    }
+
+    private static void addDeletedStatusPredicate(Boolean isDeleted, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+        if (isDeleted != null && !isDeleted) {
+            log.debug("Adding predicate for posts that are not deleted.");
+            predicates.add(criteriaBuilder.or(
+                    criteriaBuilder.isFalse(root.get("isDeleted")),
+                    criteriaBuilder.isNull(root.get("isDeleted"))
+            ));
+        } else {
+            log.debug("No deleted status to filter.");
+        }
+    }
+
+    private static void addTitlePredicate(String title, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+        if (title != null && !title.isBlank()) {
+            log.debug("Adding predicate for post title: {}", title);
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + title.toLowerCase() + "%"));
+        } else {
+            log.debug("No title to filter.");
+        }
+    }
+
+    private static void addPostTextPredicate(String postText, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+        if (postText != null && !postText.isBlank()) {
+            log.debug("Adding predicate for post text: {}", postText);
+            predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("postText")), "%" + postText.toLowerCase() + "%"));
+        } else {
+            log.debug("No post text to filter.");
+        }
+    }
+
+    private static void addTagsPredicate(List<String> tags, Root<Post> root, List<Predicate> predicates) {
+        if (tags != null && !tags.isEmpty()) {
+            log.debug("Adding predicate for post tags: {}", tags);
+            Join<Post, String> tagsJoin = root.join("tags");
+            predicates.add(tagsJoin.in(tags));
+        } else {
+            log.debug("No tags to filter.");
+        }
+    }
+
+    private static void addDateFromPredicate(String dateFrom, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+        if (dateFrom != null) {
+            log.debug("Adding predicate for dateFrom: {}", dateFrom);
+            predicates.add(criteriaBuilder.greaterThanOrEqualTo(
+                    root.get("publishDate"),
+                    Instant.ofEpochMilli(Long.parseLong(dateFrom))
+                            .atZone(ZoneOffset.UTC).toLocalDateTime()
+            ));
+        } else {
+            log.debug("No dateFrom to filter.");
+        }
+    }
+
+    private static void addDateToPredicate(String dateTo, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+        if (dateTo != null) {
+            log.debug("Adding predicate for dateTo: {}", dateTo);
+            predicates.add(criteriaBuilder.lessThanOrEqualTo(
+                    root.get("publishDate"),
+                    Instant.ofEpochMilli(Long.parseLong(dateTo))
+                            .atZone(ZoneOffset.UTC).toLocalDateTime()
+            ));
+        } else {
+            log.debug("No dateTo to filter.");
+        }
+    }
+
 }
