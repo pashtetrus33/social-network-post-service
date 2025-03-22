@@ -1,10 +1,10 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import jakarta.validation.ValidationException;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -34,13 +34,19 @@ import java.util.UUID;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
     private final KafkaService kafkaService;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
+    private final CommentService commentService;
 
+    public CommentServiceImpl(KafkaService kafkaService, CommentRepository commentRepository, PostRepository postRepository, @Lazy CommentService commentService) {
+        this.kafkaService = kafkaService;
+        this.commentRepository = commentRepository;
+        this.postRepository = postRepository;
+        this.commentService = commentService;
+    }
 
     @LogExecutionTime
     @Override
@@ -52,7 +58,7 @@ public class CommentServiceImpl implements CommentService {
         commentSearchDto.setPostId(postId);
         commentSearchDto.setCommentType(CommentType.POST);
 
-        log.info("Service getByPostId commentsearchdto: {}", commentSearchDto);
+        log.info("Service getByPostId comment search dto: {}", commentSearchDto);
 
         // Формируем спецификацию для поиска
         Specification<Comment> spec = CommentSpecification.withFilters(commentSearchDto);
@@ -65,6 +71,9 @@ public class CommentServiceImpl implements CommentService {
         for (Comment comment : comments) {
             log.info("!!Service getByPostId comment: {}", comment);
         }
+
+          comments.forEach(comment -> commentService.getSubcomments(postId, comment.getId(), pageable));
+          log.warn("Вызываем метод получения субкоментариев к посту");
 
         return CommentMapperFactory.toPageCommentDto(comments);
     }
