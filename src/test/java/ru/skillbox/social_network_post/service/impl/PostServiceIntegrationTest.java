@@ -20,6 +20,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
@@ -28,6 +29,7 @@ class PostServiceIntegrationTest extends AbstractServiceTest {
     @MockBean
     protected KafkaService kafkaService;
 
+    @Override
     @BeforeEach
     void setUp() {
         super.setUp(); // Вызов метода из абстрактного класса для инициализации аутентификации и очистки данных.
@@ -111,8 +113,10 @@ class PostServiceIntegrationTest extends AbstractServiceTest {
         UUID accountId = UUID.randomUUID();
         UUID friendId = UUID.randomUUID();
 
-        when(accountServiceClient.getAccountsByIds(any()))
-                .thenReturn(List.of(AccountDto.builder().id(accountId).build()));
+        when(accountServiceClient.searchAccount(anyString()))
+                .thenReturn(PageAccountDto.builder()
+                        .content(List.of(AccountDto.builder().id(accountId).build()))
+                        .build());
 
         when(friendServiceClient.getFriendsIds())
                 .thenReturn(List.of(friendId));
