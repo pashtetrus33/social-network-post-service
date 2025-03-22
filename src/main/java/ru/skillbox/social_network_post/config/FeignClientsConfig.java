@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.Feign;
 import feign.Logger;
 import feign.RequestInterceptor;
+import feign.RequestTemplate;
 import feign.codec.Decoder;
 import feign.codec.Encoder;
 import feign.jackson.JacksonDecoder;
@@ -33,8 +34,8 @@ public class FeignClientsConfig {
             requestTemplate.header("Accept", "application/json");
             String token = SecurityUtils.getToken();
             requestTemplate.header("Authorization", "Bearer " + token);
-            log.warn("Request intercepted with headers: {}", requestTemplate.headers());
-            log.warn("Request intercepted with token: {}", token);
+
+            logRequest(requestTemplate);
         };
     }
 
@@ -90,5 +91,10 @@ public class FeignClientsConfig {
     public Decoder jacksonDecoder() {
 
         return new JacksonDecoder(objectMapper);
+    }
+
+    private static void logRequest(RequestTemplate requestTemplate) {
+        log.warn("Sending request to URL: {} with method: {} and headers: {}",
+                requestTemplate.url(), requestTemplate.method(), requestTemplate.headers());
     }
 }
