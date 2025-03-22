@@ -24,12 +24,13 @@ public class PageAccountDto {
     private boolean last;
     private int numberOfElements;
     private boolean empty;
+}
+
 
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    static
     class SortObject {
         private boolean sorted;
         private boolean empty;
@@ -39,7 +40,6 @@ public class PageAccountDto {
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    static
     class PageableObject {
         private boolean paged;
         private int pageNumber;
@@ -48,4 +48,3 @@ public class PageAccountDto {
         private SortObject sortObject;
         private boolean unpaged;
     }
-}
