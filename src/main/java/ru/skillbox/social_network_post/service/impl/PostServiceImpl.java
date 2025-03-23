@@ -74,6 +74,7 @@ public class PostServiceImpl implements PostService {
     @LogExecutionTime
     @Override
     public PagePostDto getAll(@Valid PostSearchDto postSearchDto, Pageable pageable) {
+
         processAccountIds(postSearchDto);
         processDateFilters(postSearchDto);
 
