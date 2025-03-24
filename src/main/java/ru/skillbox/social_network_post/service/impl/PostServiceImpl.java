@@ -51,7 +51,7 @@ public class PostServiceImpl implements PostService {
     private UUID accountId;
 
     public PostServiceImpl(AccountServiceClient accountServiceClient,
-                           FriendServiceClient friendServiceClient, ReactionService reactionService, @Lazy KafkaService kafkaService,
+                           FriendServiceClient friendServiceClient, @Lazy ReactionService reactionService, @Lazy KafkaService kafkaService,
                            PostRepository postRepository, CommentRepository commentRepository) {
         this.accountServiceClient = accountServiceClient;
         this.friendServiceClient = friendServiceClient;
