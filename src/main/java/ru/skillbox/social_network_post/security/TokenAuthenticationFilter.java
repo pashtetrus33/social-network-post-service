@@ -38,12 +38,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         log.info("Request path: {}", path);
         log.info("Request port: {}", port);
 
-        // Если запрос пришел с порта 3000
-        if (port == 3000) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         // Разрешаем доступ к /actuator/** без проверки токена
         if (path.startsWith("/actuator/")) {
             filterChain.doFilter(request, response);
