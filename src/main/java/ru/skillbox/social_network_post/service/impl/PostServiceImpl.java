@@ -81,16 +81,13 @@ public class PostServiceImpl implements PostService {
         accountId = SecurityUtils.getAccountId();
         log.warn("PostService get all method. AccountId: {}", accountId);
 
-        if (Optional.ofNullable(postSearchDto.getAccountIds()).map(ids -> ids.contains(accountId)).orElse(false)) {
-            postSearchDto.setDateTo(null);
-        }
-
         Specification<Post> spec = PostSpecification.withFilters(postSearchDto, accountId);
         Page<Post> posts = postRepository.findAll(spec, pageable);
         return PostMapperFactory.toPagePostDto(posts);
     }
 
     private void processAccountIds(PostSearchDto postSearchDto) {
+
         List<UUID> authorIds = Optional.ofNullable(postSearchDto.getAuthor())
                 .filter(author -> !author.isBlank())
                 .map(this::getAuthorIds)
@@ -117,6 +114,7 @@ public class PostServiceImpl implements PostService {
     }
 
     private void processDateFilters(PostSearchDto postSearchDto) {
+
         Instant now = Instant.now();
 
         postSearchDto.setDateTo(parseOrDefault(postSearchDto.getDateTo(), now.toEpochMilli()));

@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import ru.skillbox.social_network_post.dto.ReactionDto;
 import ru.skillbox.social_network_post.dto.ReactionNotificationDto;
+import ru.skillbox.social_network_post.dto.RequestReactionDto;
 import ru.skillbox.social_network_post.entity.Comment;
 import ru.skillbox.social_network_post.entity.CommentType;
 import ru.skillbox.social_network_post.entity.Post;
@@ -37,10 +38,10 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         post = postRepository.save(post);
 
         // Arrange: создаем валидный ReactionDto
-        ReactionDto reactionDto = createTestReactionDto();
+        RequestReactionDto requestReactionDto = createTestRequestReactionDto();
 
         // Act
-        ReactionDto result = reactionService.addLikeToPost(post.getId(), reactionDto);
+        ReactionDto result = reactionService.addLikeToPost(post.getId(), requestReactionDto);
 
         post = postRepository.findAll().get(0);
 
@@ -48,8 +49,8 @@ class ReactionServiceImplTest extends AbstractServiceTest {
 
         // Assert: Проверяем, что лайк добавлен и уведомление отправлено
         assertNotNull(result);
-        assertEquals("LIKE", result.getReactionType());
-        assertEquals(1, result.getCount());  // Проверяем, что лайков 1
+        assertEquals("LIKE", result.getReaction());
+        assertEquals(1, result.getQuantity());  // Проверяем, что лайков 1
         assertEquals(1, post.getReactionsCount());  // Проверяем, что у поста лайков 1
         assertTrue(post.getMyReaction());
         verify(kafkaService, times(1)).newLikeEvent(any());
@@ -64,10 +65,10 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         post = postRepository.save(post);
 
         // Arrange: создаем валидный ReactionDto
-        ReactionDto reactionDto = createTestReactionDto();
+        RequestReactionDto requestReactionDto = createTestRequestReactionDto();
 
         // Act
-        ReactionDto result = reactionService.addLikeToPost(post.getId(), reactionDto);
+        ReactionDto result = reactionService.addLikeToPost(post.getId(), requestReactionDto);
 
         post = postRepository.findAll().get(0);
 
@@ -75,8 +76,8 @@ class ReactionServiceImplTest extends AbstractServiceTest {
 
         // Assert: Проверяем, что лайк добавлен и уведомление отправлено
         assertNotNull(result);
-        assertEquals("LIKE", result.getReactionType());
-        assertEquals(1, result.getCount());  // Проверяем, что лайков 1
+        assertEquals("LIKE", result.getReaction());
+        assertEquals(1, result.getQuantity());  // Проверяем, что лайков 1
         assertEquals(1, post.getReactionsCount());  // Проверяем, что у поста лайков 1
         assertFalse(post.getMyReaction());
         verify(kafkaService, times(1)).newLikeEvent(any());
@@ -215,7 +216,7 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         commentRepository.save(comment);
 
         // Act + Assert
-        UUID postId= post.getId();
+        UUID postId = post.getId();
         UUID commentId = comment.getId();
         assertThrows(IllegalStateException.class, () -> reactionService.removeLikeFromComment(postId, commentId));
     }
@@ -252,10 +253,10 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         return reaction;
     }
 
-    private static ReactionDto createTestReactionDto() {
-        return ReactionDto.builder()
-                .type("POST")
+    private static RequestReactionDto createTestRequestReactionDto() {
+        return RequestReactionDto.builder()
                 .reactionType("LIKE")
+                .type("POST")
                 .build();
     }
 }
