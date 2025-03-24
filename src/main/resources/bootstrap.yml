@@ -50,3 +50,6 @@ management:
     metrics:
       export:
         enabled: true
+
+server:
+  port: 45995
