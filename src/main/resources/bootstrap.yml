@@ -24,7 +24,6 @@ eureka:
       defaultZone: ${EUREKA_URI:http://discovery-service:8761/eureka}
     enabled: true
   instance:
-    instance-id: ${spring.application.name}:${eureka.instance.ip-address}
     preferIpAddress: true  # Регистрировать IP-адрес контейнера в Eureka
 
 
