@@ -32,10 +32,17 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
             HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
 
+        String path = request.getServletPath();
+        log.warn("Request path: {}", path);
+
+        // Разрешаем доступ к /actuator/** без проверки токена
+        if (path.startsWith("/actuator/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        String path = request.getServletPath();
-        log.info("Request path: {}", path);
 
         if (authHeader == null) {
             unauthorizedResponse(response, "{\"error\": \"Missing Authorization header\"}");
