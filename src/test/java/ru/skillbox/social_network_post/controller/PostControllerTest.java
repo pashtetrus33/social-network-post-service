@@ -130,7 +130,7 @@ class PostControllerTest {
                                 .reactionType("POSITIVE")
                                 .count(1L)
                                 .build()))
-                .quantity(1)
+                .quantity(1L)
                 .build();
 
         when(reactionService.addLikeToPost(eq(postId), any())).thenReturn(reactionDto);

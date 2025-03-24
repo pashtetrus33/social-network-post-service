@@ -15,7 +15,7 @@ public class ReactionDto {
 
     private Boolean active;
     private List<ReactionInfo> reactionsInfo;
-    private int quantity;
+    private Long quantity;
     private String reaction;
 
     @Getter

@@ -1,6 +1,7 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
@@ -22,9 +23,11 @@ import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReactionServiceImpl implements ReactionService {
@@ -48,11 +51,11 @@ public class ReactionServiceImpl implements ReactionService {
 
         // Проверяем, ставил ли пользователь лайк ранее
         if (reactionRepository.existsByPostIdAndAuthorIdAndCommentIdIsNull(postId, accountId)) {
-            throw new IllegalStateException(
-                    MessageFormat.format("Like already exists for post with id {0}", postId));
+            removeLikeFromPost(postId);
+            log.warn("Реакция уже есть... удаляем текущую!");
         }
 
-        Reaction reaction = LikeMapperFactory.toLike(requestReactionDto);
+        Reaction reaction = LikeMapperFactory.toReaction(requestReactionDto);
         reaction.setPost(post);
         reaction.setAuthorId(accountId);
 
@@ -67,7 +70,11 @@ public class ReactionServiceImpl implements ReactionService {
             postRepository.incrementReactionsCount(postId);
         }
 
-        long count = reactionRepository.countByPostIdAndReactionType(postId, requestReactionDto.reactionType());
+        List<ReactionDto.ReactionInfo> reactionInfoList = reactionRepository.countReactionsByPostId(postId).stream()
+                .map(result -> new ReactionDto.ReactionInfo((String) result[0], (Long) result[1]))
+                .collect(Collectors.toList());
+
+        long totalReactions = reactionRepository.countByPostId(postId);
 
         ReactionNotificationDto reactionNotificationDto = ReactionNotificationDto.builder()
                 .authorId(accountId)
@@ -82,13 +89,9 @@ public class ReactionServiceImpl implements ReactionService {
 
         return ReactionDto.builder()
                 .active(true)
+                .reactionsInfo(reactionInfoList)
                 .reaction(reaction.getReactionType())
-                .reactionsInfo(Collections.singletonList(
-                        ReactionDto.ReactionInfo.builder()
-                                .reactionType("heart")
-                                .count(count)
-                                .build()))
-                .quantity(1)
+                .quantity(totalReactions)
                 .build();
     }
 

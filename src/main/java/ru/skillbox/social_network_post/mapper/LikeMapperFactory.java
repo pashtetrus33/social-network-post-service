@@ -12,7 +12,7 @@ public final class LikeMapperFactory {
     }
 
 
-    public static Reaction toLike(RequestReactionDto requestReactionDto) {
+    public static Reaction toReaction(RequestReactionDto requestReactionDto) {
         if (requestReactionDto == null) {
             return null;
         }
