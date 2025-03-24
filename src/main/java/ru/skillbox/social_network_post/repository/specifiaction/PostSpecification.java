@@ -3,6 +3,7 @@ package ru.skillbox.social_network_post.repository.specifiaction;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.dto.PostSearchDto;
@@ -20,6 +21,7 @@ import java.util.UUID;
 public interface PostSpecification {
 
     Logger log = LoggerFactory.getLogger(PostSpecification.class);
+    String AUTHOR_ID = "authorId";
 
     static Specification<Post> withFilters(PostSearchDto postSearchDto, UUID currentAccountId) {
         return (root, query, criteriaBuilder) -> {
@@ -29,7 +31,7 @@ public interface PostSpecification {
 
             addPostIdsPredicate(postSearchDto.getIds(), root, predicates);
 
-            addAccountIdsPredicate(postSearchDto.getAccountIds(), currentAccountId, root, criteriaBuilder, predicates);
+            addAccountIdsPredicate(postSearchDto, currentAccountId, root, criteriaBuilder, predicates);
 
             addBlockedIdsPredicate(postSearchDto.getBlockedIds(), root, predicates);
             addBlockedStatusPredicate(postSearchDto.getIsBlocked(), root, criteriaBuilder, predicates);
@@ -61,13 +63,21 @@ public interface PostSpecification {
         }
     }
 
-    private static void addAccountIdsPredicate(List<UUID> accountIds, UUID currentAccountId, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+    private static void addAccountIdsPredicate(PostSearchDto postSearchDto, UUID currentAccountId, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
+
+        List<UUID> accountIds = postSearchDto.getAccountIds();
+
         if (accountIds != null) {
             log.debug("Adding predicate for account IDs: {}", accountIds);
-            predicates.add(root.get("authorId").in(accountIds));
+            predicates.add(root.get(AUTHOR_ID).in(accountIds));
+        } else if (Boolean.FALSE.equals(StringUtils.isBlank(postSearchDto.getAuthor()) || Boolean.TRUE.equals(postSearchDto.getWithFriends()))) {
+            accountIds = new ArrayList<>();
+            log.debug("Adding EMPTY  predicate for account IDs (flags author or withFriends are present): {}", accountIds);
+            predicates.add(root.get(AUTHOR_ID).in(accountIds));
+
         } else {
             log.debug("No account IDs provided. Filtering only own posts for account: {}", currentAccountId);
-            predicates.add(criteriaBuilder.notEqual(root.get("authorId"), currentAccountId));
+            predicates.add(criteriaBuilder.notEqual(root.get(AUTHOR_ID), currentAccountId));
         }
     }
 
