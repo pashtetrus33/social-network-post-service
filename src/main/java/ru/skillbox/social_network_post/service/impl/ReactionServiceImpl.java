@@ -25,7 +25,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -51,8 +50,7 @@ public class ReactionServiceImpl implements ReactionService {
 
         // Проверяем, ставил ли пользователь лайк ранее
         if (reactionRepository.existsByPostIdAndAuthorIdAndCommentIdIsNull(postId, accountId)) {
-            removeLikeFromPost(postId);
-            log.warn("Реакция уже есть... удаляем текущую!");
+            log.warn("Реакция уже есть...");
         }
 
         Reaction reaction = LikeMapperFactory.toReaction(requestReactionDto);
@@ -97,7 +95,7 @@ public class ReactionServiceImpl implements ReactionService {
     public List<ReactionDto.ReactionInfo> getReactionInfos(UUID postId) {
         return reactionRepository.countReactionsByPostId(postId).stream()
                 .map(result -> new ReactionDto.ReactionInfo((String) result[0], (Long) result[1]))
-                .collect(Collectors.toList());
+                .toList();
     }
 
 
