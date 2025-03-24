@@ -37,11 +37,11 @@ public class Post {
 
     @Min(0)
     @Builder.Default
-    private Integer reactionsCount = 0;
+    private Long reactionsCount = 0L;
 
     @Min(0)
     @Builder.Default
-    private Integer commentsCount = 0;
+    private Long commentsCount = 0L;
 
     @NotBlank
     @Size(max = 255)

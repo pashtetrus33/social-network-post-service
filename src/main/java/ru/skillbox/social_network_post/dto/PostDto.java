@@ -39,13 +39,25 @@ public class PostDto {
     private Boolean isDeleted = false;
 
     @Builder.Default
-    private Integer commentsCount = 0;
+    private Long commentsCount = 0L;
 
     @Size(max = 50, message = "Tags list size must not exceed 50")
     private List<String> tags;
 
     @Builder.Default
-    private Integer likeAmount = 0;
+    private Long likeAmount = 0L;
+
+    @Builder.Default
+    private List<ReactionDto.ReactionInfo> reactionType = List.of(
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(LikeType.delight)).count(0L).build(),
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(LikeType.malice)).count(0L).build(),
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(LikeType.heart)).count(0L).build(),
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(LikeType.sadness)).count(0L).build(),
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(LikeType.funny)).count(0L).build(),
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(LikeType.wow)).count(0L).build()
+    );
+
+    private String myReaction;
 
     @Builder.Default
     private Boolean myLike = false;
@@ -55,3 +67,4 @@ public class PostDto {
 
     private LocalDateTime publishDate;
 }
+

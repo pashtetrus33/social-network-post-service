@@ -88,7 +88,7 @@ class ReactionServiceImplTest extends AbstractServiceTest {
 
         // Создаем тестовый пост
         Post post = createTestPost(UUID.randomUUID());
-        post.setReactionsCount(1);
+        post.setReactionsCount(1L);
         post.setMyReaction(true);
 
         post = postRepository.save(post);
@@ -117,7 +117,7 @@ class ReactionServiceImplTest extends AbstractServiceTest {
 
         // Создаем тестовый пост без лайков
         Post post = createTestPost(UUID.randomUUID());
-        post.setReactionsCount(0);
+        post.setReactionsCount(0L);
 
         post = postRepository.save(post);
 

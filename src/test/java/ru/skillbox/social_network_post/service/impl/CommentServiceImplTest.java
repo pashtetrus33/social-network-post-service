@@ -50,7 +50,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
                 .title("New Test Post")
                 .postText("This is a new test post")
                 .publishDate(LocalDateTime.now())
-                .commentsCount(0)  // Изначально 0 комментариев
+                .commentsCount(0L)  // Изначально 0 комментариев
                 .build();
         post = postRepository.save(post);
 
@@ -230,7 +230,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
                 .title("New Test Post")
                 .postText("This is a new test post")
                 .publishDate(LocalDateTime.now())
-                .commentsCount(0)  // Изначально 0 комментариев
+                .commentsCount(0L)  // Изначально 0 комментариев
                 .build();
         post = postRepository.save(post);
 
@@ -283,7 +283,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
                 .title("New Test Post")
                 .postText("This is a new test post")
                 .publishDate(LocalDateTime.now())
-                .commentsCount(0)  // Изначально 0 комментариев
+                .commentsCount(0L)  // Изначально 0 комментариев
                 .build();
         post = postRepository.save(post);
 

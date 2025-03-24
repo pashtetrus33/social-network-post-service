@@ -67,7 +67,7 @@ public class ReactionServiceImpl implements ReactionService {
             postRepository.incrementReactionsCount(postId);
         }
 
-        int count = reactionRepository.countByPostIdAndReactionType(postId, requestReactionDto.reactionType());
+        long count = reactionRepository.countByPostIdAndReactionType(postId, requestReactionDto.reactionType());
 
         ReactionNotificationDto reactionNotificationDto = ReactionNotificationDto.builder()
                 .authorId(accountId)

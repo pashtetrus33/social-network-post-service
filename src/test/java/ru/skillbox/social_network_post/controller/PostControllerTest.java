@@ -128,7 +128,7 @@ class PostControllerTest {
                 .reactionsInfo(Collections.singletonList(
                         ReactionDto.ReactionInfo.builder()
                                 .reactionType("POSITIVE")
-                                .count(1)
+                                .count(1L)
                                 .build()))
                 .quantity(1)
                 .build();

@@ -26,6 +26,6 @@ public class ReactionDto {
     @Builder
     public static class ReactionInfo {
         private String reactionType;
-        private int count;
+        private Long count;
     }
 }
