@@ -3,6 +3,7 @@ package ru.skillbox.social_network_post.service;
 import ru.skillbox.social_network_post.dto.ReactionDto;
 import ru.skillbox.social_network_post.dto.RequestReactionDto;
 
+import java.util.List;
 import java.util.UUID;
 
 public interface ReactionService {
@@ -13,4 +14,6 @@ public interface ReactionService {
     void addLikeToComment(UUID postId, UUID commentId);
 
     void removeLikeFromComment(UUID postId, UUID commentId);
+
+    List<ReactionDto.ReactionInfo> getReactionInfos(UUID postId);
 }

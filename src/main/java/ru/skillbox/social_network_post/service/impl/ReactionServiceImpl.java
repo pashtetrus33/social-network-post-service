@@ -70,9 +70,7 @@ public class ReactionServiceImpl implements ReactionService {
             postRepository.incrementReactionsCount(postId);
         }
 
-        List<ReactionDto.ReactionInfo> reactionInfoList = reactionRepository.countReactionsByPostId(postId).stream()
-                .map(result -> new ReactionDto.ReactionInfo((String) result[0], (Long) result[1]))
-                .collect(Collectors.toList());
+        List<ReactionDto.ReactionInfo> reactionInfoList = getReactionInfos(postId);
 
         long totalReactions = reactionRepository.countByPostId(postId);
 
@@ -93,6 +91,13 @@ public class ReactionServiceImpl implements ReactionService {
                 .reaction(reaction.getReactionType())
                 .quantity(totalReactions)
                 .build();
+    }
+
+    @Override
+    public List<ReactionDto.ReactionInfo> getReactionInfos(UUID postId) {
+        return reactionRepository.countReactionsByPostId(postId).stream()
+                .map(result -> new ReactionDto.ReactionInfo((String) result[0], (Long) result[1]))
+                .collect(Collectors.toList());
     }
 
 

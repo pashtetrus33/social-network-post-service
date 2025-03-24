@@ -26,6 +26,7 @@ import ru.skillbox.social_network_post.repository.specifiaction.PostSpecificatio
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.PostService;
+import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
@@ -42,6 +43,7 @@ public class PostServiceImpl implements PostService {
 
     private final AccountServiceClient accountServiceClient;
     private final FriendServiceClient friendServiceClient;
+    private final ReactionService reactionService;
     private final KafkaService kafkaService;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
@@ -49,10 +51,11 @@ public class PostServiceImpl implements PostService {
     private UUID accountId;
 
     public PostServiceImpl(AccountServiceClient accountServiceClient,
-                           FriendServiceClient friendServiceClient, @Lazy KafkaService kafkaService,
+                           FriendServiceClient friendServiceClient, ReactionService reactionService, @Lazy KafkaService kafkaService,
                            PostRepository postRepository, CommentRepository commentRepository) {
         this.accountServiceClient = accountServiceClient;
         this.friendServiceClient = friendServiceClient;
+        this.reactionService = reactionService;
         this.kafkaService = kafkaService;
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
@@ -83,7 +86,12 @@ public class PostServiceImpl implements PostService {
 
         Specification<Post> spec = PostSpecification.withFilters(postSearchDto, accountId);
         Page<Post> posts = postRepository.findAll(spec, pageable);
-        return PostMapperFactory.toPagePostDto(posts);
+
+        PagePostDto pagePostDto = PostMapperFactory.toPagePostDto(posts);
+
+        pagePostDto.getContent().forEach(postDto -> postDto.setReactionType(reactionService.getReactionInfos(postDto.getId())));
+
+        return pagePostDto;
     }
 
     private void processAccountIds(PostSearchDto postSearchDto) {
