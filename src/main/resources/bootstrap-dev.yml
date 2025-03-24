@@ -35,3 +35,18 @@ custom:
 gateway:
   api:
     url: ${GATEWAY_URL:http://91.197.98.213:8080}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+    health:
+      show-details: always
+  prometheus:
+    metrics:
+      export:
+        enabled: true
