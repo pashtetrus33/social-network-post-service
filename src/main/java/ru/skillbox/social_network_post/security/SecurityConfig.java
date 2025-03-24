@@ -23,7 +23,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/actuator/**").permitAll()  // Разрешить доступ ко всем путям /actuator без аутентификации
+                        .requestMatchers("/actuator/**", "/api/health", "/api/metrics", "/api/dashboards").permitAll() // Разрешить доступ ко всем путям /actuator без аутентификации
                         .anyRequest().authenticated()  // Для остальных запросов нужна аутентификация
                 )
                 .addFilterBefore(new TokenAuthenticationFilter(authServiceClient, jwtUtil), UsernamePasswordAuthenticationFilter.class)
