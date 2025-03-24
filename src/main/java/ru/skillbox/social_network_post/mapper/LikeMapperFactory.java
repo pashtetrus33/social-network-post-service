@@ -1,7 +1,7 @@
 package ru.skillbox.social_network_post.mapper;
 
 
-import ru.skillbox.social_network_post.dto.ReactionDto;
+import ru.skillbox.social_network_post.dto.RequestReactionDto;
 import ru.skillbox.social_network_post.entity.Reaction;
 
 
@@ -12,14 +12,14 @@ public final class LikeMapperFactory {
     }
 
 
-    public static Reaction toLike(ReactionDto reactionDto) {
-        if (reactionDto == null) {
+    public static Reaction toLike(RequestReactionDto requestReactionDto) {
+        if (requestReactionDto == null) {
             return null;
         }
 
         return Reaction.builder()
-                .type(reactionDto.getType())
-                .reactionType(reactionDto.getReactionType())
+                .type(requestReactionDto.type())
+                .reactionType(requestReactionDto.reactionType())
                 .build();
     }
 }

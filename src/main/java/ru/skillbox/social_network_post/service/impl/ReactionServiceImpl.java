@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.dto.ReactionNotificationDto;
 import ru.skillbox.social_network_post.dto.ReactionDto;
+import ru.skillbox.social_network_post.dto.RequestReactionDto;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.entity.Reaction;
 import ru.skillbox.social_network_post.exception.EntityNotFoundException;
@@ -21,6 +22,7 @@ import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.UUID;
 
 @Service
@@ -37,10 +39,10 @@ public class ReactionServiceImpl implements ReactionService {
     @LogExecutionTime
     @Override
     @Transactional
-    public ReactionDto addLikeToPost(UUID postId, ReactionDto reactionDto) {
+    public ReactionDto addLikeToPost(UUID postId, RequestReactionDto requestReactionDto) {
 
         Post post = EntityCheckUtils.checkPostPresence(postRepository, postId);
-        EntityCheckUtils.checkReactionDto(reactionDto);
+        EntityCheckUtils.checkReactionDto(requestReactionDto);
 
         accountId = SecurityUtils.getAccountId();
 
@@ -50,7 +52,7 @@ public class ReactionServiceImpl implements ReactionService {
                     MessageFormat.format("Like already exists for post with id {0}", postId));
         }
 
-        Reaction reaction = LikeMapperFactory.toLike(reactionDto);
+        Reaction reaction = LikeMapperFactory.toLike(requestReactionDto);
         reaction.setPost(post);
         reaction.setAuthorId(accountId);
 
@@ -65,7 +67,7 @@ public class ReactionServiceImpl implements ReactionService {
             postRepository.incrementReactionsCount(postId);
         }
 
-        Long count = reactionRepository.countByPostIdAndReactionType(postId, reactionDto.getReactionType());
+        int count = reactionRepository.countByPostIdAndReactionType(postId, requestReactionDto.reactionType());
 
         ReactionNotificationDto reactionNotificationDto = ReactionNotificationDto.builder()
                 .authorId(accountId)
@@ -79,9 +81,14 @@ public class ReactionServiceImpl implements ReactionService {
         kafkaService.newLikeEvent(reactionNotificationDto);
 
         return ReactionDto.builder()
-                .type(reactionDto.getReactionType())
-                .reactionType(reactionDto.getReactionType())
-                .count(count)
+                .active(true)
+                .reaction(reaction.getReactionType())
+                .reactionsInfo(Collections.singletonList(
+                        ReactionDto.ReactionInfo.builder()
+                                .reactionType("heart")
+                                .count(count)
+                                .build()))
+                .quantity(1)
                 .build();
     }
 
@@ -174,7 +181,7 @@ public class ReactionServiceImpl implements ReactionService {
         kafkaService.newLikeEvent(reactionNotificationDto);
     }
 
-    
+
     @LogExecutionTime
     @Override
     @Transactional

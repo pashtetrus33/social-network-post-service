@@ -38,12 +38,13 @@ CREATE TABLE IF NOT EXISTS schema_post.comments (
 -- Создание таблицы reactions в схеме schema_post
 CREATE TABLE IF NOT EXISTS schema_post.reactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    author_id UUID NOT NULL,
-    post_id UUID,
-    comment_id UUID,
-    type VARCHAR(50) NOT NULL,
-    reaction_type VARCHAR(50) NOT NULL,
-    created_at TIMESTAMP,
+    author_id UUID NOT NULL,  -- Идентификатор автора реакции
+    post_id UUID,  -- Идентификатор поста
+    comment_id UUID,  -- Идентификатор комментария (если применимо)
+    type VARCHAR(50) NOT NULL,  -- Тип реакции (например, "like", "dislike")
+    reaction_type VARCHAR(50) NOT NULL,  -- Подтип реакции (например, "heart", "thumbs_up")
+    reaction_count INT DEFAULT 1,  -- Количество реакций одного типа
+    created_at TIMESTAMP,  -- Дата создания
     FOREIGN KEY (post_id) REFERENCES schema_post.posts(id) ON DELETE CASCADE,
     FOREIGN KEY (comment_id) REFERENCES schema_post.comments(id) ON DELETE CASCADE
     );

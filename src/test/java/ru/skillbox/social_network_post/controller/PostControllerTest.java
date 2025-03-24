@@ -9,13 +9,11 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.skillbox.social_network_post.dto.PagePostDto;
-import ru.skillbox.social_network_post.dto.PostDto;
-import ru.skillbox.social_network_post.dto.PostSearchDto;
-import ru.skillbox.social_network_post.dto.ReactionDto;
+import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.service.PostService;
 import ru.skillbox.social_network_post.service.ReactionService;
 
+import java.util.Collections;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -118,21 +116,34 @@ class PostControllerTest {
     @Test
     void addLikeToPost_ShouldReturnCreated() throws Exception {
         postId = UUID.randomUUID();
-        ReactionDto reactionDto = ReactionDto.builder()
-                .type("LIKE")
-                .reactionType("POSITIVE")
-                .count(1L)
+
+        RequestReactionDto requestReactionDto = RequestReactionDto.builder()
+                .type("POST")
+                .reactionType("LIKE")
                 .build();
+
+        ReactionDto reactionDto = ReactionDto.builder()
+                .active(true)
+                .reaction("HEART")
+                .reactionsInfo(Collections.singletonList(
+                        ReactionDto.ReactionInfo.builder()
+                                .reactionType("POSITIVE")
+                                .count(1)
+                                .build()))
+                .quantity(1)
+                .build();
+
         when(reactionService.addLikeToPost(eq(postId), any())).thenReturn(reactionDto);
+
 
         mockMvc.perform(post("/api/v1/post/" + postId + "/like")
                         .with(csrf())  // Добавляем CSRF-токен
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(reactionDto))) // Используем ObjectMapper
+                        .content(objectMapper.writeValueAsString(requestReactionDto))) // Используем ObjectMapper
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.type").value("LIKE"))
-                .andExpect(jsonPath("$.reactionType").value("POSITIVE"))
-                .andExpect(jsonPath("$.count").value(1));
+                .andExpect(jsonPath("$.reaction").value("HEART"))
+                .andExpect(jsonPath("$.active").value("true"))
+                .andExpect(jsonPath("$.quantity").value(1));
     }
 
 

@@ -41,6 +41,7 @@ public interface PostSpecification {
             addPostTextPredicate(postSearchDto.getPostText(), root, criteriaBuilder, predicates);
 
             addTagsPredicate(postSearchDto.getTags(), root, predicates);
+
             addDateFromPredicate(postSearchDto.getDateFrom(), root, criteriaBuilder, predicates);
 
             addDateToPredicate(postSearchDto.getDateTo(), root, criteriaBuilder, predicates);
