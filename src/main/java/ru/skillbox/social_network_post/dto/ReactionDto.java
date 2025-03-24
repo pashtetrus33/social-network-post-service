@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 public class ReactionDto {
 
-    private boolean active;
+    private Boolean active;
     private List<ReactionInfo> reactionsInfo;
     private int quantity;
     private String reaction;
