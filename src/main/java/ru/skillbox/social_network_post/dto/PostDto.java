@@ -42,7 +42,7 @@ public class PostDto {
     private Long commentsCount = 0L;
 
     @Size(max = 50, message = "Tags list size must not exceed 50")
-    private List<String> tags;
+    private List<TagDto> tags;
 
     @Builder.Default
     private Long likeAmount = 0L;

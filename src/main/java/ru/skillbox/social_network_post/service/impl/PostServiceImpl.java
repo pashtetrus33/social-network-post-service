@@ -71,7 +71,12 @@ public class PostServiceImpl implements PostService {
                         MessageFormat.format("Post with id {0} not found", postId)
                 ));
 
-        return PostMapperFactory.toPostDto(post);
+        PostDto postDto = PostMapperFactory.toPostDto(post);
+        String myReaction = reactionService.getMyReaction(postDto.getId(), accountId);
+        postDto.setMyReaction(myReaction);
+        postDto.setReactionType(reactionService.getReactionInfos(postDto.getId()));
+
+        return postDto;
     }
 
     @LogExecutionTime

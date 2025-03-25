@@ -49,7 +49,7 @@ class ReactionServiceImplTest extends AbstractServiceTest {
 
         // Assert: Проверяем, что лайк добавлен и уведомление отправлено
         assertNotNull(result);
-        assertEquals("LIKE", result.getReactionsInfo().get(0).getReactionType());
+        assertEquals("DELIGHT", result.getReactionsInfo().get(0).getReactionType());
         assertEquals(1, result.getQuantity());  // Проверяем, что лайков 1
         assertEquals(1, post.getReactionsCount());  // Проверяем, что у поста лайков 1
         assertTrue(post.getMyReaction());
@@ -76,7 +76,7 @@ class ReactionServiceImplTest extends AbstractServiceTest {
 
         // Assert: Проверяем, что лайк добавлен и уведомление отправлено
         assertNotNull(result);
-        assertEquals("LIKE", result.getReactionsInfo().get(0).getReactionType());
+        assertEquals("DELIGHT", result.getReactionsInfo().get(0).getReactionType());
         assertEquals(1, result.getQuantity());  // Проверяем, что лайков 1
         assertEquals(1, post.getReactionsCount());  // Проверяем, что у поста лайков 1
         assertFalse(post.getMyReaction());
@@ -250,13 +250,13 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         reaction.setCommentId(commentId);
         reaction.setAuthorId(authorId);
         reaction.setType("POST");
-        reaction.setReactionType("LIKE");
+        reaction.setReactionType("DELIGHT");
         return reaction;
     }
 
     private static RequestReactionDto createTestRequestReactionDto() {
         return RequestReactionDto.builder()
-                .reactionType("LIKE")
+                .reactionType("DELIGHT")
                 .type("POST")
                 .build();
     }

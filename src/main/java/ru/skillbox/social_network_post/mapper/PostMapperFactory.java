@@ -1,13 +1,13 @@
 package ru.skillbox.social_network_post.mapper;
 
 import org.springframework.data.domain.Page;
+import ru.skillbox.social_network_post.dto.TagDto;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.dto.PagePostDto;
 import ru.skillbox.social_network_post.dto.PostDto;
 import ru.skillbox.social_network_post.dto.PostType;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public final class PostMapperFactory {
 
@@ -31,7 +31,11 @@ public final class PostMapperFactory {
                 .isBlocked(post.getIsBlocked())
                 .isDeleted(post.getIsDeleted())
                 .commentsCount(post.getCommentsCount())
-                .tags(post.getTags() != null ? new ArrayList<>(post.getTags()) : null)
+                .tags(post.getTags() != null
+                        ? post.getTags().stream()
+                        .map(TagDto::new) // Преобразуем String в TagDto
+                        .toList()
+                        : Collections.emptyList()) // Если null → пустой список
                 .likeAmount(post.getReactionsCount())
                 .myLike(post.getMyReaction())
                 .imagePath(post.getImagePath())
@@ -64,6 +68,13 @@ public final class PostMapperFactory {
             return null;
         }
 
+        List<String> tags = Optional.ofNullable(postDto.getTags()) // если null → пустой список
+                .orElse(Collections.emptyList())
+                .stream()
+                .map(TagDto::name)
+                .filter(Objects::nonNull) // защищаемся от null-значений
+                .toList();
+
         return Post.builder()
                 .time(postDto.getTime())
                 .timeChanged(postDto.getTimeChanged())
@@ -73,7 +84,7 @@ public final class PostMapperFactory {
                 .isBlocked(postDto.getIsBlocked())
                 .isDeleted(postDto.getIsDeleted())
                 .commentsCount(postDto.getCommentsCount())
-                .tags(postDto.getTags() != null ? new ArrayList<>(postDto.getTags()) : null)
+                .tags(tags)
                 .reactionsCount(postDto.getLikeAmount())
                 .myReaction(postDto.getMyLike())
                 .imagePath(postDto.getImagePath())
@@ -91,7 +102,15 @@ public final class PostMapperFactory {
         post.setPostText(postDto.getPostText());
 
         if (postDto.getTags() != null) {
-            post.setTags(new ArrayList<>(postDto.getTags()));
+
+            List<String> tags = Optional.of(postDto.getTags()) // если null → пустой список
+                    .orElse(Collections.emptyList())
+                    .stream()
+                    .map(TagDto::name)
+                    .filter(Objects::nonNull) // защищаемся от null-значений
+                    .toList();
+
+            post.setTags(tags);
         } else {
             post.setTags(null);
         }

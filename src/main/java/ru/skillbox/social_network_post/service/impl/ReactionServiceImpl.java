@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.dto.ReactionNotificationDto;
 import ru.skillbox.social_network_post.dto.ReactionDto;
+import ru.skillbox.social_network_post.dto.ReactionType;
 import ru.skillbox.social_network_post.dto.RequestReactionDto;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.entity.Reaction;
@@ -23,9 +24,8 @@ import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -101,9 +101,26 @@ public class ReactionServiceImpl implements ReactionService {
 
     @Override
     public List<ReactionDto.ReactionInfo> getReactionInfos(UUID postId) {
-        return reactionRepository.countReactionsByPostId(postId).stream()
-                .map(result -> new ReactionDto.ReactionInfo((String) result[0], (Long) result[1]))
-                .toList();
+        // Запрос к БД, получаем только те реакции, которые есть
+        List<Object[]> dbResults = reactionRepository.countReactionsByPostId(postId);
+
+        // Преобразуем в Map для удобства
+        Map<String, Long> reactionCountMap = dbResults.stream()
+                .collect(Collectors.toMap(
+                        result -> (String) result[0],
+                        result -> (Long) result[1]
+                ));
+
+        // Гарантируем наличие всех реакций
+        List<ReactionDto.ReactionInfo> reactionInfos = new ArrayList<>();
+        for (ReactionType type : ReactionType.values()) {
+            reactionInfos.add(new ReactionDto.ReactionInfo(
+                    type.name(),
+                    reactionCountMap.getOrDefault(type.name(), 0L)
+            ));
+        }
+
+        return reactionInfos;
     }
 
     @Override

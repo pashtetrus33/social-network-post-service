@@ -62,10 +62,6 @@ public class CommentServiceImpl implements CommentService {
         // Запрашиваем комменты из репозитория
         Page<Comment> comments = commentRepository.findAll(spec, pageable);
 
-        for (Comment comment : comments) {
-            log.info("!!Service getByPostId comment: {}", comment);
-        }
-
         return CommentMapperFactory.toPageCommentDto(comments);
     }
 
@@ -95,6 +91,7 @@ public class CommentServiceImpl implements CommentService {
         if (parentId != null) {
             comment.setParentComment(EntityCheckUtils.checkCommentPresence(commentRepository, parentId));
             comment.setCommentType(CommentType.COMMENT);
+            comment.setCommentsCount(comment.getCommentsCount() + 1);
         } else {
             comment.setCommentType(CommentType.POST);
 
@@ -105,7 +102,6 @@ public class CommentServiceImpl implements CommentService {
         comment.setIsBlocked(false);
         comment.setIsDeleted(false);
         comment.setLikeAmount(0);
-        comment.setCommentsCount(0);
         comment.setMyLike(false);
 
         UUID accountId = SecurityUtils.getAccountId();
