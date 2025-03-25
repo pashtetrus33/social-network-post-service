@@ -49,12 +49,12 @@ public class PostDto {
 
     @Builder.Default
     private List<ReactionDto.ReactionInfo> reactionType = List.of(
-            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.DELIGHT)).count(0L).build(),
-            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.MALICE)).count(0L).build(),
-            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.HEART)).count(0L).build(),
-            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.SADNESS)).count(0L).build(),
-            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.FUNNY)).count(0L).build(),
-            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.WOW)).count(0L).build()
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.delight)).count(0L).build(),
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.malice)).count(0L).build(),
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.heart)).count(0L).build(),
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.sadness)).count(0L).build(),
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.funny)).count(0L).build(),
+            ReactionDto.ReactionInfo.builder().reactionType(String.valueOf(ReactionType.wow)).count(0L).build()
     );
 
     private String myReaction;
