@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 import ru.skillbox.social_network_post.entity.Reaction;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface ReactionRepository extends JpaRepository<Reaction, UUID> {
@@ -23,4 +24,6 @@ public interface ReactionRepository extends JpaRepository<Reaction, UUID> {
 
     @Query("SELECT r.reactionType, COUNT(r) FROM Reaction r WHERE r.post.id = :postId GROUP BY r.reactionType")
     List<Object[]> countReactionsByPostId(@Param("postId") UUID postId);
+
+    Optional<Reaction> findByPostIdAndAuthorId(UUID postId, UUID authorId);
 }

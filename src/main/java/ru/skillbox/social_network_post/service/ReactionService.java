@@ -16,4 +16,6 @@ public interface ReactionService {
     void removeLikeFromComment(UUID postId, UUID commentId);
 
     List<ReactionDto.ReactionInfo> getReactionInfos(UUID postId);
+
+    String getMyReaction(UUID postId, UUID accountId);
 }
