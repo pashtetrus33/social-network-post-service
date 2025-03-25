@@ -171,9 +171,16 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public void delete(UUID postId, UUID commentId) {
 
-        EntityCheckUtils.checkCommentAndPostPresence(commentRepository, postRepository, postId, commentId);
+        Pair<Post, Comment> postCommentPair = EntityCheckUtils.checkCommentAndPostPresence(commentRepository, postRepository, postId, commentId);
+        Comment comment = postCommentPair.getRight();
+
+        if (comment.getParentComment() != null) {
+            commentRepository.decrementCommentsAmount(comment.getParentComment().getId());
+        }
+
         // Помечаем комментарии как удаленные
         commentRepository.markCommentAsDeletedByPostIdAndCommentId(postId, commentId);
+
 
         postRepository.decrementCommentCount(postId);
     }
