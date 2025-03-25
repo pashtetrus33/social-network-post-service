@@ -53,14 +53,17 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
     boolean isAuthorOfPost(@Param("postId") UUID postId, @Param("userId") UUID userId);
 
     @Modifying
+    @Transactional
     @Query("UPDATE Post p SET p.isBlocked = true WHERE p.authorId = :uuid")
     void updateBlockedStatusForAccount(UUID uuid);
 
     @Modifying
+    @Transactional
     @Query("UPDATE Post p SET p.isDeleted = true WHERE p.authorId = :uuid")
     void updateDeletedStatusForAccount(UUID uuid);
 
     @Modifying
-    @Query("UPDATE Post p SET p.commentsCount = p.commentsCount -1 WHERE p.id = :postId")
-    void decrementCommentCount(UUID postId);
+    @Transactional
+    @Query("UPDATE Post p SET p.commentsCount = p.commentsCount - :count WHERE p.id = :postId")
+    void decrementCommentCount(@Param("postId") UUID postId, @Param("count") int count);
 }
