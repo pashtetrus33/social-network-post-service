@@ -134,7 +134,7 @@ public class ReactionServiceImpl implements ReactionService {
     @LogExecutionTime
     @Override
     @Transactional
-    public ReactionDto removeLikeFromPost(UUID postId) {
+    public void removeLikeFromPost(UUID postId) {
 
         EntityCheckUtils.checkPostPresence(postRepository, postId);
 
@@ -163,17 +163,6 @@ public class ReactionServiceImpl implements ReactionService {
         } else {
             log.warn("У текущего пользователя нет реакции на этот пост. Пользователь {}", accountId);
         }
-
-        List<ReactionDto.ReactionInfo> reactionInfoList = getReactionInfos(postId);
-
-        long totalReactions = reactionRepository.countByPostId(postId);
-
-        return ReactionDto.builder()
-                .active(true)
-                .reactionsInfo(reactionInfoList)
-                .reaction(null)
-                .quantity(totalReactions)
-                .build();
     }
 
 

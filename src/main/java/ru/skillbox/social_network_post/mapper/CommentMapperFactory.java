@@ -60,6 +60,10 @@ public final class CommentMapperFactory {
             return null;
         }
 
+        if (commentDto.getCommentsCount() == null) {
+            commentDto.setCommentsCount(0);
+        }
+
         Comment comment = new Comment();
         comment.setId(commentDto.getId());
         createComment(commentDto, comment);
