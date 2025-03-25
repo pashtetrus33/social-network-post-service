@@ -82,7 +82,7 @@ public class PostController {
     @LogExecutionTime
     @DeleteMapping("/{postId}/like")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeLikeFromPost(@PathVariable UUID postId) {
-        reactionService.removeLikeFromPost(postId);
+    public ReactionDto removeLikeFromPost(@PathVariable UUID postId) {
+        return reactionService.removeLikeFromPost(postId);
     }
 }

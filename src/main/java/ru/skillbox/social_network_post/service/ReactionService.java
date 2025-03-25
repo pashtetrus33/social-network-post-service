@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface ReactionService {
     ReactionDto addLikeToPost(UUID postId, RequestReactionDto requestReactionDto);
 
-    void removeLikeFromPost(UUID postId);
+    ReactionDto removeLikeFromPost(UUID postId);
 
     void addLikeToComment(UUID postId, UUID commentId);
 
