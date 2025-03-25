@@ -88,7 +88,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
                 .map(SimpleGrantedAuthority::new)
                 .toList();
 
-
+        SecurityUtils.removeToken();
         SecurityUtils.saveToken(token);
         log.warn("Token is saved: {}", token);
 

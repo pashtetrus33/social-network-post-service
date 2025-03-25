@@ -19,14 +19,14 @@ public class SecurityUtils {
         tokenHolder.set(token);
     }
 
+    // Удаление токена из ThreadLocal
+    public static void removeToken() {
+        tokenHolder.remove();
+    }
+
     // Извлечение токена из ThreadLocal
     public static String getToken() {
         return tokenHolder.get();
-    }
-
-    // Очистка ThreadLocal
-    public static void clearToken() {
-        tokenHolder.remove();
     }
 
     public static UUID getAccountId() {

@@ -24,6 +24,7 @@ import java.text.MessageFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -48,14 +49,19 @@ public class ReactionServiceImpl implements ReactionService {
 
         accountId = SecurityUtils.getAccountId();
 
-        // Проверяем, ставил ли пользователь лайк ранее
-        if (reactionRepository.existsByPostIdAndAuthorIdAndCommentIdIsNull(postId, accountId)) {
-            log.warn("Реакция уже есть...");
-        }
-
         Reaction reaction = LikeMapperFactory.toReaction(requestReactionDto);
         reaction.setPost(post);
         reaction.setAuthorId(accountId);
+
+
+        // Проверяем, ставил ли пользователь реакцию на пост
+        if (reactionRepository.existsByPostIdAndAuthorIdAndCommentIdIsNull(postId, accountId)) {
+            log.warn("Реакция уже есть...");
+
+            // Получаем реакцию, если она есть
+            Optional<Reaction> reactionOptional = reactionRepository.findByPostIdAndAuthorId(postId, accountId);
+            reactionOptional.ifPresent(reactionRepository::delete);
+        }
 
         reactionRepository.save(reaction);
 
@@ -72,6 +78,7 @@ public class ReactionServiceImpl implements ReactionService {
 
         long totalReactions = reactionRepository.countByPostId(postId);
 
+
         ReactionNotificationDto reactionNotificationDto = ReactionNotificationDto.builder()
                 .authorId(accountId)
                 .reactionId(reaction.getId())
@@ -82,6 +89,7 @@ public class ReactionServiceImpl implements ReactionService {
                 .build();
 
         kafkaService.newLikeEvent(reactionNotificationDto);
+
 
         return ReactionDto.builder()
                 .active(true)
@@ -96,6 +104,13 @@ public class ReactionServiceImpl implements ReactionService {
         return reactionRepository.countReactionsByPostId(postId).stream()
                 .map(result -> new ReactionDto.ReactionInfo((String) result[0], (Long) result[1]))
                 .toList();
+    }
+
+    @Override
+    public String getMyReaction(UUID postId, UUID accountId) {
+        return reactionRepository.findByPostIdAndAuthorId(postId, accountId)
+                .map(Reaction::getReactionType)
+                .orElse(null);
     }
 
 
@@ -115,16 +130,22 @@ public class ReactionServiceImpl implements ReactionService {
 
         accountId = SecurityUtils.getAccountId();
 
-        // Проверяем, является ли текущий пользователь автором поста
-        if (postRepository.isAuthorOfPost(postId, accountId)) {
-            // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
-            postRepository.updateReactionsCountAndUnsetMyReaction(postId);
-        } else {
-            // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
-            postRepository.updateReactionsCount(postId);
-        }
 
-        reactionRepository.deleteByPostIdAndAuthorId(postId, accountId);
+        if (reactionRepository.existsByPostIdAndAuthorIdAndCommentIdIsNull(postId, accountId)) {
+            reactionRepository.deleteByPostIdAndAuthorId(postId, accountId);
+
+            // Проверяем, является ли текущий пользователь автором поста
+            if (postRepository.isAuthorOfPost(postId, accountId)) {
+                // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
+                postRepository.updateReactionsCountAndUnsetMyReaction(postId);
+            } else {
+                // Если пост не принадлежит пользователю, просто уменьшаем количество лайков
+                postRepository.updateReactionsCount(postId);
+            }
+
+        } else {
+            log.warn("У текущего пользователя нет реакции на этот пост. Пользователь {}", accountId);
+        }
     }
 
 

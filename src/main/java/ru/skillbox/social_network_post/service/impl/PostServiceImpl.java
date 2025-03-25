@@ -89,7 +89,11 @@ public class PostServiceImpl implements PostService {
 
         PagePostDto pagePostDto = PostMapperFactory.toPagePostDto(posts);
 
-        pagePostDto.getContent().forEach(postDto -> postDto.setReactionType(reactionService.getReactionInfos(postDto.getId())));
+        pagePostDto.getContent().forEach(postDto -> {
+            String myReaction = reactionService.getMyReaction(postDto.getId(), accountId);
+            postDto.setMyReaction(myReaction);
+            postDto.setReactionType(reactionService.getReactionInfos(postDto.getId()));
+        });
 
         return pagePostDto;
     }

@@ -49,7 +49,7 @@ class ReactionServiceImplTest extends AbstractServiceTest {
 
         // Assert: Проверяем, что лайк добавлен и уведомление отправлено
         assertNotNull(result);
-        assertEquals("LIKE", result.getReaction());
+        assertEquals("LIKE", result.getReactionsInfo().get(0).getReactionType());
         assertEquals(1, result.getQuantity());  // Проверяем, что лайков 1
         assertEquals(1, post.getReactionsCount());  // Проверяем, что у поста лайков 1
         assertTrue(post.getMyReaction());
@@ -76,12 +76,13 @@ class ReactionServiceImplTest extends AbstractServiceTest {
 
         // Assert: Проверяем, что лайк добавлен и уведомление отправлено
         assertNotNull(result);
-        assertEquals("LIKE", result.getReaction());
+        assertEquals("LIKE", result.getReactionsInfo().get(0).getReactionType());
         assertEquals(1, result.getQuantity());  // Проверяем, что лайков 1
         assertEquals(1, post.getReactionsCount());  // Проверяем, что у поста лайков 1
         assertFalse(post.getMyReaction());
         verify(kafkaService, times(1)).newLikeEvent(any());
     }
+
 
     @Test
     void testDeleteLikeFromPost() {
