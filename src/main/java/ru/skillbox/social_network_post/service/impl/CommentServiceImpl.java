@@ -90,7 +90,7 @@ public class CommentServiceImpl implements CommentService {
         if (parentId != null) {
             comment.setParentComment(EntityCheckUtils.checkCommentPresence(commentRepository, parentId));
             comment.setCommentType(CommentType.COMMENT);
-            comment.setCommentsCount(comment.getCommentsCount() + 1);
+            commentRepository.incrementCommentsAmount(parentId);
         } else {
             comment.setCommentType(CommentType.POST);
 

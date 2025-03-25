@@ -49,4 +49,8 @@ public interface CommentRepository extends JpaRepository<Comment, UUID>, JpaSpec
     boolean isAuthorOfComment(@Param("commentId") UUID commentId, @Param("userId") UUID userId);
 
     boolean existsByPostIdAndId(UUID postId, UUID commentId);
+
+    @Modifying
+    @Query("UPDATE Comment c SET c.commentsCount = c.commentsCount + 1 WHERE c.id = :parentId")
+    void incrementCommentsAmount(@Param("parentId") UUID parentId);
 }
