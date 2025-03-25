@@ -53,4 +53,8 @@ public interface CommentRepository extends JpaRepository<Comment, UUID>, JpaSpec
     @Modifying
     @Query("UPDATE Comment c SET c.commentsCount = c.commentsCount + 1 WHERE c.id = :parentId")
     void incrementCommentsAmount(@Param("parentId") UUID parentId);
+
+    @Modifying
+    @Query("UPDATE Comment c SET c.commentsCount = c.commentsCount - 1 WHERE c.id = :parentId")
+    void decrementCommentsAmount(@Param("parentId") UUID parentId);
 }
