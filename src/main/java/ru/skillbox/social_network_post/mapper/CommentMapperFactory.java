@@ -71,6 +71,16 @@ public final class CommentMapperFactory {
         return comment;
     }
 
+
+    public static void updateCommentFromDto(CommentDto commentDto, Comment comment) {
+        if (commentDto == null || comment == null) {
+            return;
+        }
+
+        createComment(commentDto, comment);
+    }
+
+
     private static void createComment(CommentDto commentDto, Comment comment) {
         comment.setCommentType(commentDto.getCommentType());
         comment.setTime(commentDto.getTime());
@@ -83,14 +93,6 @@ public final class CommentMapperFactory {
         comment.setMyLike(commentDto.getMyLike());
         comment.setCommentsCount(commentDto.getCommentsCount());
         comment.setImagePath(commentDto.getImagePath());
-    }
-
-    public static void updateCommentFromDto(CommentDto commentDto, Comment comment) {
-        if (commentDto == null || comment == null) {
-            return;
-        }
-
-        createComment(commentDto, comment);
     }
 
     public static List<CommentDto> toCommentDtoList(List<Comment> comments) {
