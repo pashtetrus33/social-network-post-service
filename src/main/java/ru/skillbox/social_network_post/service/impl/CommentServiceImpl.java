@@ -181,8 +181,11 @@ public class CommentServiceImpl implements CommentService {
         // Помечаем комментарии как удаленные
         commentRepository.markCommentAsDeletedByPostIdAndCommentId(postId, commentId);
 
+        if (comment.getCommentsCount() > 0) {
+            commentRepository.markAllAsDeletedByParentComment(commentId);
+        }
 
-        postRepository.decrementCommentCount(postId);
+        postRepository.decrementCommentCount(postId, comment.getCommentsCount() + 1);
     }
 
     private void updateParentComment(CommentDto commentDto, Comment comment) {

@@ -14,4 +14,7 @@ public interface  AccountServiceClient {
 
     @RequestLine("GET /search?author={author}")
     PageAccountDto searchAccount(@Param("author") String author);
+
+    @RequestLine("GET /?page={page}&size={size}&sort={sort}")
+    PageAccountDto getAllAccounts(@Param("size") int size);
 }
