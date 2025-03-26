@@ -63,7 +63,7 @@ public class ScheduledTaskService {
             log.info("Scheduled task. Token valid: {}", isTokenValid);
             return isTokenValid;
         } catch (FeignException e) {
-            throw new CustomFreignException("Scheduled task. Error trying to validate token");
+            log.warn("Scheduled task. FreignException trying to validate token");
         } catch (Exception e) {
             log.warn("Scheduled task. Unknown error while trying to validate token: {}", e.getMessage());
         }
