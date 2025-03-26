@@ -26,11 +26,6 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
     @Query("UPDATE Post p SET p.isDeleted = true WHERE p.id = :postId")
     void markAsDeleted(@Param("postId") UUID postId);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount + 1, p.myReaction = true WHERE p.id = :postId")
-    void incrementReactionsCountAndSetMyReaction(@Param("postId") UUID postId);
-
     @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount + 1 WHERE p.id = :postId")
     @Modifying
     @Transactional
@@ -41,16 +36,8 @@ public interface PostRepository extends JpaRepository<Post, UUID>, JpaSpecificat
     @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount - 1 WHERE p.id = :postId")
     void updateReactionsCount(@Param("postId") UUID postId);
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE Post p SET p.reactionsCount = p.reactionsCount - 1, p.myReaction = false WHERE p.id = :postId AND p.myReaction = true")
-    void updateReactionsCountAndUnsetMyReaction(UUID postId);
-
     @Query("SELECT p.reactionsCount FROM Post p WHERE p.id = :postId")
     int getReactionsCount(@Param("postId") UUID postId);
-
-    @Query("SELECT COUNT(p) > 0 FROM Post p WHERE p.id = :postId AND p.authorId = :userId")
-    boolean isAuthorOfPost(@Param("postId") UUID postId, @Param("userId") UUID userId);
 
     @Modifying
     @Transactional

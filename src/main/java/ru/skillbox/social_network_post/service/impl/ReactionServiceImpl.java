@@ -65,14 +65,7 @@ public class ReactionServiceImpl implements ReactionService {
 
         reactionRepository.save(reaction);
 
-        // Проверяем, является ли текущий пользователь автором поста
-        if (postRepository.isAuthorOfPost(postId, accountId)) {
-            // Увеличиваем количество лайков и устанавливаем флаг myLike в true только если пост принадлежит автору
-            postRepository.incrementReactionsCountAndSetMyReaction(postId);
-        } else {
-            // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
-            postRepository.incrementReactionsCount(postId);
-        }
+        postRepository.incrementReactionsCount(postId);
 
         List<ReactionDto.ReactionInfo> reactionInfoList = getReactionInfos(postId);
 
@@ -130,6 +123,11 @@ public class ReactionServiceImpl implements ReactionService {
                 .orElse(null);
     }
 
+    @Override
+    public Boolean getMyReactionToComment(UUID postId, UUID commentId, UUID accountId) {
+        return reactionRepository.isExistsByPost_IdAndCommentIdAndAuthorId(postId, commentId, accountId);
+    }
+
 
     @LogExecutionTime
     @Override
@@ -151,14 +149,7 @@ public class ReactionServiceImpl implements ReactionService {
         if (reactionRepository.existsByPostIdAndAuthorIdAndCommentIdIsNull(postId, accountId)) {
             reactionRepository.deleteByPostIdAndAuthorId(postId, accountId);
 
-            // Проверяем, является ли текущий пользователь автором поста
-            if (postRepository.isAuthorOfPost(postId, accountId)) {
-                // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
-                postRepository.updateReactionsCountAndUnsetMyReaction(postId);
-            } else {
-                // Если пост не принадлежит пользователю, просто уменьшаем количество лайков
-                postRepository.updateReactionsCount(postId);
-            }
+            postRepository.updateReactionsCount(postId);
 
         } else {
             log.warn("У текущего пользователя нет реакции на этот пост. Пользователь {}", accountId);
@@ -202,16 +193,7 @@ public class ReactionServiceImpl implements ReactionService {
 
         reactionRepository.save(reaction);
 
-
-        // Проверяем, является ли текущий пользователь автором коме комментария
-        if (commentRepository.isAuthorOfComment(commentId, accountId)) {
-            // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
-            commentRepository.incrementLikeAmountAndSetMyLike(commentId);
-        } else {
-            // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
-            commentRepository.incrementLikeAmount(commentId);
-        }
-
+        commentRepository.incrementLikeAmount(commentId);
 
         ReactionNotificationDto reactionNotificationDto = ReactionNotificationDto.builder()
                 .authorId(accountId)
@@ -243,14 +225,7 @@ public class ReactionServiceImpl implements ReactionService {
 
         accountId = SecurityUtils.getAccountId();
 
-        // Проверяем, является ли текущий пользователь автором коме комментария
-        if (commentRepository.isAuthorOfComment(commentId, accountId)) {
-            // Увеличиваем количество лайков на комментарий и устанавливаем флаг myLike в true только если пост принадлежит автору
-            commentRepository.updateLikeAmountAndUnsetMyLike(commentId);
-        } else {
-            // Если пост не принадлежит пользователю, просто увеличиваем количество лайков
-            commentRepository.updateLikeAmount(commentId);
-        }
+        commentRepository.updateLikeAmount(commentId);
 
         reactionRepository.deleteByCommentIdAndAuthorId(commentId, accountId);
     }

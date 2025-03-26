@@ -57,9 +57,6 @@ public class Post {
     @Builder.Default
     private Boolean isDeleted = false;
 
-    @Builder.Default
-    private Boolean myReaction = false;
-
     @Size(max = 512)
     private String imagePath;
 

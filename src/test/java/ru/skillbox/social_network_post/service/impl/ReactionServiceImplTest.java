@@ -52,7 +52,6 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         assertEquals("delight", result.getReactionsInfo().get(0).getReactionType());
         assertEquals(1, result.getQuantity());  // Проверяем, что лайков 1
         assertEquals(1, post.getReactionsCount());  // Проверяем, что у поста лайков 1
-        assertTrue(post.getMyReaction());
         verify(kafkaService, times(1)).newLikeEvent(any());
     }
 
@@ -79,7 +78,6 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         assertEquals("delight", result.getReactionsInfo().get(0).getReactionType());
         assertEquals(1, result.getQuantity());  // Проверяем, что лайков 1
         assertEquals(1, post.getReactionsCount());  // Проверяем, что у поста лайков 1
-        assertFalse(post.getMyReaction());
         verify(kafkaService, times(1)).newLikeEvent(any());
     }
 
@@ -90,7 +88,6 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         // Создаем тестовый пост
         Post post = createTestPost(UUID.randomUUID());
         post.setReactionsCount(1L);
-        post.setMyReaction(true);
 
         post = postRepository.save(post);
 
@@ -152,9 +149,6 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         assertEquals(comment.getId(), reaction.getCommentId());
         assertEquals(SecurityUtils.getAccountId(), reaction.getAuthorId());
 
-        comment = commentRepository.findById(comment.getId()).orElseThrow();
-        assertTrue(comment.getMyLike());
-
         verify(kafkaService, times(1)).newLikeEvent(any(ReactionNotificationDto.class));
     }
 
@@ -186,7 +180,6 @@ class ReactionServiceImplTest extends AbstractServiceTest {
 
         var comment = commentRepository.save(createTestComment(post, SecurityUtils.getAccountId()));
         comment.setLikeAmount(1);
-        comment.setMyLike(true);
         commentRepository.save(comment);
 
         Reaction reaction = createTestReaction(post, comment.getId(), SecurityUtils.getAccountId());
@@ -200,9 +193,6 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         // Assert
         assertEquals(0, reactionRepository.count());
         assertEquals(0, commentRepository.getLikeAmount(comment.getId()));
-
-        var updatedComment = commentRepository.findById(comment.getId()).orElseThrow();
-        assertFalse(updatedComment.getMyLike());
     }
 
 
@@ -237,7 +227,6 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         comment.setCommentType(CommentType.COMMENT);
         comment.setIsBlocked(false);
         comment.setIsDeleted(false);
-        comment.setMyLike(false);
         comment.setAuthorId(authorId);
         comment.setCommentText("Test Comment");
         comment.setTime(java.time.LocalDateTime.now());

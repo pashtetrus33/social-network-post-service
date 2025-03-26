@@ -23,6 +23,7 @@ import ru.skillbox.social_network_post.repository.specifiaction.CommentSpecifica
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.KafkaService;
+import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.utils.EntityCheckUtils;
 
 import java.text.MessageFormat;
@@ -37,6 +38,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class CommentServiceImpl implements CommentService {
 
+    private final ReactionService reactionService;
     private final KafkaService kafkaService;
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
@@ -62,7 +64,12 @@ public class CommentServiceImpl implements CommentService {
         // Запрашиваем комменты из репозитория
         Page<Comment> comments = commentRepository.findAll(spec, pageable);
 
-        return CommentMapperFactory.toPageCommentDto(comments);
+        PageCommentDto pageCommentDto = CommentMapperFactory.toPageCommentDto(comments);
+
+        pageCommentDto.getContent().forEach(commentDto ->
+                commentDto.setMyLike(reactionService.getMyReactionToComment(postId, commentDto.getId(), SecurityUtils.getAccountId())));
+
+        return pageCommentDto;
     }
 
 
@@ -73,7 +80,13 @@ public class CommentServiceImpl implements CommentService {
         EntityCheckUtils.checkPostPresence(postRepository, postId);
         EntityCheckUtils.checkCommentPresence(commentRepository, commentId);
         Page<Comment> subcomments = commentRepository.findByParentCommentIdAndPostId(commentId, postId, pageable);
-        return CommentMapperFactory.toPageCommentDto(subcomments);
+
+        PageCommentDto pageCommentDto = CommentMapperFactory.toPageCommentDto(subcomments);
+
+        pageCommentDto.getContent().forEach(commentDto ->
+                commentDto.setMyLike(reactionService.getMyReactionToComment(postId, commentDto.getId(), SecurityUtils.getAccountId())));
+
+        return pageCommentDto;
     }
 
 
@@ -102,7 +115,6 @@ public class CommentServiceImpl implements CommentService {
         comment.setIsBlocked(false);
         comment.setIsDeleted(false);
         comment.setLikeAmount(0);
-        comment.setMyLike(false);
 
         UUID accountId = SecurityUtils.getAccountId();
 

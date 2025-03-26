@@ -29,7 +29,7 @@ public final class CommentMapperFactory {
                 comment.getIsBlocked(),
                 comment.getIsDeleted(),
                 comment.getLikeAmount(),
-                comment.getMyLike(),
+                false,
                 comment.getCommentsCount(),
                 comment.getImagePath()
         );
@@ -90,7 +90,6 @@ public final class CommentMapperFactory {
         comment.setIsBlocked(commentDto.getIsBlocked());
         comment.setIsDeleted(commentDto.getIsDeleted());
         comment.setLikeAmount(commentDto.getLikeAmount());
-        comment.setMyLike(commentDto.getMyLike());
         comment.setCommentsCount(commentDto.getCommentsCount());
         comment.setImagePath(commentDto.getImagePath());
     }

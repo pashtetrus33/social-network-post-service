@@ -1,6 +1,8 @@
 package ru.skillbox.social_network_post.service;
 
 import feign.FeignException;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,9 +15,12 @@ import ru.skillbox.social_network_post.client.AccountServiceClient;
 import ru.skillbox.social_network_post.client.AuthServiceClient;
 import ru.skillbox.social_network_post.dto.AccountDto;
 import ru.skillbox.social_network_post.dto.AuthenticateRq;
+import ru.skillbox.social_network_post.dto.PostDto;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,6 +37,7 @@ public class ScheduledTaskService {
 
     private final AuthServiceClient authServiceClient;
     private final AccountServiceClient accountServiceClient;
+    private final PostService postService;
 
     @Scheduled(fixedRate = 3_600_000) // 1 час = 3600000 мс
     public void executeTask() {
@@ -50,9 +56,31 @@ public class ScheduledTaskService {
             } else {
                 log.warn("Scheduled task. Token null");
             }
+        } else {
+            List<UUID> accountIds = getAccountIds();
+            log.warn("Scheduled task. Fetch all account ids: {}", accountIds);
+
+            Collections.shuffle(accountIds);
+
+            accountIds.forEach(accountId -> postService.create(PostDto.builder()
+                    .title(createRandomTitle())
+                    .postText(createRandomPostText())
+                    .publishDate(createRandomPublishDate())
+                    .authorId(accountId)
+                    .build()));
         }
-        List<UUID> accountIds = getAccountIds();
-        log.warn("Scheduled task. Fetch all account ids: {}", accountIds);
+    }
+
+    private LocalDateTime createRandomPublishDate() {
+        return LocalDateTime.now().minusDays(1);
+    }
+
+    private @NotNull(message = "Post text must not be null") String createRandomPostText() {
+        return "Random post text " + UUID.randomUUID();
+    }
+
+    private @NotNull(message = "Title must not be null") @Size(max = 255, message = "Title must not exceed 255 characters") String createRandomTitle() {
+        return "Random title " + UUID.randomUUID();
     }
 
     private boolean tokenValidation(String token) {
