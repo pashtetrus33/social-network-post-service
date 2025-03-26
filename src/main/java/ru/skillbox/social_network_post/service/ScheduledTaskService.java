@@ -96,7 +96,7 @@ public class ScheduledTaskService {
     @Retryable(backoff = @Backoff(delay = 2000))
     public List<UUID> getAccountIds() {
         try {
-            return accountServiceClient.getAllAccounts(Integer.MAX_VALUE).getContent().stream().map(AccountDto::getId).toList();
+            return accountServiceClient.getAllAccounts().getContent().stream().map(AccountDto::getId).toList();
         } catch (FeignException e) {
             throw new CustomFreignException("Scheduled task. Error fetching all accounts");
         }
