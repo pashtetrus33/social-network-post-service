@@ -28,5 +28,5 @@ public interface ReactionRepository extends JpaRepository<Reaction, UUID> {
     @Query("SELECT r FROM Reaction r WHERE r.post.id = :postId AND r.authorId = :authorId AND r.commentId IS NULL")
     Optional<Reaction> findByPostIdAndAuthorId(@Param("postId") UUID postId, @Param("authorId") UUID authorId);
 
-    Boolean isExistsByPost_IdAndCommentIdAndAuthorId(UUID postId, UUID commentId, UUID authorId);
+    Boolean  existsByPost_IdAndCommentIdAndAuthorId(UUID postId, UUID commentId, UUID authorId);
 }

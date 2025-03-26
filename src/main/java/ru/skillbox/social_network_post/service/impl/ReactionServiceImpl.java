@@ -125,7 +125,7 @@ public class ReactionServiceImpl implements ReactionService {
 
     @Override
     public Boolean getMyReactionToComment(UUID postId, UUID commentId, UUID accountId) {
-        return reactionRepository.isExistsByPost_IdAndCommentIdAndAuthorId(postId, commentId, accountId);
+        return reactionRepository.existsByPost_IdAndCommentIdAndAuthorId(postId, commentId, accountId);
     }
 
 
