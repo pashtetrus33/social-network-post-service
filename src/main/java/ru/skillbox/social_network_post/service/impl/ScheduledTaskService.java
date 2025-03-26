@@ -18,12 +18,12 @@ import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.PostService;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -66,19 +66,20 @@ public class ScheduledTaskService {
             } else {
                 log.warn("Scheduled task. Token null");
             }
-        } else {
-            List<UUID> accountIds = getAccountIds();
-            log.warn("Scheduled task. Fetch all account ids: {}", accountIds);
-
-            Collections.shuffle(accountIds);
-
-            accountIds.forEach(accountId -> postService.create(PostDto.builder()
-                    .title("Цитата дня #" + counter.getAndIncrement())
-                    .postText(createRandomPostText())
-                    .publishDate(createRandomPublishDate())
-                    .authorId(accountId)
-                    .build()));
         }
+
+        List<UUID> accountIds = getAccountIds();
+        log.warn("Scheduled task. Fetch all account ids: {}", accountIds);
+
+        Collections.shuffle(accountIds);
+
+        accountIds.forEach(accountId -> postService.create(PostDto.builder()
+                .title("Цитата дня #" + counter.getAndIncrement())
+                .postText(createRandomPostText())
+                .publishDate(createRandomPublishDate())
+                .authorId(accountId)
+                .build()));
+
     }
 
     private LocalDateTime createRandomPublishDate() {
@@ -97,7 +98,9 @@ public class ScheduledTaskService {
             LocalDateTime endDate = now.plusDays(after);
 
             long secondsBetween = ChronoUnit.SECONDS.between(startDate, endDate);
-            long randomSeconds = ThreadLocalRandom.current().nextLong(0, secondsBetween);
+
+            SecureRandom secureRandom = new SecureRandom();
+            long randomSeconds = secureRandom.nextLong(secondsBetween);
 
             LocalDateTime randomDate = startDate.plusSeconds(randomSeconds);
             log.info("Случайная дата публикации: {}", randomDate);

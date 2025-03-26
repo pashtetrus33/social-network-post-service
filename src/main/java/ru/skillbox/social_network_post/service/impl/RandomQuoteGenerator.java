@@ -3,6 +3,7 @@ package ru.skillbox.social_network_post.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import ru.skillbox.social_network_post.exception.QuoteRetrievalException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,6 +13,11 @@ import java.net.URL;
 
 @Slf4j
 public class RandomQuoteGenerator {
+
+    // Private constructor to prevent instantiation
+    private RandomQuoteGenerator() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
 
     static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -34,7 +40,7 @@ public class RandomQuoteGenerator {
             String quoteAuthor = jsonNode.get("quoteAuthor").asText();
             return "\"" + quoteText + "\" — " + quoteAuthor;
         } catch (IOException e) {
-            throw new RuntimeException("Ошибка при получении цитаты", e);
+            throw new QuoteRetrievalException("Ошибка при получении цитаты", e);
         }
     }
 

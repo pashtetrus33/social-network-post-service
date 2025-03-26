@@ -51,8 +51,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleIdMismatch(MethodArgumentTypeMismatchException ex) {
+    public ErrorResponse handleMethodArgumentTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return handleException(ex, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(QuoteRetrievalException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleQuoteRetrievalException(QuoteRetrievalException ex) {
+        return handleException(ex, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
