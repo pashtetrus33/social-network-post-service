@@ -1,8 +1,6 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import feign.FeignException;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,9 +19,12 @@ import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.PostService;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 @Service
@@ -36,9 +37,17 @@ public class ScheduledTaskService {
     @Value("${authentication.password}")
     private String password;
 
+    @Value("${publish-date.after}")
+    private String publishDateAfterNow;
+
+    @Value("${publish-date.before}")
+    private String publishDateBeforeNow;
+
     private final AuthServiceClient authServiceClient;
     private final AccountServiceClient accountServiceClient;
     private final PostService postService;
+
+    private static final AtomicInteger counter = new AtomicInteger(1);
 
     @Scheduled(fixedRate = 3_600_000) // 1 час = 3600000 мс
     public void executeTask() {
@@ -64,7 +73,7 @@ public class ScheduledTaskService {
             Collections.shuffle(accountIds);
 
             accountIds.forEach(accountId -> postService.create(PostDto.builder()
-                    .title(createRandomTitle())
+                    .title("Цитата дня #" + counter.getAndIncrement())
                     .postText(createRandomPostText())
                     .publishDate(createRandomPublishDate())
                     .authorId(accountId)
@@ -73,15 +82,34 @@ public class ScheduledTaskService {
     }
 
     private LocalDateTime createRandomPublishDate() {
-        return LocalDateTime.now().minusDays(1);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        try {
+            long before = Long.parseLong(publishDateBeforeNow);
+            long after = Long.parseLong(publishDateAfterNow);
+
+            if (before < 0 || after < 0) {
+                throw new IllegalArgumentException("publish-date.before и publish-date.after должны быть неотрицательными");
+            }
+
+            LocalDateTime startDate = now.minusDays(before);
+            LocalDateTime endDate = now.plusDays(after);
+
+            long secondsBetween = ChronoUnit.SECONDS.between(startDate, endDate);
+            long randomSeconds = ThreadLocalRandom.current().nextLong(0, secondsBetween);
+
+            LocalDateTime randomDate = startDate.plusSeconds(randomSeconds);
+            log.info("Случайная дата публикации: {}", randomDate);
+
+            return randomDate;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Ошибка преобразования publish-date.before или publish-date.after в число", e);
+        }
     }
 
-    private @NotNull(message = "Post text must not be null") String createRandomPostText() {
+    private String createRandomPostText() {
         return RandomQuoteGenerator.getRandomQuote();
-    }
-
-    private @NotNull(message = "Title must not be null") @Size(max = 255, message = "Title must not exceed 255 characters") String createRandomTitle() {
-        return "Random title " + UUID.randomUUID();
     }
 
     boolean tokenValidation(String token) {

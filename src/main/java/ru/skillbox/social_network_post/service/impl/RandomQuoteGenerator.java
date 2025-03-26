@@ -1,15 +1,19 @@
 package ru.skillbox.social_network_post.service.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.io.BufferedReader;
 
 @Slf4j
 public class RandomQuoteGenerator {
+
+    static ObjectMapper objectMapper = new ObjectMapper();
 
     private static final String API_URL = "https://api.forismatic.com/api/1.0/?method=getQuote&format=jsonp&jsonp=?&lang=ru";
 
@@ -18,11 +22,19 @@ public class RandomQuoteGenerator {
         try {
             url = new URL(API_URL);
             String response = getString(url);
-            String quoteText = response.substring(response.indexOf("\"quoteText\":\"") + 12, response.indexOf("\",\"quoteAuthor\""));
-            String quoteAuthor = response.substring(response.indexOf("\"quoteAuthor\":\"") + 15, response.indexOf("\"}", response.indexOf("\"quoteAuthor\":\"")));
+            log.info("API response: {}", response);
+
+            // Убираем обертку JSONP
+            response = response.substring(2, response.length() - 1);
+
+            // Парсим JSON
+
+            JsonNode jsonNode = objectMapper.readTree(response);
+            String quoteText = jsonNode.get("quoteText").asText();
+            String quoteAuthor = jsonNode.get("quoteAuthor").asText();
             return "\"" + quoteText + "\" — " + quoteAuthor;
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Ошибка при получении цитаты", e);
         }
     }
 
@@ -40,7 +52,6 @@ public class RandomQuoteGenerator {
 
         in.close();
 
-        // Преобразуем полученный JSON-ответ в строку цитаты
         return content.toString();
     }
 }
