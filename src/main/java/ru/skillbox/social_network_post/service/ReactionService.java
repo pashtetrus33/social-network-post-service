@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ReactionService {
+
     ReactionDto addLikeToPost(UUID postId, RequestReactionDto requestReactionDto);
 
     void removeLikeFromPost(UUID postId);
@@ -18,4 +19,6 @@ public interface ReactionService {
     List<ReactionDto.ReactionInfo> getReactionInfos(UUID postId);
 
     String getMyReaction(UUID postId, UUID accountId);
+
+    Boolean getMyReactionToComment(UUID postId, UUID id, UUID accountId);
 }

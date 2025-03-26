@@ -10,7 +10,6 @@ CREATE TABLE IF NOT EXISTS schema_post.posts (
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     comments_count INT NOT NULL DEFAULT 0,
     reactions_count INT NOT NULL DEFAULT 0,
-    my_reaction BOOLEAN NOT NULL DEFAULT FALSE,
     image_path VARCHAR(500),
     publish_date TIMESTAMP NOT NULL
     );
@@ -28,7 +27,6 @@ CREATE TABLE IF NOT EXISTS schema_post.comments (
     is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE,
     like_amount INT NOT NULL DEFAULT 0,
-    my_like BOOLEAN NOT NULL DEFAULT FALSE,
     comments_count INT NOT NULL DEFAULT 0,
     image_path VARCHAR(500),
     FOREIGN KEY (post_id) REFERENCES schema_post.posts(id) ON DELETE CASCADE,

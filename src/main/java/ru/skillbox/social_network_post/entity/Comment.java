@@ -42,9 +42,6 @@ public class Comment {
     @NotNull
     private Boolean isDeleted;
 
-    @NotNull
-    private Boolean myLike;
-
     @NotBlank
     @Column(columnDefinition = "TEXT")
     private String commentText;

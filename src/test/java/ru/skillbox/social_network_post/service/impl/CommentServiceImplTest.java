@@ -94,7 +94,6 @@ class CommentServiceImplTest extends AbstractServiceTest {
                     .commentText("Comment " + i)
                     .commentType(CommentType.POST)
                     .isBlocked(false)
-                    .myLike(false)
                     .isDeleted(false)
                     .time(LocalDateTime.now())
                     .build();
@@ -139,7 +138,6 @@ class CommentServiceImplTest extends AbstractServiceTest {
                 .commentType(CommentType.POST)
                 .isBlocked(false)
                 .isDeleted(false)
-                .myLike(false)
                 .build();
         commentRepository.save(parentComment);
 
@@ -153,7 +151,6 @@ class CommentServiceImplTest extends AbstractServiceTest {
                 .commentType(CommentType.POST)
                 .isBlocked(false)
                 .isDeleted(false)
-                .myLike(false)
                 .build();
         commentRepository.save(subComment);
 
@@ -202,7 +199,6 @@ class CommentServiceImplTest extends AbstractServiceTest {
                 .commentType(CommentType.POST)
                 .isBlocked(false)
                 .isDeleted(false)
-                .myLike(false)
                 .build();
         commentRepository.save(parentComment);
 

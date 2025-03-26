@@ -37,7 +37,6 @@ public final class PostMapperFactory {
                         .toList()
                         : Collections.emptyList()) // Если null → пустой список
                 .likeAmount(post.getReactionsCount())
-                .myLike(post.getMyReaction())
                 .imagePath(post.getImagePath())
                 .publishDate(post.getPublishDate())
                 .build();
@@ -86,7 +85,6 @@ public final class PostMapperFactory {
                 .commentsCount(postDto.getCommentsCount())
                 .tags(tags)
                 .reactionsCount(postDto.getLikeAmount())
-                .myReaction(postDto.getMyLike())
                 .imagePath(postDto.getImagePath())
                 .publishDate(postDto.getPublishDate())
                 .build();

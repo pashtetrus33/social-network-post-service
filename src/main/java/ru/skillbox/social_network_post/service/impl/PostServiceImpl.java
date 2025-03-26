@@ -72,8 +72,14 @@ public class PostServiceImpl implements PostService {
                 ));
 
         PostDto postDto = PostMapperFactory.toPostDto(post);
+        
         String myReaction = reactionService.getMyReaction(postDto.getId(), accountId);
-        postDto.setMyReaction(myReaction);
+
+        if (myReaction != null) {
+            postDto.setMyReaction(myReaction);
+            postDto.setMyLike(true);
+        }
+
         postDto.setReactionType(reactionService.getReactionInfos(postDto.getId()));
 
         return postDto;
@@ -95,63 +101,17 @@ public class PostServiceImpl implements PostService {
         PagePostDto pagePostDto = PostMapperFactory.toPagePostDto(posts);
 
         pagePostDto.getContent().forEach(postDto -> {
+
             String myReaction = reactionService.getMyReaction(postDto.getId(), accountId);
-            postDto.setMyReaction(myReaction);
+
+            if (myReaction != null) {
+                postDto.setMyReaction(myReaction);
+                postDto.setMyLike(true);
+            }
             postDto.setReactionType(reactionService.getReactionInfos(postDto.getId()));
         });
 
         return pagePostDto;
-    }
-
-    private void processAccountIds(PostSearchDto postSearchDto) {
-
-        List<UUID> authorIds = Optional.ofNullable(postSearchDto.getAuthor())
-                .filter(author -> !author.isBlank())
-                .map(this::getAuthorIds)
-                .orElse(Collections.emptyList());
-
-        List<UUID> friendsIds = Boolean.TRUE.equals(postSearchDto.getWithFriends())
-                ? getFriendsIds()
-                : Collections.emptyList();
-
-        log.warn("AuthorsIds from accounts service: {}", authorIds);
-        log.warn("Friends ids from friends service: {}", friendsIds);
-
-        if (postSearchDto.getAccountIds() == null && (!authorIds.isEmpty() || !friendsIds.isEmpty())) {
-            postSearchDto.setAccountIds(new ArrayList<>());
-        }
-
-        Optional.ofNullable(postSearchDto.getAccountIds()).ifPresent(accountIds -> {
-            accountIds.addAll(authorIds);
-            accountIds.addAll(friendsIds);
-        });
-
-        log.warn("Final accountIds: {}", postSearchDto.getAccountIds() != null ? postSearchDto.getAccountIds().size() : "null");
-        Optional.ofNullable(postSearchDto.getAccountIds()).ifPresent(ids -> ids.forEach(id -> log.info("Account: {}", id)));
-    }
-
-    private void processDateFilters(PostSearchDto postSearchDto) {
-
-        Instant now = Instant.now();
-
-        postSearchDto.setDateTo(parseOrDefault(postSearchDto.getDateTo(), now.toEpochMilli()));
-        postSearchDto.setDateFrom(parseOrNull(postSearchDto.getDateFrom()));
-    }
-
-    private String parseOrDefault(String date, long defaultValue) {
-        return date != null ? parseOrThrow(date) : String.valueOf(defaultValue);
-    }
-
-    private String parseOrNull(String date) {
-        return date != null ? parseOrThrow(date) : null;
-    }
-
-    private String parseOrThrow(String date) {
-        try {
-            return String.valueOf(Instant.parse(date).toEpochMilli());
-        } catch (DateTimeParseException e) {
-            throw new IllegalArgumentException("Invalid date format: " + date, e);
-        }
     }
 
 
@@ -265,5 +225,57 @@ public class PostServiceImpl implements PostService {
     @Transactional
     public void updateDeletedStatusForAccount(UUID uuid) {
         postRepository.updateDeletedStatusForAccount(uuid);
+    }
+
+
+    private void processAccountIds(PostSearchDto postSearchDto) {
+
+        List<UUID> authorIds = Optional.ofNullable(postSearchDto.getAuthor())
+                .filter(author -> !author.isBlank())
+                .map(this::getAuthorIds)
+                .orElse(Collections.emptyList());
+
+        List<UUID> friendsIds = Boolean.TRUE.equals(postSearchDto.getWithFriends())
+                ? getFriendsIds()
+                : Collections.emptyList();
+
+        log.warn("AuthorsIds from accounts service: {}", authorIds);
+        log.warn("Friends ids from friends service: {}", friendsIds);
+
+        if (postSearchDto.getAccountIds() == null && (!authorIds.isEmpty() || !friendsIds.isEmpty())) {
+            postSearchDto.setAccountIds(new ArrayList<>());
+        }
+
+        Optional.ofNullable(postSearchDto.getAccountIds()).ifPresent(accountIds -> {
+            accountIds.addAll(authorIds);
+            accountIds.addAll(friendsIds);
+        });
+
+        log.warn("Final accountIds: {}", postSearchDto.getAccountIds() != null ? postSearchDto.getAccountIds().size() : "null");
+        Optional.ofNullable(postSearchDto.getAccountIds()).ifPresent(ids -> ids.forEach(id -> log.info("Account: {}", id)));
+    }
+
+    private void processDateFilters(PostSearchDto postSearchDto) {
+
+        Instant now = Instant.now();
+
+        postSearchDto.setDateTo(parseOrDefault(postSearchDto.getDateTo(), now.toEpochMilli()));
+        postSearchDto.setDateFrom(parseOrNull(postSearchDto.getDateFrom()));
+    }
+
+    private String parseOrDefault(String date, long defaultValue) {
+        return date != null ? parseOrThrow(date) : String.valueOf(defaultValue);
+    }
+
+    private String parseOrNull(String date) {
+        return date != null ? parseOrThrow(date) : null;
+    }
+
+    private String parseOrThrow(String date) {
+        try {
+            return String.valueOf(Instant.parse(date).toEpochMilli());
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Invalid date format: " + date, e);
+        }
     }
 }
