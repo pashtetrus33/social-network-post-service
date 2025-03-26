@@ -18,13 +18,13 @@ import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.PostService;
 
-import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -96,9 +96,12 @@ public class ScheduledTaskService {
                 throw new IllegalArgumentException("publish-date.before и publish-date.after должны быть неотрицательными");
             }
 
-            LocalDateTime randomDate = now.minusDays(before)
-                    .plusSeconds(new SecureRandom().nextLong(ChronoUnit.SECONDS.between(now.minusDays(before), now.plusDays(after))));
+            LocalDateTime startDate = now.minusDays(before);
+            long secondsBetween = ChronoUnit.SECONDS.between(startDate, now.plusDays(after));
 
+            long randomSeconds = ThreadLocalRandom.current().nextLong(secondsBetween);
+
+            LocalDateTime randomDate = startDate.plusSeconds(randomSeconds);
             log.info("Случайная дата публикации: {}", randomDate);
 
 
