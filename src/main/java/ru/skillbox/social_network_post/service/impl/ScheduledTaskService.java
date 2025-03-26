@@ -21,6 +21,7 @@ import ru.skillbox.social_network_post.service.PostService;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -71,9 +72,10 @@ public class ScheduledTaskService {
         List<UUID> accountIds = getAccountIds();
         log.warn("Scheduled task. Fetch all account ids: {}", accountIds);
 
-        Collections.shuffle(accountIds);
+        List<UUID> mutableList = new ArrayList<>(accountIds);
+        Collections.shuffle(mutableList);
 
-        accountIds.forEach(accountId -> postService.create(PostDto.builder()
+        mutableList.forEach(accountId -> postService.create(PostDto.builder()
                 .title("Цитата дня #" + counter.getAndIncrement())
                 .postText(createRandomPostText())
                 .publishDate(createRandomPublishDate())
