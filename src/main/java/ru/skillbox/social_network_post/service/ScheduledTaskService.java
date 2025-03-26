@@ -33,16 +33,13 @@ public class ScheduledTaskService {
     private final AuthServiceClient authServiceClient;
     private final AccountServiceClient accountServiceClient;
 
-    @Scheduled(fixedRate = 300_000) // 5 минут = 300000 мс
+    @Scheduled(fixedRate = 3_600_000) // 1 час = 3600000 мс
     public void executeTask() {
         log.warn("Scheduled task.... {}", System.currentTimeMillis());
 
         boolean isTokenValid = tokenValidation(SecurityUtils.getToken());
 
-        if (isTokenValid) {
-            List<UUID> accountIds = getAccountIds();
-            log.warn("Scheduled task. Fetch all account ids: {}", accountIds);
-        } else {
+        if (!isTokenValid) {
             log.warn("Scheduled task. Token validation failed!!! Trying to login....");
 
             String token = authenticateUser(login, password);
@@ -50,8 +47,12 @@ public class ScheduledTaskService {
             if (token != null) {
                 log.info("Scheduled task. Login successful");
                 SecurityUtils.saveToken(token);
+            } else {
+                log.warn("Scheduled task. Token null");
             }
         }
+        List<UUID> accountIds = getAccountIds();
+        log.warn("Scheduled task. Fetch all account ids: {}", accountIds);
     }
 
     private boolean tokenValidation(String token) {

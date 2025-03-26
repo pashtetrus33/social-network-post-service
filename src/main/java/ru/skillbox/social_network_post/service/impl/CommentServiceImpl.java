@@ -50,6 +50,7 @@ public class CommentServiceImpl implements CommentService {
         log.info("Service getByPostId: {}", postId);
 
         commentSearchDto.setPostId(postId);
+        commentSearchDto.setCommentType(CommentType.POST);
 
         log.info("Service getByPostId comment search dto: {}", commentSearchDto);
 
