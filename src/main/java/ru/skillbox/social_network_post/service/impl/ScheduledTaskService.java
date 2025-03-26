@@ -77,7 +77,7 @@ public class ScheduledTaskService {
     }
 
     private @NotNull(message = "Post text must not be null") String createRandomPostText() {
-        return "Random post text " + UUID.randomUUID();
+        return RandomQuoteGenerator.getRandomQuote();
     }
 
     private @NotNull(message = "Title must not be null") @Size(max = 255, message = "Title must not exceed 255 characters") String createRandomTitle() {
