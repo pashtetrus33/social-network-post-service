@@ -3,6 +3,7 @@ package ru.skillbox.social_network_post.service;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,6 +12,7 @@ import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
 import ru.skillbox.social_network_post.client.AuthServiceClient;
 import ru.skillbox.social_network_post.dto.AccountDto;
+import ru.skillbox.social_network_post.dto.AuthenticateRq;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 
@@ -22,20 +24,33 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ScheduledTaskService {
 
+    @Value("${authentication.login}")
+    private String login;
+
+    @Value("${authentication.password}")
+    private String password;
+
     private final AuthServiceClient authServiceClient;
     private final AccountServiceClient accountServiceClient;
 
     @Scheduled(fixedRate = 300_000) // 5 минут = 300000 мс
     public void executeTask() {
-        log.warn("Запущена запланированная задача в {}", System.currentTimeMillis());
+        log.warn("Scheduled task.... {}", System.currentTimeMillis());
 
         boolean isTokenValid = tokenValidation(SecurityUtils.getToken());
 
         if (isTokenValid) {
             List<UUID> accountIds = getAccountIds();
-            log.warn("Fetch all account ids: {}", accountIds);
+            log.warn("Scheduled task. Fetch all account ids: {}", accountIds);
         } else {
-         log.warn("Token validation failed!!!");
+            log.warn("Scheduled task. Token validation failed!!! Trying to login....");
+
+            String token = authenticateUser(login, password);
+
+            if (token != null) {
+                log.info("Scheduled task. Login successful");
+                SecurityUtils.saveToken(token);
+            }
         }
     }
 
@@ -45,14 +60,35 @@ public class ScheduledTaskService {
 
         try {
             isTokenValid = authServiceClient.validateToken(token);
-            log.info("Scheduled Token valid: {}", isTokenValid);
+            log.info("Scheduled task. Token valid: {}", isTokenValid);
             return isTokenValid;
         } catch (FeignException e) {
-            throw new CustomFreignException("Schedule task. Error trying to validate token");
+            throw new CustomFreignException("Scheduled task. Error trying to validate token");
         } catch (Exception e) {
-            log.warn("Schedule task. Unknown error while trying to validate token: {}", e.getMessage());
+            log.warn("Scheduled task. Unknown error while trying to validate token: {}", e.getMessage());
         }
         return false;
+    }
+
+    private String authenticateUser(String login, String password) {
+
+        String accessToken;
+
+        try {
+            AuthenticateRq authenticateRq = new AuthenticateRq();
+            authenticateRq.setEmail(login);
+            authenticateRq.setPassword(password);
+
+            log.warn("Scheduled task. AuthenticateRq: {}", authenticateRq);
+
+            accessToken = authServiceClient.login(authenticateRq).getAccessToken();
+
+        } catch (FeignException e) {
+            log.error("Scheduled task. Freign exception while login with credentials: {} {}", login, password);
+            return null;
+        }
+
+        return accessToken;
     }
 
 
@@ -62,7 +98,7 @@ public class ScheduledTaskService {
         try {
             return accountServiceClient.getAllAccounts(Integer.MAX_VALUE).getContent().stream().map(AccountDto::getId).toList();
         } catch (FeignException e) {
-            throw new CustomFreignException("Error fetching all accounts");
+            throw new CustomFreignException("Scheduled task. Error fetching all accounts");
         }
     }
 }
