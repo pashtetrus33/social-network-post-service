@@ -1,4 +1,4 @@
-package ru.skillbox.social_network_post.service;
+package ru.skillbox.social_network_post.service.impl;
 
 import feign.FeignException;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +18,7 @@ import ru.skillbox.social_network_post.dto.AuthenticateRq;
 import ru.skillbox.social_network_post.dto.PostDto;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.security.SecurityUtils;
+import ru.skillbox.social_network_post.service.PostService;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -83,7 +84,7 @@ public class ScheduledTaskService {
         return "Random title " + UUID.randomUUID();
     }
 
-    private boolean tokenValidation(String token) {
+    boolean tokenValidation(String token) {
 
         boolean isTokenValid;
 
@@ -99,7 +100,7 @@ public class ScheduledTaskService {
         return false;
     }
 
-    private String authenticateUser(String login, String password) {
+    String authenticateUser(String login, String password) {
 
         String accessToken;
 
