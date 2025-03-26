@@ -1,6 +1,7 @@
 package ru.skillbox.social_network_post.security;
 
 
+import feign.FeignException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +15,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.skillbox.social_network_post.client.AuthServiceClient;
 import org.springframework.lang.NonNull;
+import ru.skillbox.social_network_post.exception.CustomFreignException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -58,8 +60,16 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        boolean isTokenValid = authServiceClient.validateToken(token);
-        log.info("Token valid: {}", isTokenValid);
+        boolean isTokenValid = false;
+
+        try {
+            isTokenValid = authServiceClient.validateToken(token);
+            log.info("Token valid: {}", isTokenValid);
+        } catch (FeignException e) {
+            throw new CustomFreignException("Error trying to validate token");
+        } catch (Exception e) {
+            log.warn("Unknown error while trying to validate token: {}", e.getMessage());
+        }
 
         if (!isTokenValid) {
             unauthorizedResponse(response, "{\"error\": \"Invalid or expired token\"}");
