@@ -174,10 +174,6 @@ public class CommentServiceImpl implements CommentService {
         Pair<Post, Comment> postCommentPair = EntityCheckUtils.checkCommentAndPostPresence(commentRepository, postRepository, postId, commentId);
         Comment comment = postCommentPair.getRight();
 
-        if (comment.getParentComment() != null) {
-            commentRepository.decrementCommentsAmount(comment.getParentComment().getId());
-        }
-
         // Помечаем комментарии как удаленные
         commentRepository.markCommentAsDeletedByPostIdAndCommentId(postId, commentId);
 
