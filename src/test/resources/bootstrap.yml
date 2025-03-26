@@ -28,6 +28,10 @@ spring:
       uri: http://91.197.98.213:8888
       fail-fast: false
 
+authentication:
+  login: test@test.me
+  password: 123
+
 gateway:
   api:
     url: ${GATEWAY_URL:http://91.197.98.213:8080}
