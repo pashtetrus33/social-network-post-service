@@ -96,16 +96,11 @@ public class ScheduledTaskService {
                 throw new IllegalArgumentException("publish-date.before и publish-date.after должны быть неотрицательными");
             }
 
-            LocalDateTime startDate = now.minusDays(before);
-            LocalDateTime endDate = now.plusDays(after);
+            LocalDateTime randomDate = now.minusDays(before)
+                    .plusSeconds(new SecureRandom().nextLong(ChronoUnit.SECONDS.between(now.minusDays(before), now.plusDays(after))));
 
-            long secondsBetween = ChronoUnit.SECONDS.between(startDate, endDate);
-
-            SecureRandom secureRandom = new SecureRandom();
-            long randomSeconds = secureRandom.nextLong(secondsBetween);
-
-            LocalDateTime randomDate = startDate.plusSeconds(randomSeconds);
             log.info("Случайная дата публикации: {}", randomDate);
+
 
             return randomDate;
         } catch (NumberFormatException e) {
