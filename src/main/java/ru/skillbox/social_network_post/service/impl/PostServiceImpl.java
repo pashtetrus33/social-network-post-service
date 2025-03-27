@@ -72,7 +72,7 @@ public class PostServiceImpl implements PostService {
                 ));
 
         PostDto postDto = PostMapperFactory.toPostDto(post);
-        
+
         String myReaction = reactionService.getMyReaction(postDto.getId(), accountId);
 
         if (myReaction != null) {
@@ -124,7 +124,14 @@ public class PostServiceImpl implements PostService {
 
         // Устанавливаем publishDate, если он передан, иначе текущее время
         if (postDto.getPublishDate() == null) {
-            postDto.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
+
+            LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+
+            postDto.setPublishDate(now);
+            postDto.setTime(now);
+
+        } else {
+            postDto.setTime(postDto.getPublishDate());
         }
 
         Post post = PostMapperFactory.toPost(postDto);
