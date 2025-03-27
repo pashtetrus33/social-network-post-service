@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
@@ -16,6 +19,7 @@ import ru.skillbox.social_network_post.dto.AuthenticateRq;
 import ru.skillbox.social_network_post.dto.PostDto;
 import ru.skillbox.social_network_post.dto.TagDto;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
+import ru.skillbox.social_network_post.security.HeaderAuthenticationToken;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.PostService;
 
@@ -76,6 +80,14 @@ public class ScheduledTaskService {
 
         mutableList.forEach(accountId -> {
             try {
+
+                String userName = "Scheduled_user";
+
+                Authentication authentication = new HeaderAuthenticationToken(accountId, userName,
+                        Collections.singletonList(new SimpleGrantedAuthority("Scheduled_User")));
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.warn("Successfully authenticated user: {}", accountId);
+
                 // Искусственная задержка 1-2 секунды между запросами цитат
                 Thread.sleep(1500 + ThreadLocalRandom.current().nextLong(1000));
                 log.warn("Город засыпает.... Просыпается мафия ಠ_ಠ");
