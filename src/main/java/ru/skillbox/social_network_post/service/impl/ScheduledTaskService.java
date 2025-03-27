@@ -78,40 +78,27 @@ public class ScheduledTaskService {
         List<UUID> mutableList = new ArrayList<>(accountIds);
         Collections.shuffle(mutableList);
 
-        String userName = "Scheduled_user";
-
-        Authentication authentication = new HeaderAuthenticationToken(mutableList.get(0), userName,
-                Collections.singletonList(new SimpleGrantedAuthority("Scheduled_User")));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        log.warn("Successfully authenticated user: {}", userName);
-
-
         mutableList.forEach(accountId -> {
 
-            String randomPostText = createRandomPostText();
-            String tag = getAuthorFromQuote(randomPostText);
+            String userName = "Scheduled_user";
+
+            Authentication authentication = new HeaderAuthenticationToken(mutableList.get(0), userName,
+                    Collections.singletonList(new SimpleGrantedAuthority("Scheduled_User")));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            log.warn("Successfully authenticated user: {}", userName);
+
+            List<String> quoteResult = createRandomPostText();
 
             postService.create(PostDto.builder()
                     .title("Цитата дня #" + counter.getAndIncrement())
-                    .postText(randomPostText)
-                    .tags(List.of(new TagDto(tag), new TagDto("цитата")))
+                    .postText(quoteResult.get(1))
+                    .tags(List.of(new TagDto(quoteResult.get(0)), new TagDto("цитата")))
                     .publishDate(createRandomPublishDate())
                     .authorId(accountId)
                     .build());
         });
     }
 
-    private String getAuthorFromQuote(String randomPostText) {
-
-        int separatorIndex = randomPostText.indexOf(" — ");
-
-        // Если разделитель найден, извлекаем подстроку после него
-        if (separatorIndex != -1) {
-            return randomPostText.substring(separatorIndex + 3);
-        } else {
-            return "No author found.";
-        }
-    }
 
     private LocalDateTime createRandomPublishDate() {
 
@@ -144,7 +131,7 @@ public class ScheduledTaskService {
         }
     }
 
-    private String createRandomPostText() {
+    private List<String> createRandomPostText() {
         return RandomQuoteGenerator.getRandomQuote();
     }
 

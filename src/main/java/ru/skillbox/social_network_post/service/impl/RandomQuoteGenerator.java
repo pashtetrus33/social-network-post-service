@@ -4,16 +4,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import ru.skillbox.social_network_post.exception.QuoteRetrievalException;
+
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
+
 
 @Slf4j
 public class RandomQuoteGenerator {
-
-    private static final HttpClient CLIENT = HttpClient.newHttpClient();
 
     static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -25,11 +27,9 @@ public class RandomQuoteGenerator {
     }
 
 
-    public static String getRandomQuote() {
-
+    public static List<String> getRandomQuote() {
         try {
-
-            String response = getString(API_URL);
+            String response = getString(new URL(API_URL));
             log.info("API response: {}", response);
 
             // Убираем обертку JSONP
@@ -38,37 +38,28 @@ public class RandomQuoteGenerator {
             JsonNode jsonNode = objectMapper.readTree(response);
             String quoteText = jsonNode.get("quoteText").asText();
             String quoteAuthor = jsonNode.get("quoteAuthor").asText();
-            return "\"" + quoteText + "\" — " + quoteAuthor;
+
+            return Arrays.asList(quoteAuthor, quoteText);
         } catch (IOException e) {
             throw new QuoteRetrievalException("Ошибка при получении цитаты", e);
         }
     }
 
-    public static String getString(String url) throws IOException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
-                .GET()
-                .timeout(java.time.Duration.ofSeconds(5)) // Таймаут на запрос
-                .header("Accept", "application/json") // Можно добавить заголовки
-                .build();
 
-        HttpResponse<String> response;
-        try {
-            response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-        } catch (IOException e) {
-            // Обработка IOException
-            throw new IOException(e.getMessage(), e);
-        } catch (InterruptedException e) {
-            // Восстанавливаем статус прерывания
-            Thread.currentThread().interrupt();
-            // Обработка InterruptedException, оборачиваем в IOException
-            throw new IOException("Thread was interrupted", e);
+    private static String getString(URL url) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+
+        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String inputLine;
+        StringBuilder content = new StringBuilder();
+
+        while ((inputLine = in.readLine()) != null) {
+            content.append(inputLine);
         }
 
-        if (response.statusCode() != 200) { // Проверяем код ответа
-            throw new IOException("HTTP error code: " + response.statusCode());
-        }
+        in.close();
 
-        return response.body();
+        return content.toString();
     }
 }
