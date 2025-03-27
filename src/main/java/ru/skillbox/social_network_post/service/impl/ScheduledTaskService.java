@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,10 +16,7 @@ import org.springframework.stereotype.Service;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
 import ru.skillbox.social_network_post.client.AuthServiceClient;
-import ru.skillbox.social_network_post.dto.AccountDto;
-import ru.skillbox.social_network_post.dto.AuthenticateRq;
-import ru.skillbox.social_network_post.dto.PostDto;
-import ru.skillbox.social_network_post.dto.TagDto;
+import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.security.HeaderAuthenticationToken;
 import ru.skillbox.social_network_post.security.SecurityUtils;
@@ -113,6 +111,10 @@ public class ScheduledTaskService {
                     .authorId(accountId)
                     .build());
         });
+
+        PagePostDto postsForComments = postService.getAll(new PostSearchDto(), PageRequest.of(0, 20));
+        log.warn("Get posts for comments:");
+        postsForComments.getContent().forEach(post -> log.warn("Post: {}", post.getId()));
     }
 
 
