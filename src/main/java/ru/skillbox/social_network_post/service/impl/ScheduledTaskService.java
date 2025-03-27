@@ -114,8 +114,13 @@ public class ScheduledTaskService {
         });
 
         PagePostDto postsForComments = postService.getAll(new PostSearchDto(), PageRequest.of(0, 20, Sort.by(Sort.Order.desc("publishDate"))));
-        log.warn("Get posts for comments:");
-        postsForComments.getContent().forEach(post -> log.warn("Post: {}", post.getId()));
+
+        if (postsForComments != null) {
+            log.warn("Got some posts for comments:");
+            postsForComments.getContent().forEach(post -> log.warn("Post: {}", post.getId()));
+        } else {
+            log.warn("Got no posts for comments");
+        }
     }
 
 
