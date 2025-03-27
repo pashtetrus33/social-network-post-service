@@ -22,6 +22,7 @@ import ru.skillbox.social_network_post.service.PostService;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -40,8 +41,6 @@ public class ScheduledTaskService {
 
     @Value("${publish-date.before}")
     private String publishDateBeforeNow;
-
-    private static final Random RANDOM = new Random();
 
     private final AuthServiceClient authServiceClient;
     private final AccountServiceClient accountServiceClient;
@@ -78,7 +77,7 @@ public class ScheduledTaskService {
         mutableList.forEach(accountId -> {
             try {
                 // Искусственная задержка 1-2 секунды между запросами цитат
-                Thread.sleep(1500 + RANDOM.nextLong(1000));
+                Thread.sleep(1500 + ThreadLocalRandom.current().nextLong(1000));
                 log.warn("Город засыпает.... Просыпается мафия ಠ_ಠ");
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -116,7 +115,7 @@ public class ScheduledTaskService {
             Duration duration = Duration.between(startDate, endDate);
             long secondsBetween = duration.getSeconds();
 
-            long randomSeconds = (RANDOM.nextLong() & Long.MAX_VALUE) % secondsBetween; // Генерация неотрицательного числа
+            long randomSeconds = ThreadLocalRandom.current().nextLong(secondsBetween);
 
             LocalDateTime randomDate = startDate.plusSeconds(randomSeconds);
             log.info("Случайная дата публикации: {}", randomDate);
