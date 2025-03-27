@@ -3,6 +3,7 @@ package ru.skillbox.social_network_post.service.impl;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -97,10 +98,17 @@ public class ScheduledTaskService {
 
             List<String> quoteResult = randomQuoteGenerator.getRandomQuote();
 
+            List<TagDto> tags = new ArrayList<>();
+            tags.add(new TagDto("цитата"));
+
+            if (!StringUtils.isBlank(quoteResult.get(0))) {
+                tags.add(new TagDto(quoteResult.get(0)));
+            }
+
             postService.create(PostDto.builder()
                     .title("Цитата дня #" + counter.getAndIncrement())
                     .postText("\"" + quoteResult.get(1) + "\" — " + quoteResult.get(0))
-                    .tags(List.of(new TagDto(quoteResult.get(0)), new TagDto("цитата")))
+                    .tags(tags)
                     .publishDate(createRandomPublishDate())
                     .authorId(accountId)
                     .build());
