@@ -24,10 +24,8 @@ public class Comment {
 
     private UUID authorId;
 
-    @CreationTimestamp
     private LocalDateTime time;
 
-    @UpdateTimestamp
     private LocalDateTime timeChanged;
 
     @Min(0)

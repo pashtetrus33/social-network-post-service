@@ -64,8 +64,10 @@ public final class CommentMapperFactory {
             commentDto.setCommentsCount(0);
         }
 
+
         Comment comment = new Comment();
         comment.setId(commentDto.getId());
+        comment.setTime(commentDto.getTime());
         createComment(commentDto, comment);
 
         return comment;
@@ -83,8 +85,6 @@ public final class CommentMapperFactory {
 
     private static void createComment(CommentDto commentDto, Comment comment) {
         comment.setCommentType(commentDto.getCommentType());
-        comment.setTime(commentDto.getTime());
-        comment.setTimeChanged(commentDto.getTimeChanged());
         comment.setAuthorId(commentDto.getAuthorId());
         comment.setCommentText(commentDto.getCommentText());
         comment.setIsBlocked(commentDto.getIsBlocked());
