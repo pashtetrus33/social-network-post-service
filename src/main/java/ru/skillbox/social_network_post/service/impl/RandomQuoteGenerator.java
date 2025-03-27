@@ -4,36 +4,36 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import ru.skillbox.social_network_post.exception.QuoteRetrievalException;
-
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 @Slf4j
 public class RandomQuoteGenerator {
+
+    private static final HttpClient CLIENT = HttpClient.newHttpClient();
+
+    static ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final String API_URL = "https://api.forismatic.com/api/1.0/?method=getQuote&format=jsonp&jsonp=?&lang=ru";
 
     // Private constructor to prevent instantiation
     private RandomQuoteGenerator() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
 
-    static ObjectMapper objectMapper = new ObjectMapper();
-
-    private static final String API_URL = "https://api.forismatic.com/api/1.0/?method=getQuote&format=jsonp&jsonp=?&lang=ru";
 
     public static String getRandomQuote() {
-        URL url;
+
         try {
-            url = new URL(API_URL);
-            String response = getString(url);
+
+            String response = getString(API_URL);
             log.info("API response: {}", response);
 
             // Убираем обертку JSONP
             response = response.substring(2, response.length() - 1);
-
-            // Парсим JSON
 
             JsonNode jsonNode = objectMapper.readTree(response);
             String quoteText = jsonNode.get("quoteText").asText();
@@ -44,20 +44,31 @@ public class RandomQuoteGenerator {
         }
     }
 
-    private static String getString(URL url) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
+    public static String getString(String url) throws IOException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .timeout(java.time.Duration.ofSeconds(5)) // Таймаут на запрос
+                .header("Accept", "application/json") // Можно добавить заголовки
+                .build();
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        String inputLine;
-        StringBuilder content = new StringBuilder();
-
-        while ((inputLine = in.readLine()) != null) {
-            content.append(inputLine);
+        HttpResponse<String> response;
+        try {
+            response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        } catch (IOException e) {
+            // Обработка IOException
+            throw new IOException(e.getMessage(), e);
+        } catch (InterruptedException e) {
+            // Восстанавливаем статус прерывания
+            Thread.currentThread().interrupt();
+            // Обработка InterruptedException, оборачиваем в IOException
+            throw new IOException("Thread was interrupted", e);
         }
 
-        in.close();
+        if (response.statusCode() != 200) { // Проверяем код ответа
+            throw new IOException("HTTP error code: " + response.statusCode());
+        }
 
-        return content.toString();
+        return response.body();
     }
 }

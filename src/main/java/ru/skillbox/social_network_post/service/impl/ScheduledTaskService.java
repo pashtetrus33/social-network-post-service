@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
@@ -14,17 +17,15 @@ import ru.skillbox.social_network_post.client.AuthServiceClient;
 import ru.skillbox.social_network_post.dto.AccountDto;
 import ru.skillbox.social_network_post.dto.AuthenticateRq;
 import ru.skillbox.social_network_post.dto.PostDto;
+import ru.skillbox.social_network_post.dto.TagDto;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
+import ru.skillbox.social_network_post.security.HeaderAuthenticationToken;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.PostService;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -44,13 +45,15 @@ public class ScheduledTaskService {
     @Value("${publish-date.before}")
     private String publishDateBeforeNow;
 
+    private static final Random RANDOM = new Random();
+
     private final AuthServiceClient authServiceClient;
     private final AccountServiceClient accountServiceClient;
     private final PostService postService;
 
     private static final AtomicInteger counter = new AtomicInteger(1);
 
-    @Scheduled(fixedRate = 3_600_000) // 1 час = 3600000 мс
+    @Scheduled(fixedRate = 1_800_000) // 30 мин = 1 800 000 мс
     public void executeTask() {
         log.warn("Scheduled task.... {}", System.currentTimeMillis());
 
@@ -75,13 +78,39 @@ public class ScheduledTaskService {
         List<UUID> mutableList = new ArrayList<>(accountIds);
         Collections.shuffle(mutableList);
 
-        mutableList.forEach(accountId -> postService.create(PostDto.builder()
-                .title("Цитата дня #" + counter.getAndIncrement())
-                .postText(createRandomPostText())
-                .publishDate(createRandomPublishDate())
-                .authorId(accountId)
-                .build()));
+        String userName = "Scheduled_user";
 
+        Authentication authentication = new HeaderAuthenticationToken(mutableList.get(0), userName,
+                Collections.singletonList(new SimpleGrantedAuthority("Scheduled_User")));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        log.warn("Successfully authenticated user: {}", userName);
+
+
+        mutableList.forEach(accountId -> {
+
+            String randomPostText = createRandomPostText();
+            String tag = getAuthorFromQuote(randomPostText);
+
+            postService.create(PostDto.builder()
+                    .title("Цитата дня #" + counter.getAndIncrement())
+                    .postText(randomPostText)
+                    .tags(List.of(new TagDto(tag), new TagDto("цитата")))
+                    .publishDate(createRandomPublishDate())
+                    .authorId(accountId)
+                    .build());
+        });
+    }
+
+    private String getAuthorFromQuote(String randomPostText) {
+
+        int separatorIndex = randomPostText.indexOf(" — ");
+
+        // Если разделитель найден, извлекаем подстроку после него
+        if (separatorIndex != -1) {
+            return randomPostText.substring(separatorIndex + 3);
+        } else {
+            return "No author found.";
+        }
     }
 
     private LocalDateTime createRandomPublishDate() {
@@ -89,6 +118,7 @@ public class ScheduledTaskService {
         LocalDateTime now = LocalDateTime.now();
 
         try {
+
             long before = Long.parseLong(publishDateBeforeNow);
             long after = Long.parseLong(publishDateAfterNow);
 
@@ -97,9 +127,12 @@ public class ScheduledTaskService {
             }
 
             LocalDateTime startDate = now.minusDays(before);
-            long secondsBetween = ChronoUnit.SECONDS.between(startDate, now.plusDays(after));
+            LocalDateTime endDate = now.plusDays(after);
 
-            long randomSeconds = ThreadLocalRandom.current().nextLong(secondsBetween);
+            Duration duration = Duration.between(startDate, endDate);
+            long secondsBetween = duration.getSeconds();
+
+            long randomSeconds = (RANDOM.nextLong() & Long.MAX_VALUE) % secondsBetween; // Генерация неотрицательного числа
 
             LocalDateTime randomDate = startDate.plusSeconds(randomSeconds);
             log.info("Случайная дата публикации: {}", randomDate);
