@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -112,7 +113,7 @@ public class ScheduledTaskService {
                     .build());
         });
 
-        PagePostDto postsForComments = postService.getAll(new PostSearchDto(), PageRequest.of(0, 20));
+        PagePostDto postsForComments = postService.getAll(new PostSearchDto(), PageRequest.of(0, 20, Sort.by(Sort.Order.desc("publishDate"))));
         log.warn("Get posts for comments:");
         postsForComments.getContent().forEach(post -> log.warn("Post: {}", post.getId()));
     }
