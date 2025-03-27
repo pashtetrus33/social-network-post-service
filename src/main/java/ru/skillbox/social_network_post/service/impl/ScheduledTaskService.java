@@ -50,6 +50,7 @@ public class ScheduledTaskService {
     private final AuthServiceClient authServiceClient;
     private final AccountServiceClient accountServiceClient;
     private final PostService postService;
+    private final RandomQuoteGenerator randomQuoteGenerator;
 
     private static final AtomicInteger counter = new AtomicInteger(1);
 
@@ -82,12 +83,12 @@ public class ScheduledTaskService {
 
             String userName = "Scheduled_user";
 
-            Authentication authentication = new HeaderAuthenticationToken(mutableList.get(0), userName,
+            Authentication authentication = new HeaderAuthenticationToken(accountId, userName,
                     Collections.singletonList(new SimpleGrantedAuthority("Scheduled_User")));
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.warn("Successfully authenticated user: {}", userName);
+            log.warn("Successfully authenticated user: {}", accountId);
 
-            List<String> quoteResult = createRandomPostText();
+            List<String> quoteResult = randomQuoteGenerator.getRandomQuote();
 
             postService.create(PostDto.builder()
                     .title("Цитата дня #" + counter.getAndIncrement())
@@ -129,10 +130,6 @@ public class ScheduledTaskService {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("Ошибка преобразования publish-date.before или publish-date.after в число", e);
         }
-    }
-
-    private List<String> createRandomPostText() {
-        return RandomQuoteGenerator.getRandomQuote();
     }
 
     boolean tokenValidation(String token) {
