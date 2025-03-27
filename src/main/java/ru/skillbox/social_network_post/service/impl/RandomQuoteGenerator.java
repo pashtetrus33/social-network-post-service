@@ -3,6 +3,7 @@ package ru.skillbox.social_network_post.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import ru.skillbox.social_network_post.exception.QuoteRetrievalException;
 
 import java.io.BufferedReader;
@@ -15,21 +16,14 @@ import java.util.List;
 
 
 @Slf4j
+@Service
 public class RandomQuoteGenerator {
 
     static ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String API_URL = "https://api.forismatic.com/api/1.0/?method=getQuote&format=jsonp&jsonp=?&lang=ru";
-
-    // Private constructor to prevent instantiation
-    private RandomQuoteGenerator() {
-        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-    }
-
-
-    public static List<String> getRandomQuote() {
+    public List<String> getRandomQuote() {
         try {
-            String response = getString(new URL(API_URL));
+            String response = getString(new URL("https://api.forismatic.com/api/1.0/?method=getQuote&format=jsonp&jsonp=?&lang=ru"));
             log.info("API response: {}", response);
 
             // Убираем обертку JSONP
@@ -46,7 +40,7 @@ public class RandomQuoteGenerator {
     }
 
 
-    private static String getString(URL url) throws IOException {
+    private String getString(URL url) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
 
