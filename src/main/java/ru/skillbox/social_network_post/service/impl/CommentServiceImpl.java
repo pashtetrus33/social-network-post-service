@@ -97,6 +97,10 @@ public class CommentServiceImpl implements CommentService {
 
         Post post = EntityCheckUtils.checkPostPresence(postRepository, postId);
 
+        if (commentDto.getTime() == null) {
+            commentDto.setTime(LocalDateTime.now(ZoneOffset.UTC));
+        }
+
         Comment comment = CommentMapperFactory.toComment(commentDto);
 
         UUID parentId = commentDto.getParentId();
@@ -121,10 +125,6 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthorId(accountId);
 
         post.setCommentsCount(post.getCommentsCount() + 1);
-
-        if (commentDto.getTime() == null) {
-            comment.setTime(LocalDateTime.now(ZoneOffset.UTC));
-        }
 
         Comment savedComment = commentRepository.save(comment);
 
