@@ -7,9 +7,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import ru.skillbox.social_network_post.aspect.LogExecutionTime;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
@@ -19,7 +16,6 @@ import ru.skillbox.social_network_post.dto.AuthenticateRq;
 import ru.skillbox.social_network_post.dto.PostDto;
 import ru.skillbox.social_network_post.dto.TagDto;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
-import ru.skillbox.social_network_post.security.HeaderAuthenticationToken;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.PostService;
 
@@ -80,19 +76,19 @@ public class ScheduledTaskService {
         Collections.shuffle(mutableList);
 
         mutableList.forEach(accountId -> {
-
-            String userName = "Scheduled_user";
-
-            Authentication authentication = new HeaderAuthenticationToken(accountId, userName,
-                    Collections.singletonList(new SimpleGrantedAuthority("Scheduled_User")));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            log.warn("Successfully authenticated user: {}", accountId);
+            try {
+                // Искусственная задержка 1-2 секунды между запросами цитат
+                Thread.sleep(1500 + RANDOM.nextLong(1000));
+                log.warn("Город засыпает.... Просыпается мафия ಠ_ಠ");
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
 
             List<String> quoteResult = randomQuoteGenerator.getRandomQuote();
 
             postService.create(PostDto.builder()
                     .title("Цитата дня #" + counter.getAndIncrement())
-                    .postText(quoteResult.get(1))
+                    .postText("\"" + quoteResult.get(1) + "\" — " + quoteResult.get(0))
                     .tags(List.of(new TagDto(quoteResult.get(0)), new TagDto("цитата")))
                     .publishDate(createRandomPublishDate())
                     .authorId(accountId)
