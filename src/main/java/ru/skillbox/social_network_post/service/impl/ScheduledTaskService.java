@@ -135,7 +135,7 @@ public class ScheduledTaskService {
 
                 LocalDateTime publishDate = post.getPublishDate();
 
-                long randomMinutes = 10 + random.nextLong(110);
+                long randomMinutes = 10L + random.nextInt(111);
 
                 LocalDateTime commentTime = publishDate.plusMinutes(randomMinutes);
 
@@ -199,7 +199,7 @@ public class ScheduledTaskService {
 
             LocalDateTime time = commentDto.getTime();
 
-            long randomMinutes = 10 + random.nextLong(110);
+            long randomMinutes = 10L + random.nextInt(110);
 
             LocalDateTime subCommentTime = time.plusMinutes(randomMinutes);
 
