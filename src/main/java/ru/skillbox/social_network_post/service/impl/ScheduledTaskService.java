@@ -125,8 +125,12 @@ public class ScheduledTaskService {
                 postDtos.stream().limit(5).forEach(post -> {
 
                     LocalDateTime publishDate = post.getPublishDate();
+
                     long randomMinutes = ThreadLocalRandom.current().nextLong(10, 120);
+
                     LocalDateTime commentTime = publishDate.plusMinutes(randomMinutes);
+
+                    log.info("Случайная дата публикации: {}", commentTime);
 
                     String randomComment = comments.get(ThreadLocalRandom.current().nextInt(comments.size()));
 
@@ -170,7 +174,7 @@ public class ScheduledTaskService {
             long randomSeconds = ThreadLocalRandom.current().nextLong(secondsBetween);
 
             LocalDateTime randomDate = startDate.plusSeconds(randomSeconds);
-            log.info("Случайная дата публикации: {}", randomDate);
+            log.warn("Случайная дата публикации: {}", randomDate);
 
 
             return randomDate;
