@@ -176,8 +176,8 @@ public class ReactionServiceImpl implements ReactionService {
 
         // Проверяем, ставил ли пользователь лайк для данного комментария
         if (reactionRepository.existsByCommentIdAndAuthorId(commentId, accountId)) {
-            throw new IllegalStateException(
-                    MessageFormat.format("Like already exists for post with id {0} and comment with id {1}", postId, commentId));
+            log.error("Like already exists for post with id {} and comment with id {}", postId, commentId);
+            return;
         }
 
         Reaction reaction = new Reaction();
