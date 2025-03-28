@@ -134,7 +134,7 @@ public class ScheduledTaskService {
 
                     String randomComment = comments.get(ThreadLocalRandom.current().nextInt(comments.size()));
 
-                    String postCut = " " + post.getPostText().substring(0, 30) + " ...";
+                    String postCut = " " + post.getPostText().substring(0, 50) + " ...";
 
                     CommentDto commentDto = CommentDto.builder()
                             .commentText(randomComment + postCut)
