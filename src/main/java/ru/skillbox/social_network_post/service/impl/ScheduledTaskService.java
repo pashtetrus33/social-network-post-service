@@ -156,7 +156,10 @@ public class ScheduledTaskService {
 
                 PageCommentDto commentsForComments = commentService.getByPostId(post.getId(), new CommentSearchDto(), PageRequest.of(0, 10, Sort.by(Sort.Order.desc("time"))));
 
+                createReactionsForPosts(post.getId());
+
                 if (commentsForComments != null) {
+                    log.warn("Got some comments for comments:");
                     createFakeSubcomments(commentsForComments, post.getId());
                 } else {
                     log.warn("Comment not found for post: {}", post.getId());
@@ -168,10 +171,26 @@ public class ScheduledTaskService {
         }
     }
 
+    private void createReactionsForPosts(UUID postId) {
+
+        RequestReactionDto reaction = RequestReactionDto.builder()
+                .type("POST")
+                .reactionType(getRandomReaction())
+                .build();
+        reactionService.addLikeToPost(postId, reaction);
+
+        log.warn("Got some reactions for post: {} Reaction: {}", postId, reaction);
+    }
+
+
+    private String getRandomReaction() {
+        ReactionType[] values = ReactionType.values();
+        return values[ThreadLocalRandom.current().nextInt(values.length)].name();
+    }
+
 
     private void createFakeSubcomments(PageCommentDto commentsForComments, UUID postId) {
 
-        log.warn("Got some comments for comments:");
         commentsForComments.getContent().forEach(commentDto -> log.warn("Comment: {}", commentDto.getId()));
 
         List<CommentDto> commentDtos = new ArrayList<>(commentsForComments.getContent());
