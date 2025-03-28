@@ -108,7 +108,7 @@ public class ReactionServiceImpl implements ReactionService {
         List<ReactionDto.ReactionInfo> reactionInfos = new ArrayList<>();
         for (ReactionType type : ReactionType.values()) {
             reactionInfos.add(new ReactionDto.ReactionInfo(
-                    type.name(),
+                    type.getName(),
                     reactionCountMap.getOrDefault(type.name(), 0L)
             ));
         }

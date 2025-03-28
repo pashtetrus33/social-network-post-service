@@ -29,7 +29,6 @@ import ru.skillbox.social_network_post.utils.CommentUtils;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
@@ -57,6 +56,7 @@ public class ScheduledTaskService {
     private final RandomQuoteGenerator randomQuoteGenerator;
 
     private static final AtomicInteger counter = new AtomicInteger(1);
+    private final Random random = new Random();
 
     @Scheduled(fixedRate = 1_800_000) // 30 мин = 1 800 000 мс
     public void executeTask() {
@@ -94,7 +94,7 @@ public class ScheduledTaskService {
                 log.warn("Successfully authenticated user: {}", accountId);
 
                 // Искусственная задержка 1-2 секунды между запросами цитат
-                Thread.sleep(1500 + ThreadLocalRandom.current().nextLong(1000));
+                Thread.sleep(2000 + random.nextLong(1000));
                 log.warn("Город засыпает.... Просыпается мафия ಠ_ಠ");
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -135,7 +135,7 @@ public class ScheduledTaskService {
 
                 LocalDateTime publishDate = post.getPublishDate();
 
-                long randomMinutes = ThreadLocalRandom.current().nextLong(10, 120);
+                long randomMinutes = random.nextLong(10, 120);
 
                 LocalDateTime commentTime = publishDate.plusMinutes(randomMinutes);
 
@@ -185,7 +185,7 @@ public class ScheduledTaskService {
 
     private String getRandomReaction() {
         ReactionType[] values = ReactionType.values();
-        return values[ThreadLocalRandom.current().nextInt(values.length)].name();
+        return values[random.nextInt(values.length)].getName();
     }
 
 
@@ -199,7 +199,7 @@ public class ScheduledTaskService {
 
             LocalDateTime time = commentDto.getTime();
 
-            long randomMinutes = ThreadLocalRandom.current().nextLong(10, 120);
+            long randomMinutes = 10 + random.nextLong(110);
 
             LocalDateTime subCommentTime = time.plusMinutes(randomMinutes);
 
@@ -239,7 +239,7 @@ public class ScheduledTaskService {
             Duration duration = Duration.between(startDate, endDate);
             long secondsBetween = duration.getSeconds();
 
-            long randomSeconds = ThreadLocalRandom.current().nextLong(secondsBetween);
+            long randomSeconds = random.nextLong(secondsBetween);
 
             LocalDateTime randomDate = startDate.plusSeconds(randomSeconds);
             log.warn("Random publish date for post: {}", randomDate);

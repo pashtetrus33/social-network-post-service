@@ -159,7 +159,7 @@ class ReactionServiceImplTest extends AbstractServiceTest {
         Comment comment = commentRepository.save(createTestComment(post, SecurityUtils.getAccountId()));
 
         // Добавляем лайк
-        Reaction reaction = reactionRepository.save(createTestReaction(post, comment.getId(), SecurityUtils.getAccountId()));
+        reactionRepository.save(createTestReaction(post, comment.getId(), SecurityUtils.getAccountId()));
 
         UUID commentId = comment.getId();
         UUID postId = post.getId();

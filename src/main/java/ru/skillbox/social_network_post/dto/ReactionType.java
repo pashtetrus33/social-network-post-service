@@ -1,10 +1,14 @@
 package ru.skillbox.social_network_post.dto;
 
 public enum ReactionType {
-    delight,
-    malice,
-    heart,
-    sadness,
-    funny,
-    wow
+    DELIGHT,
+    MALICE,
+    HEART,
+    SADNESS,
+    FUNNY,
+    WOW;
+
+    public String getName() {
+        return name().toLowerCase();
+    }
 }
