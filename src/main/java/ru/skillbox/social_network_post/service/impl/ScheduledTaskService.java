@@ -117,36 +117,78 @@ public class ScheduledTaskService {
 
             PagePostDto postsForComments = postService.getAll(new PostSearchDto(), PageRequest.of(0, 20, Sort.by(Sort.Order.desc("publishDate"))));
 
-            if (postsForComments != null) {
-                log.warn("Got some posts for comments:");
-                postsForComments.getContent().forEach(post -> log.warn("Post: {}", post.getId()));
+            createFakeComments(postsForComments);
+        });
+    }
 
-                List<PostDto> postDtos = new ArrayList<>(postsForComments.getContent());
-                Collections.shuffle(postDtos);
-                postDtos.stream().limit(5).forEach(post -> {
+    private void createFakeComments(PagePostDto postsForComments) {
 
-                    LocalDateTime publishDate = post.getPublishDate();
+        if (postsForComments != null) {
+            log.warn("Got some posts for comments:");
+            postsForComments.getContent().forEach(post -> log.warn("Post: {}", post.getId()));
 
-                    long randomMinutes = ThreadLocalRandom.current().nextLong(10, 120);
+            List<PostDto> postDtos = new ArrayList<>(postsForComments.getContent());
+            Collections.shuffle(postDtos);
+            postDtos.stream().limit(5).forEach(post -> {
 
-                    LocalDateTime commentTime = publishDate.plusMinutes(randomMinutes);
+                LocalDateTime publishDate = post.getPublishDate();
 
-                    log.info("Случайная дата публикации: {}", commentTime);
+                long randomMinutes = ThreadLocalRandom.current().nextLong(10, 120);
 
-                    String postCut = " " + post.getPostText().substring(0, 50) + " ...";
+                LocalDateTime commentTime = publishDate.plusMinutes(randomMinutes);
 
-                    CommentDto commentDto = CommentDto.builder()
-                            .commentText(CommentUtils.getRandomComment(postCut))
-                            .time(commentTime)
-                            .build();
+                log.info("Случайная дата публикации: {}", commentTime);
 
-                    commentService.create(post.getId(), commentDto);
-                    log.warn("Добавили комментарий к посту {}. {}", post.getId(), commentDto.getCommentText());
-                });
+                String postCut = " " + post.getPostText().substring(0, 50) + " ...";
 
-            } else {
-                log.warn("Got no posts for comments");
-            }
+                CommentDto commentDto = CommentDto.builder()
+                        .commentText(CommentUtils.getRandomComment(postCut))
+                        .time(commentTime)
+                        .build();
+
+                commentService.create(post.getId(), commentDto);
+                log.warn("Добавили комментарий к посту {}. {}", post.getId(), commentDto.getCommentText());
+
+                PageCommentDto commentsForComments = commentService.getByPostId(post.getId(), new CommentSearchDto(), PageRequest.of(0, 10, Sort.by(Sort.Order.desc("time"))));
+
+                if (commentsForComments != null) {
+                    createFakeSubcomments(commentsForComments, post.getId());
+                } else {
+                    log.warn("Comment not found for post: {}", post.getId());
+                }
+            });
+
+        } else {
+            log.warn("Got no posts for comments");
+        }
+    }
+
+
+    private void createFakeSubcomments(PageCommentDto commentsForComments, UUID postId) {
+
+        log.warn("Got some comments for comments:");
+        commentsForComments.getContent().forEach(commentDto -> log.warn("Comment: {}", commentDto.getId()));
+
+        List<CommentDto> commentDtos = new ArrayList<>(commentsForComments.getContent());
+        Collections.shuffle(commentDtos);
+        commentDtos.stream().limit(5).forEach(commentDto -> {
+
+            LocalDateTime time = commentDto.getTime();
+
+            long randomMinutes = ThreadLocalRandom.current().nextLong(10, 120);
+
+            LocalDateTime subCommentTime = time.plusMinutes(randomMinutes);
+
+            log.info("Случайная дата публикации для субкомментария: {}", subCommentTime);
+
+            CommentDto subCommentDto = CommentDto.builder()
+                    .commentText(CommentUtils.getRandomReply())
+                    .parentId(commentDto.getId())
+                    .time(subCommentTime)
+                    .build();
+
+            commentService.create(postId, subCommentDto);
+            log.warn("Добавили cуб комментарий к комментарию {}. {}", postId, commentDto.getCommentText());
         });
     }
 
