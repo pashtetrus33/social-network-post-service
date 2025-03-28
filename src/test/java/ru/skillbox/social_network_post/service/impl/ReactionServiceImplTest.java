@@ -153,24 +153,28 @@ class ReactionServiceImplTest extends AbstractServiceTest {
     }
 
     @Test
-    void testAddLikeToComment_WhenAlreadyExists_ThrowsException() {
+    void testAddLikeToComment_WhenAlreadyExists_DoesNotAddDuplicateReaction() {
         // Arrange
-        Post post = createTestPost(UUID.randomUUID());
-        post = postRepository.save(post);
-
+        Post post = postRepository.save(createTestPost(UUID.randomUUID()));
         Comment comment = commentRepository.save(createTestComment(post, SecurityUtils.getAccountId()));
 
         // Добавляем лайк
+        Reaction reaction = reactionRepository.save(createTestReaction(post, comment.getId(), SecurityUtils.getAccountId()));
 
-        Reaction reaction = createTestReaction(post, comment.getId(), SecurityUtils.getAccountId());
-
-        reactionRepository.save(reaction);
-
-        // Act + Assert
         UUID commentId = comment.getId();
         UUID postId = post.getId();
-        assertThrows(IllegalStateException.class, () -> reactionService.addLikeToComment(postId, commentId));
+
+        // Проверяем количество реакций до вызова метода
+        long beforeCount = reactionRepository.count();
+
+        // Act
+        reactionService.addLikeToComment(postId, commentId);
+
+        // Assert
+        long afterCount = reactionRepository.count();
+        assertEquals(beforeCount, afterCount, "Количество реакций не должно увеличиваться при повторном лайке");
     }
+
 
     @Test
     void testRemoveLikeFromComment() {
