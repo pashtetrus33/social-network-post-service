@@ -94,7 +94,7 @@ public class ScheduledTaskService {
                 log.warn("Successfully authenticated user: {}", accountId);
 
                 // Искусственная задержка 1-2 секунды между запросами цитат
-                Thread.sleep(2000 + random.nextLong(1000));
+                Thread.sleep(2000L + random.nextInt(1000));
                 log.warn("Город засыпает.... Просыпается мафия ಠ_ಠ");
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -135,7 +135,7 @@ public class ScheduledTaskService {
 
                 LocalDateTime publishDate = post.getPublishDate();
 
-                long randomMinutes = random.nextLong(10, 120);
+                long randomMinutes = 10 + random.nextLong(110);
 
                 LocalDateTime commentTime = publishDate.plusMinutes(randomMinutes);
 
@@ -239,7 +239,7 @@ public class ScheduledTaskService {
             Duration duration = Duration.between(startDate, endDate);
             long secondsBetween = duration.getSeconds();
 
-            long randomSeconds = random.nextLong(secondsBetween);
+            long randomSeconds = random.nextInt((int) secondsBetween);
 
             LocalDateTime randomDate = startDate.plusSeconds(randomSeconds);
             log.warn("Random publish date for post: {}", randomDate);
