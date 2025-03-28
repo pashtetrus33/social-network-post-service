@@ -58,7 +58,7 @@ public class ScheduledTaskService {
     private static final AtomicInteger counter = new AtomicInteger(1);
     private final Random random = new Random();
 
-    @Scheduled(fixedRate = 1_800_000) // 30 мин = 1 800 000 мс
+    @Scheduled(fixedRate = 7_200_000) // каждые 2 часа
     public void executeTask() {
         log.warn("Scheduled task.... {}", System.currentTimeMillis());
 
@@ -123,7 +123,7 @@ public class ScheduledTaskService {
         });
     }
 
-    private void createFakeComments(PagePostDto postsForComments) {
+    void createFakeComments(PagePostDto postsForComments) {
 
         if (postsForComments != null) {
             log.warn("Got some posts for comments:");
