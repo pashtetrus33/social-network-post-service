@@ -27,6 +27,7 @@ class ScheduledTaskServiceTest extends AbstractServiceTest {
     @Autowired
     private ScheduledTaskService scheduledTaskService;
 
+    @Override
     @BeforeEach
     void setUp() {
         super.setUp();
@@ -86,7 +87,7 @@ class ScheduledTaskServiceTest extends AbstractServiceTest {
         // Arrange
         PageAccountDto pageAccountDto = PageAccountDto.builder()
                 .content(Collections.singletonList(AccountDto.builder()
-                                .id(UUID.fromString("084de31a-cbfc-423a-b41b-b5c08199c110"))
+                        .id(UUID.fromString("084de31a-cbfc-423a-b41b-b5c08199c110"))
                         .build()))
                 .build();
 
@@ -108,6 +109,55 @@ class ScheduledTaskServiceTest extends AbstractServiceTest {
 
         // Act & Assert
         assertThrows(CustomFreignException.class, scheduledTaskService::getAccountIds, "Exception should be thrown");
+    }
+
+
+    @Test
+    void testTokenValidationWithFeignException() {
+        // Arrange
+        String invalidToken = "invalid-token";
+        when(authServiceClient.validateToken(invalidToken)).thenThrow(new CustomFreignException("Token validation failed"));
+
+        // Act & Assert
+        assertFalse(scheduledTaskService.tokenValidation(invalidToken), "Token validation should fail when FeignException occurs");
+    }
+
+
+    @Test
+    void testAuthenticateUserFailure() {
+        // Arrange
+        String login = "test@example.com";
+        String password = "password";
+
+        when(authServiceClient.login(any(AuthenticateRq.class)))
+                .thenThrow(new CustomFreignException("Authentication failed"));
+
+        // Act & Assert
+        assertThrows(CustomFreignException.class, () -> scheduledTaskService.authenticateUser(login, password),
+                "Authentication should fail with FeignException");
+    }
+
+
+    @Test
+    void testGetAccountIdsEmptyList() {
+        // Arrange
+        when(accountServiceClient.getAllAccounts()).thenReturn(PageAccountDto.builder().content(Collections.emptyList()).build());
+
+        // Act
+        List<UUID> accountIds = scheduledTaskService.getAccountIds();
+
+        // Assert
+        assertTrue(accountIds.isEmpty(), "Account list should be empty");
+    }
+
+
+    @Test
+    void testGetAccountIdsThrowsCustomFreignException() {
+        // Arrange
+        when(accountServiceClient.getAllAccounts()).thenThrow(new CustomFreignException("Error fetching accounts"));
+
+        // Act & Assert
+        assertThrows(CustomFreignException.class, () -> scheduledTaskService.getAccountIds(), "CustomFreignException should be thrown");
     }
 
 
