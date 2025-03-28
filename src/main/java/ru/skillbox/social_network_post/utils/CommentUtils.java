@@ -7,6 +7,11 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class CommentUtils {
 
+    // Private constructor to prevent instantiation
+    private CommentUtils() {
+        throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
+    }
+
     private static final List<String> COMMENTS = List.of(
             "😊 Отличный пост! Спасибо за интересные мысли. Это верно 🔥",
             "Очень интересно, 🤔 не думал об этом раньше! Это правильно ✅",

@@ -3,8 +3,6 @@ package ru.skillbox.social_network_post.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
