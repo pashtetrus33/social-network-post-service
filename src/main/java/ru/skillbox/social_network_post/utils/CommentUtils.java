@@ -2,10 +2,12 @@ package ru.skillbox.social_network_post.utils;
 
 
 import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.Random;
 
 
 public class CommentUtils {
+
+    private static final Random random = new Random();
 
     // Private constructor to prevent instantiation
     private CommentUtils() {
@@ -60,11 +62,11 @@ public class CommentUtils {
 
     // Метод для получения случайного комментария
     public static String getRandomComment(String additionalText) {
-        return COMMENTS.get(ThreadLocalRandom.current().nextInt(COMMENTS.size())) + " " + additionalText;
+        return COMMENTS.get(random.nextInt(COMMENTS.size())) + " " + additionalText;
     }
 
     // Метод для получения случайного ответа
     public static String getRandomReply() {
-        return REPLIES.get(ThreadLocalRandom.current().nextInt(REPLIES.size()));
+        return REPLIES.get(random.nextInt(REPLIES.size()));
     }
 }
