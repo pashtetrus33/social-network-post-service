@@ -9,7 +9,6 @@ public class CommentUtils {
 
     private static final Random random = new Random();
 
-    // Private constructor to prevent instantiation
     private CommentUtils() {
         throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
     }
