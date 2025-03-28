@@ -139,7 +139,10 @@ public class ScheduledTaskService {
 
                 log.info("Случайная дата публикации: {}", commentTime);
 
-                String postCut = " " + post.getPostText().substring(0, 50) + " ...";
+                int postLength = post.getPostText().length();
+                int commentLength = (int) (postLength * 0.3);
+
+                String postCut = " " + post.getPostText().substring(0, commentLength) + " ...";
 
                 CommentDto commentDto = CommentDto.builder()
                         .commentText(CommentUtils.getRandomComment(postCut))
