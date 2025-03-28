@@ -23,6 +23,7 @@ import ru.skillbox.social_network_post.security.HeaderAuthenticationToken;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.PostService;
+import ru.skillbox.social_network_post.service.ReactionService;
 import ru.skillbox.social_network_post.utils.CommentUtils;
 
 import java.time.Duration;
@@ -52,6 +53,7 @@ public class ScheduledTaskService {
     private final AccountServiceClient accountServiceClient;
     private final PostService postService;
     private final CommentService commentService;
+    private final ReactionService reactionService;
     private final RandomQuoteGenerator randomQuoteGenerator;
 
     private static final AtomicInteger counter = new AtomicInteger(1);
@@ -137,7 +139,7 @@ public class ScheduledTaskService {
 
                 LocalDateTime commentTime = publishDate.plusMinutes(randomMinutes);
 
-                log.info("Случайная дата публикации: {}", commentTime);
+                log.info("Random publish date for comment: {}", commentTime);
 
                 int postLength = post.getPostText().length();
                 int commentLength = (int) (postLength * 0.3);
@@ -150,7 +152,7 @@ public class ScheduledTaskService {
                         .build();
 
                 commentService.create(post.getId(), commentDto);
-                log.warn("Добавили комментарий к посту {}. {}", post.getId(), commentDto.getCommentText());
+                log.warn("Created comment for post {}. {}", post.getId(), commentDto.getCommentText());
 
                 PageCommentDto commentsForComments = commentService.getByPostId(post.getId(), new CommentSearchDto(), PageRequest.of(0, 10, Sort.by(Sort.Order.desc("time"))));
 
@@ -182,7 +184,7 @@ public class ScheduledTaskService {
 
             LocalDateTime subCommentTime = time.plusMinutes(randomMinutes);
 
-            log.info("Случайная дата публикации для субкомментария: {}", subCommentTime);
+            log.info("Random subcomment publish date: {}", subCommentTime);
 
             CommentDto subCommentDto = CommentDto.builder()
                     .commentText(CommentUtils.getRandomReply())
@@ -191,7 +193,10 @@ public class ScheduledTaskService {
                     .build();
 
             commentService.create(postId, subCommentDto);
-            log.warn("Добавили cуб комментарий к комментарию {}. {}", postId, commentDto.getCommentText());
+            log.warn("Created subcomment {}. {}", postId, commentDto.getCommentText());
+
+            log.warn("Put like to comment {}", commentDto.getId());
+            reactionService.addLikeToComment(postId, commentDto.getId());
         });
     }
 
@@ -206,7 +211,7 @@ public class ScheduledTaskService {
             long after = Long.parseLong(publishDateAfterNow);
 
             if (before < 0 || after < 0) {
-                throw new IllegalArgumentException("publish-date.before и publish-date.after должны быть неотрицательными");
+                throw new IllegalArgumentException("publish-date.before and publish-date.after must be positive");
             }
 
             LocalDateTime startDate = now.minusDays(before);
@@ -218,12 +223,12 @@ public class ScheduledTaskService {
             long randomSeconds = ThreadLocalRandom.current().nextLong(secondsBetween);
 
             LocalDateTime randomDate = startDate.plusSeconds(randomSeconds);
-            log.warn("Случайная дата публикации: {}", randomDate);
+            log.warn("Random publish date for post: {}", randomDate);
 
 
             return randomDate;
         } catch (NumberFormatException e) {
-            throw new IllegalArgumentException("Ошибка преобразования publish-date.before или publish-date.after в число", e);
+            throw new IllegalArgumentException("Error parsing publish-date.before or publish-date.after in number", e);
         }
     }
 
