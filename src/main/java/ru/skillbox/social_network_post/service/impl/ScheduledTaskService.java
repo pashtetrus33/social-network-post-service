@@ -21,6 +21,7 @@ import ru.skillbox.social_network_post.dto.*;
 import ru.skillbox.social_network_post.exception.CustomFreignException;
 import ru.skillbox.social_network_post.security.HeaderAuthenticationToken;
 import ru.skillbox.social_network_post.security.SecurityUtils;
+import ru.skillbox.social_network_post.service.CommentService;
 import ru.skillbox.social_network_post.service.PostService;
 
 import java.time.Duration;
@@ -49,6 +50,7 @@ public class ScheduledTaskService {
     private final AuthServiceClient authServiceClient;
     private final AccountServiceClient accountServiceClient;
     private final PostService postService;
+    private final CommentService commentService;
     private final RandomQuoteGenerator randomQuoteGenerator;
 
     private static final AtomicInteger counter = new AtomicInteger(1);
@@ -111,16 +113,38 @@ public class ScheduledTaskService {
                     .publishDate(createRandomPublishDate())
                     .authorId(accountId)
                     .build());
+
+            PagePostDto postsForComments = postService.getAll(new PostSearchDto(), PageRequest.of(0, 20, Sort.by(Sort.Order.desc("publishDate"))));
+
+            if (postsForComments != null) {
+                log.warn("Got some posts for comments:");
+                postsForComments.getContent().forEach(post -> log.warn("Post: {}", post.getId()));
+
+                List<PostDto> postDtos = new ArrayList<>(postsForComments.getContent());
+                Collections.shuffle(postDtos);
+                postDtos.stream().limit(5).forEach(post -> {
+
+                    LocalDateTime publishDate = post.getPublishDate();
+                    long randomMinutes = ThreadLocalRandom.current().nextLong(10, 120);
+                    LocalDateTime commentTime = publishDate.plusMinutes(randomMinutes);
+
+                    String randomComment = comments.get(ThreadLocalRandom.current().nextInt(comments.size()));
+
+                    String postCut = " " + post.getPostText().substring(0, 30) + " ...";
+
+                    CommentDto commentDto = CommentDto.builder()
+                            .commentText(randomComment + postCut)
+                            .time(commentTime)
+                            .build();
+
+                    commentService.create(post.getId(), commentDto);
+                    log.warn("Добавили комментарий к посту {}. {}", post.getId(), commentDto.getCommentText());
+                });
+
+            } else {
+                log.warn("Got no posts for comments");
+            }
         });
-
-        PagePostDto postsForComments = postService.getAll(new PostSearchDto(), PageRequest.of(0, 20, Sort.by(Sort.Order.desc("publishDate"))));
-
-        if (postsForComments != null) {
-            log.warn("Got some posts for comments:");
-            postsForComments.getContent().forEach(post -> log.warn("Post: {}", post.getId()));
-        } else {
-            log.warn("Got no posts for comments");
-        }
     }
 
 
@@ -202,4 +226,27 @@ public class ScheduledTaskService {
             throw new CustomFreignException("Scheduled task. Error fetching all accounts");
         }
     }
+
+    List<String> comments = List.of(
+            "Отличный пост! Спасибо за интересные мысли. Это верно: 😊🔥",
+            "Очень интересно, не думал об этом раньше! Это правильно: 🤔✅",
+            "Полностью согласен, отличное объяснение. Действительно так: 👍👏",
+            "Интересная точка зрения! Подтверждаю: 🤩💡",
+            "Не уверен, но звучит логично. Возможно так: 🤷️🤓",
+            "Круто, спасибо за информацию! Доказано, что: 🎯📚",
+            "Можно подробнее? Интересно разобраться. Я читал, что: 📖🔍",
+            "Не согласен, но уважаю вашу точку зрения. Есть мнение, что: 🤨🤝",
+            "Это действительно так? Многие говорят, что: 🧐🤔",
+            "Спасибо! Теперь мне стало понятнее. Есть подтверждение, что: ✅📜",
+            "Вы молодец! Очень четко и по делу. Исследования показывают, что: 🎓📊",
+            "Ух ты! Никогда не задумывался об этом. В научных кругах говорят, что: 🤯🔬",
+            "Это изменило мой взгляд на вещи. Важно понимать, что: 🌍🔄",
+            "Как раз искал такую информацию, благодарю! Доказано учеными, что: 🏆📑",
+            "Кажется, здесь ошибка. Проверьте ещё раз! Некоторые считают, что: ❌🤷",
+            "Надо будет попробовать, спасибо! В теории это значит, что: 🛠️⚙️",
+            "Очень полезно! Надо сохранить себе. Любопытно, что: 📌💡",
+            "Вау, даже не знал, что так можно! Практика показывает, что: 😲⚡",
+            "Можете объяснить это поподробнее? Важно отметить, что: 👀❓",
+            "Супер, теперь понятно! Благодарю! Некоторые исследования говорят, что: 🙌📚"
+    );
 }
