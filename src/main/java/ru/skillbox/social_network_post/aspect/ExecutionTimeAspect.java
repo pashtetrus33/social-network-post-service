@@ -63,7 +63,7 @@ public class ExecutionTimeAspect {
                 log.error(message);
                 break;
             default:
-                log.info(message);
+                log.warn(message);
         }
     }
 }
