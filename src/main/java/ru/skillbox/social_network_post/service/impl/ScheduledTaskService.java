@@ -131,7 +131,7 @@ public class ScheduledTaskService {
 
             List<PostDto> postDtos = new ArrayList<>(postsForComments.getContent());
             Collections.shuffle(postDtos);
-            postDtos.stream().limit(5).forEach(post -> {
+            postDtos.stream().limit(3).forEach(post -> {
 
                 LocalDateTime publishDate = post.getPublishDate();
 
@@ -195,7 +195,7 @@ public class ScheduledTaskService {
 
         List<CommentDto> commentDtos = new ArrayList<>(commentsForComments.getContent());
         Collections.shuffle(commentDtos);
-        commentDtos.stream().limit(5).forEach(commentDto -> {
+        commentDtos.stream().limit(3).forEach(commentDto -> {
 
             LocalDateTime time = commentDto.getTime();
 
