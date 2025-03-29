@@ -35,10 +35,6 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
     ) throws ServletException, IOException {
 
         String path = request.getServletPath();
-        int port = request.getLocalPort();
-
-        log.info("Request path: {}", path);
-        log.info("Request port: {}", port);
 
         // Разрешаем доступ к /actuator/** без проверки токена
         if (path.startsWith("/actuator/")) {
