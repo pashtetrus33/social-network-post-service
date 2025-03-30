@@ -176,7 +176,7 @@ public class ReactionServiceImpl implements ReactionService {
 
         // Проверяем, ставил ли пользователь лайк для данного комментария
         if (reactionRepository.existsByCommentIdAndAuthorId(commentId, accountId)) {
-            log.error("Like already exists for post with id {} and comment with id {}", postId, commentId);
+            log.warn("Like already exists for comment with id {} and authorId {}", commentId, accountId);
             return;
         }
 
