@@ -152,7 +152,7 @@ public class ReactionServiceImpl implements ReactionService {
             postRepository.updateReactionsCount(postId);
 
         } else {
-            log.warn("У текущего пользователя нет реакции на этот пост. Пользователь {}", accountId);
+            log.warn("Failed remove reaction from post. There are not reactions for post with id {} by accountId {}", postId, accountId);
         }
     }
 
