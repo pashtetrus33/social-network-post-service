@@ -95,7 +95,7 @@ class PostServiceIntegrationTest extends AbstractServiceTest {
 
         // Act
         PagePostDto result = postService.getAll(searchDto, pageable);
-        log.warn("Get all size: {}", result.getContent().size());
+        log.warn("Get all test method size: {}", result.getContent().size());
 
 
         // Assert
