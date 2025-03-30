@@ -109,7 +109,7 @@ public class ReactionServiceImpl implements ReactionService {
         for (ReactionType type : ReactionType.values()) {
             reactionInfos.add(new ReactionDto.ReactionInfo(
                     type.getName(),
-                    reactionCountMap.getOrDefault(type.name(), 0L)
+                    reactionCountMap.getOrDefault(type.getName(), 0L)
             ));
         }
 
