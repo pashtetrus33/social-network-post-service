@@ -24,6 +24,7 @@ public interface PostSpecification {
     String AUTHOR_ID = "authorId";
 
     static Specification<Post> withFilters(PostSearchDto postSearchDto, UUID currentAccountId) {
+
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
