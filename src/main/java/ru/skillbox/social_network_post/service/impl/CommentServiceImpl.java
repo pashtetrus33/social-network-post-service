@@ -49,17 +49,13 @@ public class CommentServiceImpl implements CommentService {
     @Transactional(readOnly = true)
     public PageCommentDto getByPostId(UUID postId, CommentSearchDto commentSearchDto, Pageable pageable) {
 
-        log.info("Service getByPostId: {}", postId);
-
         commentSearchDto.setPostId(postId);
         commentSearchDto.setCommentType(CommentType.POST);
-
-        log.info("Service getByPostId comment search dto: {}", commentSearchDto);
 
         // Формируем спецификацию для поиска
         Specification<Comment> spec = CommentSpecification.withFilters(commentSearchDto);
 
-        log.info("Service getByPostId spec: {}", spec);
+        log.warn("Service getByPostId spec: {}", spec);
 
         // Запрашиваем комменты из репозитория
         Page<Comment> comments = commentRepository.findAll(spec, pageable);
