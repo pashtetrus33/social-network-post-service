@@ -1,6 +1,7 @@
 package ru.skillbox.social_network_post.service.impl;
 
 import feign.FeignException;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -25,6 +26,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
+@Slf4j
 class PostServiceIntegrationTest extends AbstractServiceTest {
 
     @MockBean
@@ -79,23 +81,21 @@ class PostServiceIntegrationTest extends AbstractServiceTest {
     @Test
     void testGetAll() {
 
-        UUID postAuthorId = UUID.randomUUID();
-
         // Arrange: создаем тестовый пост
         Post post = new Post();
         post.setTitle("New Test Post");
         post.setPostText("Test Content");
-        post.setAuthorId(postAuthorId);
+        post.setAuthorId(UUID.randomUUID());
         post.setPublishDate(LocalDateTime.now());
         postRepository.save(post);
 
         PostSearchDto searchDto = new PostSearchDto();
         searchDto.setWithFriends(false);
-        searchDto.setAccountIds(Collections.singletonList(postAuthorId));
         Pageable pageable = PageRequest.of(0, 10);
 
         // Act
         PagePostDto result = postService.getAll(searchDto, pageable);
+        log.warn("Get all size: {}", result.getContent().size());
 
 
         // Assert

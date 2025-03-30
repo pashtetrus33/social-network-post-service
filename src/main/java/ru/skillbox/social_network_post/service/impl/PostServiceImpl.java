@@ -96,6 +96,7 @@ public class PostServiceImpl implements PostService {
         log.warn("PostService get all method. AccountId: {}", accountId);
 
         Specification<Post> spec = PostSpecification.withFilters(postSearchDto, accountId);
+
         Page<Post> posts = postRepository.findAll(spec, pageable);
 
         PagePostDto pagePostDto = PostMapperFactory.toPagePostDto(posts);
