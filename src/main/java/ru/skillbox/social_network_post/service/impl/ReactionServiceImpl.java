@@ -152,7 +152,7 @@ public class ReactionServiceImpl implements ReactionService {
             postRepository.updateReactionsCount(postId);
 
         } else {
-            log.warn("У текущего пользователя нет реакции на этот пост. Пользователь {}", accountId);
+            log.warn("Failed remove reaction from post. There are not reactions for post with id {} by accountId {}", postId, accountId);
         }
     }
 
@@ -225,8 +225,15 @@ public class ReactionServiceImpl implements ReactionService {
 
         accountId = SecurityUtils.getAccountId();
 
-        commentRepository.updateLikeAmount(commentId);
+        if (reactionRepository.existsByCommentIdAndAuthorId(commentId, accountId)) {
 
-        reactionRepository.deleteByCommentIdAndAuthorId(commentId, accountId);
+            log.warn("Remove like from comment {}. AccountID {}", commentId, accountId);
+
+            commentRepository.updateLikeAmount(commentId);
+
+            reactionRepository.deleteByCommentIdAndAuthorId(commentId, accountId);
+        } else {
+            log.warn("Failed remove like from comment. There are not likes for comment with id {} by accountId {}", commentId, accountId);
+        }
     }
 }
