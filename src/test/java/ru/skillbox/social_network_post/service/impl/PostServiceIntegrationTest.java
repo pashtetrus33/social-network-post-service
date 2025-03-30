@@ -86,9 +86,7 @@ class PostServiceIntegrationTest extends AbstractServiceTest {
         postRepository.save(post);
 
         PostSearchDto searchDto = new PostSearchDto();
-        searchDto.setAuthor(null);
         searchDto.setWithFriends(false);
-        searchDto.setDateTo(null);
         Pageable pageable = PageRequest.of(0, 10);
 
         // Act
