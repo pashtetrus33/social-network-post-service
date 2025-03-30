@@ -14,7 +14,7 @@ public interface ReactionRepository extends JpaRepository<Reaction, UUID> {
 
     boolean existsByPostIdAndAuthorIdAndCommentIdIsNull(UUID postId, UUID userId);
 
-    boolean existsByCommentIdAndAuthorId(UUID postId, UUID userId);
+    boolean existsByCommentIdAndAuthorId(UUID commentId, UUID userId);
 
     void deleteByPostIdAndAuthorId(UUID postId, UUID userId);
 

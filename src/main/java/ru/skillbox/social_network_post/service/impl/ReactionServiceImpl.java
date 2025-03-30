@@ -225,8 +225,15 @@ public class ReactionServiceImpl implements ReactionService {
 
         accountId = SecurityUtils.getAccountId();
 
-        commentRepository.updateLikeAmount(commentId);
+        if (reactionRepository.existsByCommentIdAndAuthorId(commentId, accountId)) {
 
-        reactionRepository.deleteByCommentIdAndAuthorId(commentId, accountId);
+            log.warn("Remove like from comment {}. AccountID {}", commentId, accountId);
+
+            commentRepository.updateLikeAmount(commentId);
+
+            reactionRepository.deleteByCommentIdAndAuthorId(commentId, accountId);
+        } else {
+            log.warn("Failed remove like from comment. There are not likes for comment with id {} by accountId {}", commentId, accountId);
+        }
     }
 }
