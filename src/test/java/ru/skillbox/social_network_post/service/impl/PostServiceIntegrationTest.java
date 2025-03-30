@@ -15,6 +15,7 @@ import ru.skillbox.social_network_post.service.KafkaService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -77,16 +78,20 @@ class PostServiceIntegrationTest extends AbstractServiceTest {
 
     @Test
     void testGetAll() {
+
+        UUID postAuthorId = UUID.randomUUID();
+
         // Arrange: создаем тестовый пост
         Post post = new Post();
         post.setTitle("New Test Post");
         post.setPostText("Test Content");
-        post.setAuthorId(UUID.randomUUID());
+        post.setAuthorId(postAuthorId);
         post.setPublishDate(LocalDateTime.now());
         postRepository.save(post);
 
         PostSearchDto searchDto = new PostSearchDto();
         searchDto.setWithFriends(false);
+        searchDto.setAccountIds(Collections.singletonList(postAuthorId));
         Pageable pageable = PageRequest.of(0, 10);
 
         // Act
