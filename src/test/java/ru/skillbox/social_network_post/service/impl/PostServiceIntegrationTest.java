@@ -16,7 +16,6 @@ import ru.skillbox.social_network_post.service.KafkaService;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
