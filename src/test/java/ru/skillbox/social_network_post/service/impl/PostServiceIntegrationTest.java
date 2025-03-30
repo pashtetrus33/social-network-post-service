@@ -94,6 +94,7 @@ class PostServiceIntegrationTest extends AbstractServiceTest {
         // Act
         PagePostDto result = postService.getAll(searchDto, pageable);
 
+
         // Assert
         assertNotNull(result, "PagePostDto should not be null");
         assertFalse(result.getContent().isEmpty(), "Result should contain at least one post");
