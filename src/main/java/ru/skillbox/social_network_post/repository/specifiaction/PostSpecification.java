@@ -28,7 +28,7 @@ public interface PostSpecification {
         return (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
 
-            log.debug("Start building predicates for postSearchDto: {}", postSearchDto);
+            log.warn("Start building predicates for postSearchDto: {}", postSearchDto);
 
             addPostIdsPredicate(postSearchDto.getIds(), root, predicates);
 
@@ -49,7 +49,7 @@ public interface PostSpecification {
 
             addDateToPredicate(postSearchDto.getDateTo(), root, criteriaBuilder, predicates);
 
-            log.debug("Final predicates built: {}", predicates);
+            log.warn("Final predicates built: {}", predicates);
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
@@ -57,10 +57,10 @@ public interface PostSpecification {
 
     private static void addPostIdsPredicate(List<UUID> postIds, Root<Post> root, List<Predicate> predicates) {
         if (postIds != null && !postIds.isEmpty()) {
-            log.debug("Adding predicate for post IDs: {}", postIds);
+            log.warn("Adding predicate for post IDs: {}", postIds);
             predicates.add(root.get("id").in(postIds));
         } else {
-            log.debug("No post IDs to filter.");
+            log.warn("No post IDs to filter.");
         }
     }
 
@@ -69,11 +69,11 @@ public interface PostSpecification {
         List<UUID> accountIds = postSearchDto.getAccountIds();
 
         if (accountIds != null) {
-            log.debug("Adding predicate for account IDs: {}", accountIds);
+            log.warn("Adding predicate for account IDs: {}", accountIds);
             predicates.add(root.get(AUTHOR_ID).in(accountIds));
         } else if (Boolean.FALSE.equals(StringUtils.isBlank(postSearchDto.getAuthor()) || Boolean.TRUE.equals(postSearchDto.getWithFriends()))) {
             accountIds = new ArrayList<>();
-            log.debug("Adding EMPTY  predicate for account IDs (flags author or withFriends are present): {}", accountIds);
+            log.warn("Adding EMPTY  predicate for account IDs (flags author or withFriends are present): {}", accountIds);
             predicates.add(root.get(AUTHOR_ID).in(accountIds));
 
         } else {
@@ -84,88 +84,88 @@ public interface PostSpecification {
 
     private static void addBlockedIdsPredicate(List<UUID> blockedIds, Root<Post> root, List<Predicate> predicates) {
         if (blockedIds != null && !blockedIds.isEmpty()) {
-            log.debug("Adding predicate for blocked post IDs: {}", blockedIds);
+            log.warn("Adding predicate for blocked post IDs: {}", blockedIds);
             predicates.add(root.get("id").in(blockedIds));
         } else {
-            log.debug("No blocked post IDs to filter.");
+            log.warn("No blocked post IDs to filter.");
         }
     }
 
     private static void addBlockedStatusPredicate(Boolean isBlocked, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
         if (isBlocked != null && !isBlocked) {
-            log.debug("Adding predicate for posts that are not blocked.");
+            log.warn("Adding predicate for posts that are not blocked.");
             predicates.add(criteriaBuilder.or(
                     criteriaBuilder.isFalse(root.get("isBlocked")),
                     criteriaBuilder.isNull(root.get("isBlocked"))
             ));
         } else {
-            log.debug("No blocked status to filter.");
+            log.warn("No blocked status to filter.");
         }
     }
 
     private static void addDeletedStatusPredicate(Boolean isDeleted, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
         if (isDeleted != null && !isDeleted) {
-            log.debug("Adding predicate for posts that are not deleted.");
+            log.warn("Adding predicate for posts that are not deleted.");
             predicates.add(criteriaBuilder.or(
                     criteriaBuilder.isFalse(root.get("isDeleted")),
                     criteriaBuilder.isNull(root.get("isDeleted"))
             ));
         } else {
-            log.debug("No deleted status to filter.");
+            log.warn("No deleted status to filter.");
         }
     }
 
     private static void addTitlePredicate(String title, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
         if (title != null && !title.isBlank()) {
-            log.debug("Adding predicate for post title: {}", title);
+            log.warn("Adding predicate for post title: {}", title);
             predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("title")), "%" + title.toLowerCase() + "%"));
         } else {
-            log.debug("No title to filter.");
+            log.warn("No title to filter.");
         }
     }
 
     private static void addPostTextPredicate(String postText, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
         if (postText != null && !postText.isBlank()) {
-            log.debug("Adding predicate for post text: {}", postText);
+            log.warn("Adding predicate for post text: {}", postText);
             predicates.add(criteriaBuilder.like(criteriaBuilder.lower(root.get("postText")), "%" + postText.toLowerCase() + "%"));
         } else {
-            log.debug("No post text to filter.");
+            log.warn("No post text to filter.");
         }
     }
 
     private static void addTagsPredicate(List<String> tags, Root<Post> root, List<Predicate> predicates) {
         if (tags != null && !tags.isEmpty()) {
-            log.debug("Adding predicate for post tags: {}", tags);
+            log.warn("Adding predicate for post tags: {}", tags);
             Join<Post, String> tagsJoin = root.join("tags");
             predicates.add(tagsJoin.in(tags));
         } else {
-            log.debug("No tags to filter.");
+            log.warn("No tags to filter.");
         }
     }
 
     private static void addDateFromPredicate(String dateFrom, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
         if (dateFrom != null) {
-            log.debug("Adding predicate for dateFrom: {}", dateFrom);
+            log.warn("Adding predicate for dateFrom: {}", dateFrom);
             predicates.add(criteriaBuilder.greaterThanOrEqualTo(
                     root.get("publishDate"),
                     Instant.ofEpochMilli(Long.parseLong(dateFrom))
                             .atZone(ZoneOffset.UTC).toLocalDateTime()
             ));
         } else {
-            log.debug("No dateFrom to filter.");
+            log.warn("No dateFrom to filter.");
         }
     }
 
     private static void addDateToPredicate(String dateTo, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
         if (dateTo != null) {
-            log.debug("Adding predicate for dateTo: {}", dateTo);
+            log.warn("Adding predicate for dateTo: {}", dateTo);
             predicates.add(criteriaBuilder.lessThanOrEqualTo(
                     root.get("publishDate"),
                     Instant.ofEpochMilli(Long.parseLong(dateTo))
                             .atZone(ZoneOffset.UTC).toLocalDateTime()
             ));
         } else {
-            log.debug("No dateTo to filter.");
+            log.warn("No dateTo to filter.");
         }
     }
 
