@@ -93,15 +93,10 @@ public class PostServiceImpl implements PostService {
         processDateFilters(postSearchDto);
 
         accountId = SecurityUtils.getAccountId();
-        log.warn("PostService get all method. AccountId: {}", accountId);
 
         Specification<Post> spec = PostSpecification.withFilters(postSearchDto, accountId);
 
-        log.warn("Get all without spec: {}", postRepository.findAll().size());
-
         Page<Post> posts = postRepository.findAll(spec, pageable);
-
-        log.warn("Get all service method size: {}", posts.getContent().size());
 
         PagePostDto pagePostDto = PostMapperFactory.toPagePostDto(posts);
 

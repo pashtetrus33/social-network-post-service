@@ -89,12 +89,11 @@ class PostServiceIntegrationTest extends AbstractServiceTest {
         postRepository.save(post);
 
         PostSearchDto searchDto = new PostSearchDto();
+        searchDto.setAuthor(null);
         Pageable pageable = PageRequest.of(0, 10);
 
         // Act
         PagePostDto result = postService.getAll(searchDto, pageable);
-        log.warn("Get all test method size: {}", result.getContent().size());
-
 
         // Assert
         assertNotNull(result, "PagePostDto should not be null");
