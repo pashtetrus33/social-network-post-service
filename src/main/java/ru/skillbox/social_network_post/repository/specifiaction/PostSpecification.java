@@ -49,7 +49,7 @@ public interface PostSpecification {
 
             addDateToPredicate(postSearchDto.getDateTo(), root, criteriaBuilder, predicates);
 
-            log.warn("Final predicates built: {}", predicates);
+            log.warn("Final predicates size: {}", predicates.size());
 
             return criteriaBuilder.and(predicates.toArray(new Predicate[0]));
         };
@@ -67,6 +67,7 @@ public interface PostSpecification {
     private static void addAccountIdsPredicate(PostSearchDto postSearchDto, UUID currentAccountId, Root<Post> root, CriteriaBuilder criteriaBuilder, List<Predicate> predicates) {
 
         List<UUID> accountIds = postSearchDto.getAccountIds();
+        log.warn("Post searchDto. Account IDs: {}", accountIds);
 
         if (accountIds != null) {
             log.warn("Adding predicate for account IDs: {}", accountIds);
@@ -77,7 +78,7 @@ public interface PostSpecification {
             predicates.add(root.get(AUTHOR_ID).in(accountIds));
 
         } else {
-            log.debug("No account IDs provided. Filtering only own posts for account: {}", currentAccountId);
+            log.warn("No account IDs provided. Filtering only own posts for account: {}", currentAccountId);
             predicates.add(criteriaBuilder.notEqual(root.get(AUTHOR_ID), currentAccountId));
         }
     }
