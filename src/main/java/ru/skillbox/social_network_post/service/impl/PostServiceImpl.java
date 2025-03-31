@@ -97,6 +97,8 @@ public class PostServiceImpl implements PostService {
 
         Specification<Post> spec = PostSpecification.withFilters(postSearchDto, accountId);
 
+        log.warn("Get all without spec: {}", postRepository.findAll().size());
+
         Page<Post> posts = postRepository.findAll(spec, pageable);
 
         log.warn("Get all service method size: {}", posts.getContent().size());
