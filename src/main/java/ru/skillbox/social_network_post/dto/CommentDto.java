@@ -38,7 +38,7 @@ public class CommentDto {
 
     private Integer likeAmount;
 
-    private Boolean myReaction;
+    private Boolean myLike;
 
     private Integer commentsCount;
 

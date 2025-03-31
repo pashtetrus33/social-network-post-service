@@ -63,7 +63,7 @@ public class CommentServiceImpl implements CommentService {
         PageCommentDto pageCommentDto = CommentMapperFactory.toPageCommentDto(comments);
 
         pageCommentDto.getContent().forEach(commentDto ->
-                commentDto.setMyReaction(reactionService.getMyReactionToComment(postId, commentDto.getId(), SecurityUtils.getAccountId())));
+                commentDto.setMyLike(reactionService.getMyReactionToComment(postId, commentDto.getId(), SecurityUtils.getAccountId())));
 
         return pageCommentDto;
     }
@@ -80,7 +80,7 @@ public class CommentServiceImpl implements CommentService {
         PageCommentDto pageCommentDto = CommentMapperFactory.toPageCommentDto(subcomments);
 
         pageCommentDto.getContent().forEach(commentDto ->
-                commentDto.setMyReaction(reactionService.getMyReactionToComment(postId, commentDto.getId(), SecurityUtils.getAccountId())));
+                commentDto.setMyLike(reactionService.getMyReactionToComment(postId, commentDto.getId(), SecurityUtils.getAccountId())));
 
         return pageCommentDto;
     }

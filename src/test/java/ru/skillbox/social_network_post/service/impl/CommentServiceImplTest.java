@@ -219,7 +219,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
         commentDto.setCommentType(CommentType.POST);
         commentDto.setIsBlocked(false);
         commentDto.setIsDeleted(false);
-        commentDto.setMyReaction(false);
+        commentDto.setMyLike(false);
 
         // Arrange: создаём пост
         Post post = Post.builder()
@@ -247,7 +247,7 @@ class CommentServiceImplTest extends AbstractServiceTest {
         updatedCommentDto.setCommentType(CommentType.POST);
         updatedCommentDto.setIsBlocked(false);
         updatedCommentDto.setIsDeleted(false);
-        updatedCommentDto.setMyReaction(false);
+        updatedCommentDto.setMyLike(false);
 
         commentService.update(post.getId(), createdComment.getId(), updatedCommentDto);
 
