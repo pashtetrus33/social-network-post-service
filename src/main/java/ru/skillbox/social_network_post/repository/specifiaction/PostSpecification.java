@@ -3,7 +3,6 @@ package ru.skillbox.social_network_post.repository.specifiaction;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Root;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 import ru.skillbox.social_network_post.entity.Post;
 import ru.skillbox.social_network_post.dto.PostSearchDto;
@@ -72,11 +71,6 @@ public interface PostSpecification {
         if (accountIds != null) {
             log.warn("Adding predicate for account IDs: {}", accountIds);
             predicates.add(root.get(AUTHOR_ID).in(accountIds));
-        } else if (Boolean.FALSE.equals(StringUtils.isBlank(postSearchDto.getAuthor()) || Boolean.TRUE.equals(postSearchDto.getWithFriends()))) {
-            accountIds = new ArrayList<>();
-            log.warn("Adding EMPTY  predicate for account IDs (flags author or withFriends are present): {}", accountIds);
-            predicates.add(root.get(AUTHOR_ID).in(accountIds));
-
         } else {
             log.warn("No account IDs provided. Filtering only own posts for account: {}", currentAccountId);
             predicates.add(criteriaBuilder.notEqual(root.get(AUTHOR_ID), currentAccountId));
@@ -169,5 +163,4 @@ public interface PostSpecification {
             log.warn("No dateTo to filter.");
         }
     }
-
 }
