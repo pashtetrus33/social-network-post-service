@@ -242,6 +242,9 @@ public class PostServiceImpl implements PostService {
 
     private void processAccountIds(PostSearchDto postSearchDto) {
 
+        log.warn("PostSearchDto. AccountIds: {}", postSearchDto.getAccountIds());
+        log.warn("PostSearchDto. Author: {}", postSearchDto.getAuthor());
+
         List<UUID> authorIds = Optional.ofNullable(postSearchDto.getAuthor())
                 .filter(author -> !author.isBlank())
                 .map(this::getAuthorIds)
