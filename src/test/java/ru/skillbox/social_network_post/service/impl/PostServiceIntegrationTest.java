@@ -15,6 +15,7 @@ import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.service.KafkaService;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
@@ -85,7 +86,8 @@ class PostServiceIntegrationTest extends AbstractServiceTest {
         post.setTitle("New Test Post");
         post.setPostText("Test Content");
         post.setAuthorId(UUID.randomUUID());
-        post.setPublishDate(LocalDateTime.now());
+        post.setPublishDate(LocalDateTime.now(ZoneId.of("UTC")));
+
         postRepository.save(post);
 
         PostSearchDto searchDto = new PostSearchDto();

@@ -266,25 +266,37 @@ public class PostServiceImpl implements PostService {
     }
 
     private void processDateFilters(PostSearchDto postSearchDto) {
+        long nowMillis = Instant.now().toEpochMilli();
+        log.warn("Current timestamp (UTC): {}", nowMillis);
 
-        Instant now = Instant.now();
+        long dateTo = parseOrDefault(postSearchDto.getDateTo(), nowMillis);
+        Long dateFrom = parseOrNull(postSearchDto.getDateFrom());
 
-        postSearchDto.setDateTo(parseOrDefault(postSearchDto.getDateTo(), now.toEpochMilli()));
-        postSearchDto.setDateFrom(parseOrNull(postSearchDto.getDateFrom()));
+        postSearchDto.setDateTo(String.valueOf(dateTo));
+        postSearchDto.setDateFrom(dateFrom != null ? String.valueOf(dateFrom) : null);
+
+        log.warn("Processed date filters - DateFrom: {}, DateTo: {}", postSearchDto.getDateFrom(), postSearchDto.getDateTo());
     }
 
-    private String parseOrDefault(String date, long defaultValue) {
-        return date != null ? parseOrThrow(date) : String.valueOf(defaultValue);
+    private long parseOrDefault(String date, long defaultValue) {
+        return Optional.ofNullable(date)
+                .map(this::parseOrThrow)
+                .orElse(defaultValue);
     }
 
-    private String parseOrNull(String date) {
-        return date != null ? parseOrThrow(date) : null;
+    private Long parseOrNull(String date) {
+        return Optional.ofNullable(date)
+                .map(this::parseOrThrow)
+                .orElse(null);
     }
 
-    private String parseOrThrow(String date) {
+    private long parseOrThrow(String date) {
         try {
-            return String.valueOf(Instant.parse(date).toEpochMilli());
+            long timestamp = Instant.parse(date).toEpochMilli();
+            log.warn("Parsed date '{}' -> timestamp {}", date, timestamp);
+            return timestamp;
         } catch (DateTimeParseException e) {
+            log.error("Invalid date format: {}", date, e);
             throw new IllegalArgumentException("Invalid date format: " + date, e);
         }
     }
