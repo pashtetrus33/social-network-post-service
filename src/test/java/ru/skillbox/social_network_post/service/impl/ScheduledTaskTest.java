@@ -16,10 +16,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class ScheduledTaskServiceTest extends AbstractServiceTest {
-
-    @MockBean
-    private AuthServiceClient authServiceClient;
+class ScheduledTaskTest extends AbstractTest {
 
     @MockBean
     private PostServiceImpl postService;
@@ -29,7 +26,7 @@ class ScheduledTaskServiceTest extends AbstractServiceTest {
 
     @Override
     @BeforeEach
-    void setUp() {
+    protected void setUp() {
         super.setUp();
     }
 

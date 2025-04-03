@@ -27,14 +27,14 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @Slf4j
-class PostServiceIntegrationTest extends AbstractServiceTest {
+class PostIntegrationTest extends AbstractTest {
 
     @MockBean
     protected KafkaService kafkaService;
 
     @Override
     @BeforeEach
-    void setUp() {
+    protected void setUp() {
         super.setUp(); // Вызов метода из абстрактного класса для инициализации аутентификации и очистки данных.
     }
 

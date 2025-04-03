@@ -19,14 +19,14 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class ReactionServiceImplTest extends AbstractServiceTest {
+class ReactionImplTest extends AbstractTest {
 
     @MockBean
     protected KafkaService kafkaService;
 
     @Override
     @BeforeEach
-    void setUp() {
+    protected void setUp() {
         super.setUp();
     }
 

@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.*;
 
 @Testcontainers
-class KafkaServiceImplTest extends AbstractServiceTest {
+class KafkaImplTest extends AbstractTest {
 
     @Autowired
     private KafkaServiceImpl kafkaService;
@@ -36,7 +36,7 @@ class KafkaServiceImplTest extends AbstractServiceTest {
 
     @Override
     @BeforeEach
-    void setUp() {
+    protected void setUp() {
         super.setUp();
     }
 

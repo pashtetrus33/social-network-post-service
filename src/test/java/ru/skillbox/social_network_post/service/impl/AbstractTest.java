@@ -21,6 +21,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 import ru.skillbox.social_network_post.SocialNetworkPostApplication;
 import ru.skillbox.social_network_post.client.AccountServiceClient;
+import ru.skillbox.social_network_post.client.AuthServiceClient;
 import ru.skillbox.social_network_post.client.FriendServiceClient;
 import ru.skillbox.social_network_post.repository.CommentRepository;
 import ru.skillbox.social_network_post.repository.PostRepository;
@@ -29,10 +30,11 @@ import ru.skillbox.social_network_post.repository.ReactionRepository;
 import java.util.Properties;
 import java.util.UUID;
 
+
 @SpringBootTest(classes = SocialNetworkPostApplication.class)
 @Testcontainers
 @ExtendWith(SpringExtension.class)
-public abstract class AbstractServiceTest {
+public abstract class AbstractTest {
 
     private static final Network network = Network.newNetwork();
 
@@ -75,6 +77,8 @@ public abstract class AbstractServiceTest {
         return properties;
     }
 
+    @MockBean
+    protected AuthServiceClient authServiceClient;
 
     @MockBean
     protected AccountServiceClient accountServiceClient;
@@ -102,7 +106,7 @@ public abstract class AbstractServiceTest {
 
 
     @BeforeEach
-    void setUp() {
+    protected void setUp() {
         // Общая логика настройки для всех тестов
         setUpAuthentication();
         clearRepositoryData();

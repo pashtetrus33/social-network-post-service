@@ -18,7 +18,6 @@ public class JwtUtil {
         if (username == null) {
             throw new IllegalArgumentException("Invalid JWT token: missing or empty 'sub' field");
         }
-
         return username;
     }
 

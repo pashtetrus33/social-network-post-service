@@ -21,14 +21,14 @@ import java.util.UUID;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.*;
 
-class CommentServiceImplTest extends AbstractServiceTest {
+class CommentImplTest extends AbstractTest {
 
     @MockBean
     protected KafkaService kafkaService;
 
     @Override
     @BeforeEach
-    void setUp() {
+    protected void setUp() {
         super.setUp(); // Вызов метода из абстрактного класса для инициализации аутентификации и очистки данных.
     }
 
