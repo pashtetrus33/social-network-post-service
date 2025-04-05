@@ -270,7 +270,7 @@ public class PostServiceImpl implements PostService {
         long nowMillis = Instant.now().toEpochMilli();
         log.warn("Current timestamp (UTC): {}", nowMillis);
 
-        if (postSearchDto.getAccountIds() == null || postSearchDto.getAccountIds().size() != 1 || accountId != postSearchDto.getAccountIds().get(0)) {
+        if (postSearchDto.getAccountIds() == null || postSearchDto.getAccountIds().size() != 1 || !accountId.equals(postSearchDto.getAccountIds().get(0))) {
             long dateTo = parseOrDefault(postSearchDto.getDateTo(), nowMillis);
             postSearchDto.setDateTo(String.valueOf(dateTo));
         }
