@@ -89,10 +89,11 @@ public class PostServiceImpl implements PostService {
     @Override
     public PagePostDto getAll(@Valid PostSearchDto postSearchDto, Pageable pageable) {
 
-        processAccountIds(postSearchDto);
-        processDateFilters(postSearchDto);
-
         accountId = SecurityUtils.getAccountId();
+
+        processAccountIds(postSearchDto);
+        processDateFilters(postSearchDto, accountId);
+
 
         Specification<Post> spec = PostSpecification.withFilters(postSearchDto, accountId);
 
@@ -265,14 +266,18 @@ public class PostServiceImpl implements PostService {
         Optional.ofNullable(postSearchDto.getAccountIds()).ifPresent(ids -> ids.forEach(id -> log.info("Account: {}", id)));
     }
 
-    private void processDateFilters(PostSearchDto postSearchDto) {
+    private void processDateFilters(PostSearchDto postSearchDto, UUID accountId) {
         long nowMillis = Instant.now().toEpochMilli();
         log.warn("Current timestamp (UTC): {}", nowMillis);
 
-        long dateTo = parseOrDefault(postSearchDto.getDateTo(), nowMillis);
+        if (postSearchDto.getAccountIds().size() != 1 || accountId != postSearchDto.getAccountIds().get(0)) {
+            long dateTo = parseOrDefault(postSearchDto.getDateTo(), nowMillis);
+            postSearchDto.setDateTo(String.valueOf(dateTo));
+        }
+
         Long dateFrom = parseOrNull(postSearchDto.getDateFrom());
 
-        postSearchDto.setDateTo(String.valueOf(dateTo));
+
         postSearchDto.setDateFrom(dateFrom != null ? String.valueOf(dateFrom) : null);
 
         log.warn("Processed date filters - DateFrom: {}, DateTo: {}", postSearchDto.getDateFrom(), postSearchDto.getDateTo());
