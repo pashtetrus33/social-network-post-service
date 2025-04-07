@@ -188,7 +188,7 @@ public class ReactionServiceImpl implements ReactionService {
         reaction.setReactionType("No_reaction");
 
         if (reaction.getCreatedAt() == null) {
-            reaction.setCreatedAt(LocalDateTime.now());
+            reaction.setCreatedAt(LocalDateTime.now(ZoneOffset.UTC));
         }
 
         reactionRepository.save(reaction);

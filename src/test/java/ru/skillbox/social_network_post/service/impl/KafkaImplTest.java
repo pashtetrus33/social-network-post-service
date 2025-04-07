@@ -15,6 +15,7 @@ import ru.skillbox.social_network_post.dto.ReactionNotificationDto;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.UUID;
@@ -43,14 +44,14 @@ class KafkaImplTest extends AbstractTest {
     @Test
     void testNewPostEvent() throws Exception {
         // Arrange
-        LocalDateTime expectedPublishDate = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS); // Убираем наносекунды
+        LocalDateTime expectedPublishDate = LocalDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.SECONDS); // Убираем наносекунды
 
         // Arrange
         PostNotificationDto postNotificationDto = PostNotificationDto.builder()
                 .authorId(UUID.randomUUID())
                 .postId(UUID.randomUUID())
                 .title("Test Post")
-                .publishDate(LocalDateTime.now()) // Дата и время
+                .publishDate(LocalDateTime.now(ZoneOffset.UTC)) // Дата и время
                 .build();
 
         // Act

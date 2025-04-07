@@ -15,6 +15,7 @@ import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.service.KafkaService;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,7 +45,7 @@ class PostIntegrationTest extends AbstractTest {
         post.setTitle("Test Post");
         post.setPostText("Test Content");
         post.setAuthorId(UUID.randomUUID());
-        post.setPublishDate(LocalDateTime.now());
+        post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
 
         Post savedPost = postRepository.save(post);
 
@@ -84,7 +85,7 @@ class PostIntegrationTest extends AbstractTest {
         post.setTitle("New Test Post");
         post.setPostText("Test Content");
         post.setAuthorId(UUID.randomUUID());
-        post.setPublishDate(LocalDateTime.now());
+        post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
 
         postRepository.save(post);
 
@@ -96,6 +97,8 @@ class PostIntegrationTest extends AbstractTest {
 
         // Assert
         assertNotNull(result, "PagePostDto should not be null");
+        assertFalse(result.getContent().isEmpty(), "Result should contain at least one post");
+
     }
 
     @Test
@@ -105,7 +108,7 @@ class PostIntegrationTest extends AbstractTest {
         post.setAuthorId(UUID.randomUUID());
         post.setTitle("Test title");
         post.setPostText("Test content");
-        post.setPublishDate(LocalDateTime.now());
+        post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
         postRepository.save(post);
 
         // Мокаем Feign клиентов
@@ -138,7 +141,7 @@ class PostIntegrationTest extends AbstractTest {
         PostDto postDto = new PostDto();
         postDto.setTitle("New Test Post");
         postDto.setPostText("This is a new test post");
-        postDto.setPublishDate(LocalDateTime.now());
+        postDto.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
 
         doNothing().when(kafkaService).newPostEvent(any(PostNotificationDto.class));
 
@@ -170,7 +173,7 @@ class PostIntegrationTest extends AbstractTest {
 
         // Assert: Verify that publishDate was set to the current time
         assertNotNull(postDto.getPublishDate(), "Publish date should not be null");
-        assertTrue(postDto.getPublishDate().isBefore(LocalDateTime.now().plusSeconds(1)),
+        assertTrue(postDto.getPublishDate().isBefore(LocalDateTime.now(ZoneOffset.UTC).plusSeconds(1)),
                 "Publish date should be close to the current time");
 
         // Verify that kafkaService was called once
@@ -184,7 +187,7 @@ class PostIntegrationTest extends AbstractTest {
         post.setTitle("Original Title");
         post.setPostText("Original Content");
         post.setAuthorId(UUID.randomUUID());
-        post.setPublishDate(LocalDateTime.now());
+        post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
 
         Post savedPost = postRepository.save(post);
 
@@ -193,7 +196,7 @@ class PostIntegrationTest extends AbstractTest {
         updatedDto.setId(savedPost.getId());
         updatedDto.setTitle("Updated Title");
         updatedDto.setPostText("Updated Content");
-        updatedDto.setTimeChanged(LocalDateTime.now());
+        updatedDto.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
 
         // Act
         postService.update(updatedDto);
@@ -213,7 +216,7 @@ class PostIntegrationTest extends AbstractTest {
         postDto.setId(nonExistentId);
         postDto.setTitle("Title");
         postDto.setPostText("Content");
-        postDto.setTimeChanged(LocalDateTime.now());
+        postDto.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
 
         // Act & Assert
         EntityNotFoundException exception = assertThrows(
@@ -233,7 +236,7 @@ class PostIntegrationTest extends AbstractTest {
         post.setTitle("Original Title");
         post.setPostText("Original Content");
         post.setAuthorId(UUID.randomUUID());
-        post.setPublishDate(LocalDateTime.now());
+        post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
 
         Post savedPost = postRepository.save(post);
 
@@ -249,7 +252,7 @@ class PostIntegrationTest extends AbstractTest {
 
         // Assert: Проверяем, что timeChanged был установлен
         assertNotNull(postDto.getTimeChanged(), "TimeChanged should not be null");
-        assertTrue(postDto.getTimeChanged().isBefore(LocalDateTime.now().plusSeconds(1)), "TimeChanged should be near the current time");
+        assertTrue(postDto.getTimeChanged().isBefore(LocalDateTime.now(ZoneOffset.UTC).plusSeconds(1)), "TimeChanged should be near the current time");
     }
 
 
@@ -260,7 +263,7 @@ class PostIntegrationTest extends AbstractTest {
         post.setTitle("Delete Me");
         post.setPostText("To be deleted");
         post.setAuthorId(UUID.randomUUID());
-        post.setPublishDate(LocalDateTime.now());
+        post.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
 
         Post savedPost = postRepository.save(post);
 
@@ -282,14 +285,14 @@ class PostIntegrationTest extends AbstractTest {
         post1.setTitle("Blocked 1");
         post1.setPostText("Block test 1");
         post1.setAuthorId(accountId);
-        post1.setPublishDate(LocalDateTime.now());
+        post1.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
         postRepository.save(post1);
 
         Post post2 = new Post();
         post2.setTitle("Blocked 2");
         post2.setPostText("Block test 2");
         post2.setAuthorId(accountId);
-        post2.setPublishDate(LocalDateTime.now());
+        post2.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
         postRepository.save(post2);
 
         // Act
@@ -312,14 +315,14 @@ class PostIntegrationTest extends AbstractTest {
         post1.setTitle("Delete Status 1");
         post1.setPostText("Delete status test 1");
         post1.setAuthorId(accountId);
-        post1.setPublishDate(LocalDateTime.now());
+        post1.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
         postRepository.save(post1);
 
         Post post2 = new Post();
         post2.setTitle("Delete Status 2");
         post2.setPostText("Delete status test 2");
         post2.setAuthorId(accountId);
-        post2.setPublishDate(LocalDateTime.now());
+        post2.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
         postRepository.save(post2);
 
         // Act

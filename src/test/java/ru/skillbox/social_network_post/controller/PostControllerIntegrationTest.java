@@ -20,6 +20,7 @@ import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.impl.AbstractTest;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -47,9 +48,9 @@ class PostControllerIntegrationTest extends AbstractTest {
     private PostRepository postRepository;
 
     private Post testPost;
-    private final String fakeToken =
-            "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWNjb3VudElkIjoiMTc4ODBkMmUtMjJjYy00ODQwLTgyNGItNWQyMWNmMWZjNDc4IiwiYWRtaW4iOnRydWUsImlhdCI6MTc0MzY4NzQwMiwiZXhwIjoxNzQzNjkxMDAyfQ.LvfPVBQN84KNmRznEaCwfrEUFfiAl3DMwGKYN-Q9lso"; // Фейковый токен
+    private final String fakeToken = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWNjb3VudElkIjoiMTc4ODBkMmUtMjJjYy00ODQwLTgyNGItNWQyMWNmMWZjNDc4IiwiYWRtaW4iOnRydWUsImlhdCI6MTc0MzY4NzQwMiwiZXhwIjoxNzQzNjkxMDAyfQ.LvfPVBQN84KNmRznEaCwfrEUFfiAl3DMwGKYN-Q9lso"; // Фейковый токен
 
+    @Override
     @BeforeEach
     protected void setUp() {
         super.setUp();
@@ -57,7 +58,7 @@ class PostControllerIntegrationTest extends AbstractTest {
         testPost.setId(UUID.randomUUID());
         testPost.setTitle("Test Post");
         testPost.setPostText("This is a test post");
-        testPost.setPublishDate(LocalDateTime.now());
+        testPost.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
 
         // Мокаем поведение валидации токена
         when(authServiceClient.validateToken(anyString())).thenReturn(true);
@@ -70,7 +71,7 @@ class PostControllerIntegrationTest extends AbstractTest {
         PostDto postDto = new PostDto();
         postDto.setTitle("Test Post");
         postDto.setPostText("This is a test post");
-        postDto.setPublishDate(LocalDateTime.now());
+        postDto.setPublishDate(LocalDateTime.now(ZoneOffset.UTC));
 
         mockMvc.perform(post("/api/v1/post")
                         .header(HttpHeaders.AUTHORIZATION, fakeToken) // Добавляем фейковый токен

@@ -28,6 +28,7 @@ import ru.skillbox.social_network_post.utils.CommentUtils;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -222,7 +223,7 @@ public class ScheduledTaskService {
 
     private LocalDateTime createRandomPublishDate() {
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
         try {
 
