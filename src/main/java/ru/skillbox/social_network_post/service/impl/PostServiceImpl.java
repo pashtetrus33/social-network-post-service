@@ -126,7 +126,7 @@ public class PostServiceImpl implements PostService {
         // Устанавливаем publishDate, если он передан, иначе текущее время
         if (postDto.getPublishDate() == null) {
 
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
 
             postDto.setPublishDate(now);
             postDto.setTime(now);
@@ -174,7 +174,7 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new EntityNotFoundException("Post with ID " + postId + " not found"));
 
         if (postDto.getTimeChanged() == null) {
-            postDto.setTimeChanged(LocalDateTime.now());
+            postDto.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
         }
 
         PostMapperFactory.updatePostFromDto(postDto, post);

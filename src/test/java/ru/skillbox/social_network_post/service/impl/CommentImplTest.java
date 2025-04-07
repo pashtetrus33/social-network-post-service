@@ -16,6 +16,7 @@ import ru.skillbox.social_network_post.exception.IdMismatchException;
 import ru.skillbox.social_network_post.service.KafkaService;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import static org.junit.Assert.assertThrows;
@@ -43,13 +44,13 @@ class CommentImplTest extends AbstractTest {
     void testCreateComment() {
         CommentDto commentDto = new CommentDto();
         commentDto.setCommentText("Test Comment");
-        commentDto.setTime(LocalDateTime.now());
+        commentDto.setTime(LocalDateTime.now(ZoneOffset.UTC));
 
         // Arrange: создаём пост
         Post post = Post.builder()
                 .title("New Test Post")
                 .postText("This is a new test post")
-                .publishDate(LocalDateTime.now())
+                .publishDate(LocalDateTime.now(ZoneOffset.UTC))
                 .commentsCount(0L)  // Изначально 0 комментариев
                 .build();
         post = postRepository.save(post);
@@ -82,7 +83,7 @@ class CommentImplTest extends AbstractTest {
         Post post = Post.builder()
                 .title("Test Post")
                 .postText("Some text")
-                .publishDate(LocalDateTime.now())
+                .publishDate(LocalDateTime.now(ZoneOffset.UTC))
                 .build();
         post = postRepository.save(post);
 
@@ -95,7 +96,7 @@ class CommentImplTest extends AbstractTest {
                     .commentType(CommentType.POST)
                     .isBlocked(false)
                     .isDeleted(false)
-                    .time(LocalDateTime.now())
+                    .time(LocalDateTime.now(ZoneOffset.UTC))
                     .build();
             commentRepository.save(comment);
         }
@@ -127,7 +128,7 @@ class CommentImplTest extends AbstractTest {
         Post post = Post.builder()
                 .title("Test Post")
                 .postText("Post text")
-                .publishDate(LocalDateTime.now())
+                .publishDate(LocalDateTime.now(ZoneOffset.UTC))
                 .build();
         post = postRepository.save(post);
 
@@ -170,7 +171,7 @@ class CommentImplTest extends AbstractTest {
         Post post = Post.builder()
                 .title("Test Post")
                 .postText("Post text")
-                .publishDate(LocalDateTime.now())
+                .publishDate(LocalDateTime.now(ZoneOffset.UTC))
                 .build();
         post = postRepository.save(post);
 
@@ -188,7 +189,7 @@ class CommentImplTest extends AbstractTest {
         Post post = Post.builder()
                 .title("Test Post")
                 .postText("Post text")
-                .publishDate(LocalDateTime.now())
+                .publishDate(LocalDateTime.now(ZoneOffset.UTC))
                 .build();
         post = postRepository.save(post);
 
@@ -215,7 +216,7 @@ class CommentImplTest extends AbstractTest {
     void testUpdateComment() {
         CommentDto commentDto = new CommentDto();
         commentDto.setCommentText("Test Comment");
-        commentDto.setTime(LocalDateTime.now());
+        commentDto.setTime(LocalDateTime.now(ZoneOffset.UTC));
         commentDto.setCommentType(CommentType.POST);
         commentDto.setIsBlocked(false);
         commentDto.setIsDeleted(false);
@@ -225,7 +226,7 @@ class CommentImplTest extends AbstractTest {
         Post post = Post.builder()
                 .title("New Test Post")
                 .postText("This is a new test post")
-                .publishDate(LocalDateTime.now())
+                .publishDate(LocalDateTime.now(ZoneOffset.UTC))
                 .commentsCount(0L)  // Изначально 0 комментариев
                 .build();
         post = postRepository.save(post);
@@ -272,13 +273,13 @@ class CommentImplTest extends AbstractTest {
     void testDeleteComment() {
         CommentDto commentDto = new CommentDto();
         commentDto.setCommentText("Test Comment");
-        commentDto.setTime(LocalDateTime.now());
+        commentDto.setTime(LocalDateTime.now(ZoneOffset.UTC));
 
         // Arrange: создаём пост
         Post post = Post.builder()
                 .title("New Test Post")
                 .postText("This is a new test post")
-                .publishDate(LocalDateTime.now())
+                .publishDate(LocalDateTime.now(ZoneOffset.UTC))
                 .commentsCount(0L)  // Изначально 0 комментариев
                 .build();
         post = postRepository.save(post);

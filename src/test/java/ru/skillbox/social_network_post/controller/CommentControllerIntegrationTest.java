@@ -23,6 +23,7 @@ import ru.skillbox.social_network_post.service.KafkaService;
 import ru.skillbox.social_network_post.service.impl.AbstractTest;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import static org.mockito.Mockito.*;
@@ -66,7 +67,7 @@ class CommentControllerIntegrationTest extends AbstractTest {
         testPost = Post.builder()
                 .title("Test Post")
                 .postText("Content of test post")
-                .publishDate(LocalDateTime.now())
+                .publishDate(LocalDateTime.now(ZoneOffset.UTC))
                 .commentsCount(1L)
                 .build();
         testPost = postRepository.save(testPost);  // Сохраняем в базе данных
@@ -80,7 +81,7 @@ class CommentControllerIntegrationTest extends AbstractTest {
                 .commentsCount(0)
                 .isBlocked(false)
                 .isDeleted(false)
-                .time(LocalDateTime.now())
+                .time(LocalDateTime.now(ZoneOffset.UTC))
                 .post(testPost)
                 .build());
 
@@ -94,7 +95,7 @@ class CommentControllerIntegrationTest extends AbstractTest {
                 .commentsCount(0)
                 .isBlocked(false)
                 .isDeleted(false)
-                .time(LocalDateTime.now())
+                .time(LocalDateTime.now(ZoneOffset.UTC))
                 .postId(postId)
                 .build();
 

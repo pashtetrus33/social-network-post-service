@@ -13,6 +13,7 @@ import ru.skillbox.social_network_post.entity.Reaction;
 import ru.skillbox.social_network_post.security.SecurityUtils;
 import ru.skillbox.social_network_post.service.KafkaService;
 
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -221,7 +222,7 @@ class ReactionImplTest extends AbstractTest {
         post.setTitle("Test Post");
         post.setPostText("Test Content");
         post.setAuthorId(authorId);
-        post.setPublishDate(java.time.LocalDateTime.now());
+        post.setPublishDate(java.time.LocalDateTime.now(ZoneOffset.UTC));
         return post;
     }
 
@@ -233,7 +234,7 @@ class ReactionImplTest extends AbstractTest {
         comment.setIsDeleted(false);
         comment.setAuthorId(authorId);
         comment.setCommentText("Test Comment");
-        comment.setTime(java.time.LocalDateTime.now());
+        comment.setTime(java.time.LocalDateTime.now(ZoneOffset.UTC));
         return comment;
     }
 
