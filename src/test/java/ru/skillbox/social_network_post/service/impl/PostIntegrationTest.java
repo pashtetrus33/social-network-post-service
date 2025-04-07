@@ -15,8 +15,6 @@ import ru.skillbox.social_network_post.exception.EntityNotFoundException;
 import ru.skillbox.social_network_post.service.KafkaService;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -86,7 +84,7 @@ class PostIntegrationTest extends AbstractTest {
         post.setTitle("New Test Post");
         post.setPostText("Test Content");
         post.setAuthorId(UUID.randomUUID());
-        post.setPublishDate(LocalDateTime.now(ZoneId.of("UTC")));
+        post.setPublishDate(LocalDateTime.now());
 
         postRepository.save(post);
 
@@ -173,7 +171,7 @@ class PostIntegrationTest extends AbstractTest {
 
         // Assert: Verify that publishDate was set to the current time
         assertNotNull(postDto.getPublishDate(), "Publish date should not be null");
-        assertTrue(postDto.getPublishDate().isBefore(LocalDateTime.now(ZoneOffset.UTC).plusSeconds(1)),
+        assertTrue(postDto.getPublishDate().isBefore(LocalDateTime.now().plusSeconds(1)),
                 "Publish date should be close to the current time");
 
         // Verify that kafkaService was called once
@@ -252,7 +250,7 @@ class PostIntegrationTest extends AbstractTest {
 
         // Assert: Проверяем, что timeChanged был установлен
         assertNotNull(postDto.getTimeChanged(), "TimeChanged should not be null");
-        assertTrue(postDto.getTimeChanged().isBefore(LocalDateTime.now(ZoneOffset.UTC).plusSeconds(1)), "TimeChanged should be near the current time");
+        assertTrue(postDto.getTimeChanged().isBefore(LocalDateTime.now().plusSeconds(1)), "TimeChanged should be near the current time");
     }
 
 

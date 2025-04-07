@@ -94,7 +94,7 @@ public class CommentServiceImpl implements CommentService {
         Post post = EntityCheckUtils.checkPostPresence(postRepository, postId);
 
         if (commentDto.getTime() == null) {
-            commentDto.setTime(LocalDateTime.now(ZoneOffset.UTC));
+            commentDto.setTime(LocalDateTime.now());
         }
 
         Comment comment = CommentMapperFactory.toComment(commentDto);
@@ -169,7 +169,7 @@ public class CommentServiceImpl implements CommentService {
         }
 
         // Всегда обновляем время
-        comment.setTimeChanged(LocalDateTime.now(ZoneOffset.UTC));
+        comment.setTimeChanged(LocalDateTime.now());
 
         commentRepository.save(comment);
     }
