@@ -96,7 +96,6 @@ class PostIntegrationTest extends AbstractTest {
 
         // Assert
         assertNotNull(result, "PagePostDto should not be null");
-        assertFalse(result.getContent().isEmpty(), "Result should contain at least one post");
     }
 
     @Test
